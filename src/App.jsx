@@ -14,9 +14,9 @@ const T = {
   surfaceAlt: '#F5F0E8',
   border: '#E8DFC8',
   borderLight: '#F0E8D8',
-  gold: '#C9A843',
-  goldLight: '#E8D08A',
-  goldDark: '#A08030',
+  gold: '#D4AF37',
+  goldLight: '#E8C97A',
+  goldDark: '#6A1B9A',
   text: '#2C2416',
   textMid: '#6B5A3E',
   textLight: '#9C8A6A',
@@ -216,7 +216,7 @@ const sb = {
       return data
     } catch(e) {
       console.error('SignUp fetch error:', e)
-      return { error: { message: 'Network error — could not reach Supabase. Check your internet connection.' } }
+      return { error: { message: 'Network error - could not reach Supabase. Check your internet connection.' } }
     }
   },
   signIn: async (email, password) => {
@@ -231,7 +231,7 @@ const sb = {
       return data
     } catch(e) {
       console.error('SignIn fetch error:', e)
-      return { error: { message: 'Network error — could not reach Supabase. Check your internet connection.' } }
+      return { error: { message: 'Network error - could not reach Supabase. Check your internet connection.' } }
     }
   },
   getUser: async (token) => {
@@ -533,7 +533,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     </>,
     br10: <>
       <rect width={width} height={height} fill={c} />
-      <path d={`M0,${height/2} ${Array.from({length: Math.ceil(width/20)}, (_,i) => `Q${i*20+10},${i%2===0?0:height} ${(i+1)*20},${height/2}`).join(' ')}`} fill="none" stroke={a} strokeWidth={2} opacity={0.8} />
+      <path d={'M0,' + (height/2) + ' ' + Array.from({length: Math.ceil(width/20)}, (_,i) => 'Q' + (i*20+10) + ',' + (i%2===0?0:height) + ' ' + ((i+1)*20) + ',' + (height/2)).join(' ')} fill="none" stroke={a} strokeWidth={2} opacity={0.8} />
     </>,
     br11: <>
       <rect width={width} height={height} fill={c} />
@@ -762,17 +762,219 @@ function Notification({ notification }) {
 }
 
 // ─── VOICE QUESTIONNAIRE ──────────────────────────────────────────────────────
-const QUESTIONS = [
-  { id: 'occasion', text: 'What is the occasion for your saree?', options: ['Wedding', 'Festival', 'Casual', 'Office', 'Party'] },
-  { id: 'style', text: 'Which style do you prefer?', options: ['Traditional', 'Modern', 'Minimal', 'Bridal'] },
-  { id: 'fabric', text: 'What fabric do you have in mind?', options: ['Silk', 'Cotton', 'Linen', 'Organza'] },
-  { id: 'colorTheme', text: 'What is your preferred color theme?', options: ['Pastel', 'Bright', 'Gold & White', 'Royal Dark'] },
-  { id: 'border', text: 'How would you like the border?', options: ['Thin', 'Medium', 'Heavy'] },
-  { id: 'pallu', text: 'What kind of pallu do you prefer?', options: ['Rich', 'Simple', 'Designer'] },
-]
+// ─── DEEP QUESTIONNAIRE SYSTEM ───────────────────────────────────────────────
+// Questions are grouped by saree part. AI decides follow-ups based on answers.
+const QUESTION_BANK = {
+  // ── SECTION 1: Occasion & Intent ──
+  occasion: {
+    id: 'occasion', section: 'Occasion',
+    icon: '✨',
+    text: 'What is this saree being designed for?',
+    subtext: 'This helps us match the right richness and formality.',
+    options: [
+      { value: 'Wedding', desc: 'Bridal or wedding guest wear' },
+      { value: 'Festival', desc: 'Puja, Diwali, Onam, Pongal etc.' },
+      { value: 'Party', desc: 'Celebrations, receptions, get-togethers' },
+      { value: 'Office', desc: 'Professional, everyday elegance' },
+      { value: 'Casual', desc: 'Daily wear, outings, family events' },
+    ]
+  },
+  wearer: {
+    id: 'wearer', section: 'Occasion',
+    icon: '👤',
+    text: 'Who is going to wear this saree?',
+    subtext: 'Age and role influence design choices significantly.',
+    options: [
+      { value: 'Bride', desc: 'The main bride - maximum richness' },
+      { value: 'Mother of Bride', desc: 'Elegant, dignified, complementary' },
+      { value: 'Wedding Guest', desc: 'Festive but not outshining the bride' },
+      { value: 'Young Woman (20s–30s)', desc: 'Trendy, contemporary styles' },
+      { value: 'Mature Woman (40s+)', desc: 'Classic, refined, comfortable' },
+    ]
+  },
+
+  // ── SECTION 2: Fabric ──
+  fabric: {
+    id: 'fabric', section: 'Fabric',
+    icon: '🧵',
+    text: 'What fabric would you prefer?',
+    subtext: 'Fabric determines drape, sheen, and overall feel.',
+    options: [
+      { value: 'Kanchipuram Silk', desc: 'Heavy, lustrous - ideal for weddings' },
+      { value: 'Banarasi Silk', desc: 'Rich brocade weave, Mughal heritage' },
+      { value: 'Mysore Silk', desc: 'Lightweight, smooth, everyday elegance' },
+      { value: 'Cotton', desc: 'Breathable, casual to semi-formal' },
+      { value: 'Linen', desc: 'Minimal, modern, office-friendly' },
+      { value: 'Organza', desc: 'Sheer, delicate, contemporary' },
+      { value: 'Georgette', desc: 'Flowy, party and evening wear' },
+    ]
+  },
+  fabricWeight: {
+    id: 'fabricWeight', section: 'Fabric',
+    icon: '⚖️',
+    text: 'How heavy or light should the saree feel?',
+    subtext: 'This affects drape and how long you can comfortably wear it.',
+    options: [
+      { value: 'Light & Flowy', desc: 'Easy to manage, all-day comfort' },
+      { value: 'Medium Weight', desc: 'Balanced drape and structure' },
+      { value: 'Heavy & Structured', desc: 'Grand presence, traditional feel' },
+    ]
+  },
+
+  // ── SECTION 3: Body Design ──
+  bodyStyle: {
+    id: 'bodyStyle', section: 'Body Design',
+    icon: '🟫',
+    text: 'What should the main body of the saree look like?',
+    subtext: 'The body covers most of the saree - this is the dominant visual.',
+    options: [
+      { value: 'Plain / Solid', desc: 'Clean, unadorned - lets border & pallu shine' },
+      { value: 'Subtle Texture', desc: 'Stripes, checks or light weave pattern' },
+      { value: 'All-Over Motifs', desc: 'Small buttas or flowers scattered throughout' },
+      { value: 'Bold Pattern', desc: 'Ikat, geometric or large repeat pattern' },
+      { value: 'Zari Infused', desc: 'Gold thread woven throughout the body' },
+    ]
+  },
+  bodyMotif: {
+    id: 'bodyMotif', section: 'Body Design',
+    icon: '🌸',
+    text: 'What kind of motifs appeal to you for the body?',
+    subtext: 'Only if the body has patterns - skip if you chose plain.',
+    options: [
+      { value: 'Floral', desc: 'Roses, lotus, jasmine - timeless feminine' },
+      { value: 'Peacock', desc: 'Rich, traditional Indian motif' },
+      { value: 'Temple / Rudraksha', desc: 'Sacred geometry, South Indian style' },
+      { value: 'Geometric', desc: 'Modern, structured, clean lines' },
+      { value: 'Tribal / Warli', desc: 'Handloom artisan aesthetic' },
+      { value: 'Mughal / Floral Arch', desc: 'North Indian, Banarasi heritage' },
+    ]
+  },
+
+  // ── SECTION 4: Border ──
+  borderWeight: {
+    id: 'borderWeight', section: 'Border',
+    icon: '📏',
+    text: 'How prominent should the border (kasavu) be?',
+    subtext: 'The border runs along the length of the saree.',
+    options: [
+      { value: 'Thin (1–2cm)', desc: 'Minimal line, modern or casual' },
+      { value: 'Medium (3–5cm)', desc: 'Balanced - suits most occasions' },
+      { value: 'Broad (6–10cm)', desc: 'Statement border, traditional sarees' },
+      { value: 'Grand Zari Border (10cm+)', desc: 'Bridal weight, maximum impact' },
+    ]
+  },
+  borderStyle: {
+    id: 'borderStyle', section: 'Border',
+    icon: '🔰',
+    text: 'What pattern style do you want for the border?',
+    subtext: 'This defines the character of the saree edge.',
+    options: [
+      { value: 'Single Kasavu Line', desc: 'Classic Kerala style, elegant simplicity' },
+      { value: 'Double Kasavu', desc: 'Two gold lines - traditional and festive' },
+      { value: 'Temple / Gopuram', desc: 'Arch motifs, Kanchipuram style' },
+      { value: 'Mango / Paisley', desc: 'Curved teardrop motifs, classic Indian' },
+      { value: 'Peacock Procession', desc: 'Rich birds along the border' },
+      { value: 'Floral Vine', desc: 'Delicate flowers, contemporary feel' },
+      { value: 'Geometric Chain', desc: 'Modern, structured repeat pattern' },
+    ]
+  },
+
+  // ── SECTION 5: Pallu ──
+  palluStyle: {
+    id: 'palluStyle', section: 'Pallu',
+    icon: '🎨',
+    text: 'What overall feel do you want for the pallu?',
+    subtext: 'The pallu is the most visible part - draped over the shoulder.',
+    options: [
+      { value: 'Minimal - same as body', desc: 'Seamless look, no contrast' },
+      { value: 'Contrast colour pallu', desc: 'Different colour from body' },
+      { value: 'Rich & Heavy pallu', desc: 'Dense zari or embroidery' },
+      { value: 'Designer pallu', desc: 'Statement piece with unique motifs' },
+    ]
+  },
+  palluMotif: {
+    id: 'palluMotif', section: 'Pallu',
+    icon: '🦚',
+    text: 'What should the pallu design feature?',
+    subtext: 'The centrepiece of your entire saree.',
+    options: [
+      { value: 'Peacock Spread', desc: 'Majestic, bridal, full feather display' },
+      { value: 'Floral Bouquet', desc: 'Dense flowers, feminine and classic' },
+      { value: 'Temple Arch', desc: 'Gopuram arches, sacred geometry' },
+      { value: 'Mughal Garden', desc: 'Vines, flowers, Banarasi heritage' },
+      { value: 'Butta Clusters', desc: 'Small motifs scattered on pallu' },
+      { value: 'Plain with Zari', desc: 'Solid colour with gold shimmer' },
+      { value: 'Geometric', desc: 'Modern angular patterns' },
+    ]
+  },
+
+  // ── SECTION 6: Colour ──
+  colorBase: {
+    id: 'colorBase', section: 'Colour',
+    icon: '🎨',
+    text: 'What is your base colour preference for the saree?',
+    subtext: 'The primary colour that dominates the body.',
+    options: [
+      { value: 'Deep Red / Maroon', desc: 'Classic bridal, powerful and rich' },
+      { value: 'Royal Blue / Navy', desc: 'Regal, sophisticated' },
+      { value: 'Forest Green / Emerald', desc: 'Lush, festive, traditional' },
+      { value: 'Cream / Off-White', desc: 'Pure, elegant, Kerala style' },
+      { value: 'Pink / Rose Gold', desc: 'Feminine, party-ready' },
+      { value: 'Purple / Violet', desc: 'Royal, modern and luxurious' },
+      { value: 'Black', desc: 'Bold, modern, evening wear' },
+      { value: 'Pastel (any)', desc: 'Soft, contemporary, gentle hues' },
+    ]
+  },
+  colorAccent: {
+    id: 'colorAccent', section: 'Colour',
+    icon: '✨',
+    text: 'What accent or contrast colour should complement it?',
+    subtext: 'Used for borders, zari, and pallu highlights.',
+    options: [
+      { value: 'Gold Zari', desc: 'Traditional gold thread - never fails' },
+      { value: 'Silver Zari', desc: 'Modern, cool-toned elegance' },
+      { value: 'Contrast (complementary colour)', desc: 'Opposite on the colour wheel' },
+      { value: 'Same Family (deeper shade)', desc: 'Tonal, subtle, refined' },
+      { value: 'Ivory / Cream', desc: 'Soft contrast, very wearable' },
+    ]
+  },
+}
+
+// AI-driven question flow - determines next question based on answers
+function getNextQuestionId(answers, currentId) {
+  const flow = {
+    'occasion': 'wearer',
+    'wearer': 'fabric',
+    'fabric': (a) => (a.fabric === 'Linen' || a.fabric === 'Organza') ? 'bodyStyle' : 'fabricWeight',
+    'fabricWeight': 'bodyStyle',
+    'bodyStyle': (a) => a.bodyStyle === 'Plain / Solid' ? 'borderWeight' : 'bodyMotif',
+    'bodyMotif': 'borderWeight',
+    'borderWeight': 'borderStyle',
+    'borderStyle': 'palluStyle',
+    'palluStyle': (a) => a.palluStyle === 'Minimal - same as body' ? 'colorBase' : 'palluMotif',
+    'palluMotif': 'colorBase',
+    'colorBase': 'colorAccent',
+    'colorAccent': null, // done
+  }
+  const next = flow[currentId]
+  if (!next) return null
+  if (typeof next === 'function') return next(answers)
+  return next
+}
+
+function getQuestionSequence(answers) {
+  const seq = []
+  let current = 'occasion'
+  while (current) {
+    seq.push(current)
+    current = getNextQuestionId(answers, current)
+  }
+  return seq
+}
 
 function VoiceQuestionnaire({ onComplete, onBack }) {
-  const [currentQ, setCurrentQ] = useState(0)
+  const [questionIds, setQuestionIds] = useState(['occasion'])
+  const [currentIdx, setCurrentIdx] = useState(0)
   const [answers, setAnswers] = useState({})
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState('')
@@ -781,49 +983,103 @@ function VoiceQuestionnaire({ onComplete, onBack }) {
   const [animIn, setAnimIn] = useState(true)
   const recognitionRef = useRef(null)
 
+  const currentId = questionIds[currentIdx]
+  const q = QUESTION_BANK[currentId]
+  // Estimate total - recalculate based on current answers
+  const estimatedTotal = getQuestionSequence(answers).length
+
   const speak = useCallback((text) => {
     if (!window.speechSynthesis) return
     window.speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(text)
-    u.rate = 0.9; u.pitch = 1.05
+    u.rate = 0.88; u.pitch = 1.05
     u.onstart = () => setIsSpeaking(true)
     u.onend = () => setIsSpeaking(false)
     window.speechSynthesis.speak(u)
   }, [])
 
   useEffect(() => {
-    if (currentQ < QUESTIONS.length) {
+    if (q) {
       setAnimIn(false)
-      setTimeout(() => { setAnimIn(true); speak(QUESTIONS[currentQ].text) }, 100)
+      setTimeout(() => { setAnimIn(true); speak(q.text) }, 120)
     }
     return () => { window.speechSynthesis?.cancel() }
-  }, [currentQ, speak])
+  }, [currentIdx, speak])
 
-  const handleAnswer = (option) => {
-    const q = QUESTIONS[currentQ]
-    const newAnswers = { ...answers, [q.id]: option }
+  const handleAnswer = (optionValue) => {
+    const newAnswers = { ...answers, [currentId]: optionValue }
     setAnswers(newAnswers)
-    speak(`Great choice! ${option}.`)
+    speak(`Got it - ${optionValue}.`)
+
+    // Recalculate the full question path based on new answers
+    const newSequence = getQuestionSequence(newAnswers)
+    setQuestionIds(newSequence)
+
     setTimeout(() => {
-      if (currentQ < QUESTIONS.length - 1) {
-        setCurrentQ(c => c + 1)
+      const nextIdx = currentIdx + 1
+      if (nextIdx < newSequence.length) {
+        setCurrentIdx(nextIdx)
       } else {
         handleComplete(newAnswers)
       }
-    }, 800)
+    }, 700)
   }
 
   const handleComplete = async (finalAnswers) => {
     setIsGenerating(true)
-    speak('Perfect! Let me design your ideal saree now.')
+    speak('Perfect! Designing your ideal saree now - this will take just a moment.')
     try {
+      const prefLines = Object.entries(finalAnswers).map(([k,v]) => {
+        const section = QUESTION_BANK[k] ? QUESTION_BANK[k].section : k
+        const question = QUESTION_BANK[k] ? QUESTION_BANK[k].text : k
+        return section + ' - ' + question + ': ' + v
+      })
+      const userPrompt = "Customer's detailed preferences:\n" + prefLines.join('\n') + "\n\nDesign the perfect saree for this customer."
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
         body: JSON.stringify({
-          model: CLAUDE_MODEL, max_tokens: 1000,
-          system: `You are a saree design expert. Based on customer preferences, recommend saree styles and generate a design. Return ONLY valid JSON with: { "recommendations": [{"name":"Kerala Kasavu","description":"...","matchScore":95}], "design": {"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","occasion":"...","style":"...","explanation":"..."} }. Pattern IDs: body(b1-b17), border(br1-br12), pallu(p1-p12).`,
-          messages: [{ role: 'user', content: `Customer preferences: ${JSON.stringify(finalAnswers)}. Recommend the best Indian saree styles and generate a matching design.` }]
+          model: CLAUDE_MODEL, max_tokens: 1200,
+          system: `You are a master Indian saree designer with 30 years of experience. 
+Based on the customer's detailed preferences, create a precise saree design recommendation.
+
+Return ONLY valid JSON in this exact format:
+{
+  "recommendations": [
+    {"name":"Kanchipuram Bridal Silk","description":"Detailed description of why this suits them","matchScore":96,"fabric":"Kanchipuram Silk","estimatedBudget":"₹25,000–₹80,000"},
+    {"name":"Second option name","description":"...","matchScore":88,"fabric":"...","estimatedBudget":"..."}
+  ],
+  "design": {
+    "primaryColor":"#8B0000",
+    "secondaryColor":"#F5F5DC",
+    "accentColor":"#C9A843",
+    "bodyPattern":"b6",
+    "borderPattern":"br3",
+    "palluPattern":"p3",
+    "sareeStyle":"Kanchipuram Silk",
+    "fabric":"Kanchipuram Silk",
+    "occasion":"Wedding",
+    "keyFeatures":["Heavy zari border","Peacock pallu","Rich body motifs"],
+    "stylingTip":"Pair with a contrast blouse in emerald green for a stunning combination.",
+    "explanation":"Detailed explanation of design choices made."
+  }
+}
+
+Pattern IDs available:
+- Body: b1(Plain), b2(Stripes), b3(Checks), b4(Floral Butta), b5(Ikat Diamond), b6(Temple Motifs), b7(Peacock Grid), b8(Zari Dots), b9(Bandhani), b10(Leheriya Wave), b11(Mughal Arch), b12(Geometric), b13(Lotus), b14(Warli), b15(Kashmiri), b16(Pinstripe), b17(Meenakari)
+- Border: br1(Single Kasavu), br2(Double Kasavu), br3(Temple), br4(Mango), br5(Peacock), br6(Broad Zari), br7(Thin Gold), br8(Floral Chain), br9(Geometric Steps), br10(Wave), br11(Diamond Chain), br12(Lotus Row)
+- Pallu: p1(Rich Zari), p2(Contrast), p3(Peacock), p4(Floral), p5(Minimal), p6(Temple Arch), p7(Mughal Garden), p8(Butta Scatter), p9(Stripe), p10(Embroidered Vines), p11(Kashmiri), p12(Geometric)
+
+Match patterns intelligently to the customer's preferences. Use hex color codes that match their stated color preference precisely.`,
+          messages: [{
+            role: 'user',
+            content: userPrompt
+          }]
         })
       })
       const data = await res.json()
@@ -831,14 +1087,18 @@ function VoiceQuestionnaire({ onComplete, onBack }) {
       const clean = text.replace(/```json|```/g, '').trim()
       const parsed = JSON.parse(clean)
       onComplete(parsed, finalAnswers)
-    } catch {
-      onComplete({ recommendations: [], design: { primaryColor: '#8B0000', secondaryColor: '#C9A843', accentColor: '#FFD700', bodyPattern: 'b6', borderPattern: 'br3', palluPattern: 'p6', explanation: 'Classic silk saree design' } }, finalAnswers)
+    } catch(e) {
+      console.error('AI generation error:', e)
+      onComplete({
+        recommendations: [{ name: 'Classic Silk Saree', description: 'A timeless design based on your preferences.', matchScore: 85, fabric: finalAnswers.fabric || 'Silk', estimatedBudget: '₹15,000–₹40,000' }],
+        design: { primaryColor: '#8B0000', secondaryColor: '#F5F5DC', accentColor: '#D4AF37', bodyPattern: 'b6', borderPattern: 'br3', palluPattern: 'p6', explanation: 'Classic silk saree design based on your preferences.' }
+      }, finalAnswers)
     }
   }
 
   const startListening = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) { alert('Voice input not supported in this browser. Please tap an option.'); return }
+    if (!SpeechRecognition) { alert('Voice input not supported. Please tap an option.'); return }
     window.speechSynthesis?.cancel()
     const recognition = new SpeechRecognition()
     recognition.continuous = false; recognition.interimResults = true; recognition.lang = 'en-IN'
@@ -848,129 +1108,172 @@ function VoiceQuestionnaire({ onComplete, onBack }) {
       const t = Array.from(e.results).map(r => r[0].transcript).join('')
       setTranscript(t)
       if (e.results[e.results.length-1].isFinal) {
-        const opts = QUESTIONS[currentQ].options
-        const match = opts.find(o => t.toLowerCase().includes(o.toLowerCase()))
+        const opts = q.options.map(o => o.value)
+        const match = opts.find(o => t.toLowerCase().includes(o.toLowerCase().split(' ')[0]))
         if (match) { setIsListening(false); handleAnswer(match) }
       }
     }
-    recognition.onend = () => { setIsListening(false) }
-    recognition.onerror = () => { setIsListening(false) }
+    recognition.onend = () => setIsListening(false)
+    recognition.onerror = () => setIsListening(false)
     recognition.start()
   }
 
-  const stopListening = () => {
-    recognitionRef.current?.stop()
-    setIsListening(false)
-  }
+  const stopListening = () => { recognitionRef.current?.stop(); setIsListening(false) }
 
   if (isGenerating) {
     return (
-      <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:60,gap:20}}>
-        <div style={{
-          width: 64, height: 64, borderRadius: '50%',
-          border: `3px solid ${T.goldLight}`, borderTopColor: T.gold,
-          animation: 'spin 1s linear infinite'
-        }} />
-        <div style={{fontFamily:'Cormorant Garamond',fontSize:22,color:T.textMid,fontStyle:'italic'}}>
-          Designing your perfect saree...
+      <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:60,gap:24,minHeight:400}}>
+        <div style={{position:'relative',width:80,height:80}}>
+          <div style={{position:'absolute',inset:0,borderRadius:'50%',border:`3px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite'}} />
+          <div style={{position:'absolute',inset:8,borderRadius:'50%',border:`2px solid rgba(106,27,154,0.2)`,borderBottomColor:'#6A1B9A',animation:'spin 1.5s linear infinite reverse'}} />
+          <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>🧵</div>
         </div>
-        <div className="label-xs" style={{color:T.textLight}}>AI is at work</div>
+        <div style={{textAlign:'center'}}>
+          <div style={{fontFamily:'Cormorant Garamond',fontSize:24,color:T.text,fontStyle:'italic',marginBottom:8}}>
+            Crafting your perfect saree...
+          </div>
+          <div className="label-xs" style={{color:T.textLight}}>AI is analysing your preferences</div>
+        </div>
+        {/* Show answers summary while loading */}
+        <div style={{background:T.surfaceAlt,border:`1px solid ${T.border}`,borderRadius:4,padding:16,maxWidth:320,width:'100%'}}>
+          <p className="label-xs" style={{marginBottom:10}}>Your selections</p>
+          {Object.entries(answers).map(([k,v]) => (
+            <div key={k} style={{display:'flex',justifyContent:'space-between',fontSize:11,color:T.textMid,padding:'3px 0',borderBottom:`1px solid ${T.borderLight}`}}>
+              <span style={{color:T.textLight}}>{QUESTION_BANK[k]?.section}</span>
+              <span style={{fontWeight:500}}>{v}</span>
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
 
-  const q = QUESTIONS[currentQ]
-  const progress = ((currentQ) / QUESTIONS.length) * 100
+  if (!q) return null
+
+  const progress = ((currentIdx) / Math.max(estimatedTotal, 1)) * 100
+  const sectionColor = {
+    'Occasion': '#6A1B9A', 'Fabric': '#1565C0', 'Body Design': '#2E7D32',
+    'Border': '#E65100', 'Pallu': '#AD1457', 'Colour': '#D4AF37'
+  }
+  const currentSectionColor = sectionColor[q.section] || T.gold
 
   return (
-    <div style={{maxWidth:480,margin:'0 auto',padding:'0 16px'}}>
-      {/* Progress */}
-      <div style={{marginBottom:32}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-          <span className="label-xs">Question {currentQ+1} of {QUESTIONS.length}</span>
-          <button onClick={onBack} className="btn-ghost" style={{padding:'4px 12px',fontSize:10}}>← Back</button>
+    <div style={{maxWidth:520,margin:'0 auto',padding:'0 16px 40px'}}>
+
+      {/* Section indicator */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{width:8,height:8,borderRadius:'50%',background:currentSectionColor}} />
+          <span style={{fontSize:10,letterSpacing:2,textTransform:'uppercase',color:currentSectionColor,fontWeight:600}}>{q.section}</span>
         </div>
-        <div style={{height:2,background:T.border,borderRadius:1}}>
-          <div style={{height:'100%',width:`${progress}%`,background:`linear-gradient(90deg,${T.goldDark},${T.gold})`,borderRadius:1,transition:'width 0.5s ease'}} />
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <span className="label-xs">Q{currentIdx+1} of ~{estimatedTotal}</span>
+          <button onClick={onBack} className="btn-ghost" style={{padding:'4px 10px',fontSize:10}}>← Back</button>
         </div>
-        <div style={{display:'flex',gap:6,marginTop:8}}>
-          {QUESTIONS.map((_,i) => (
-            <div key={i} style={{flex:1,height:3,borderRadius:1,background:i<currentQ?T.gold:i===currentQ?T.goldLight:T.border,transition:'background 0.3s'}} />
+      </div>
+
+      {/* Progress bar */}
+      <div style={{marginBottom:28}}>
+        <div style={{height:3,background:T.border,borderRadius:2,overflow:'hidden'}}>
+          <div style={{height:'100%',width:`${progress}%`,background:`linear-gradient(90deg,#6A1B9A,${T.gold})`,borderRadius:2,transition:'width 0.5s ease'}} />
+        </div>
+        {/* Section dots */}
+        <div style={{display:'flex',gap:4,marginTop:8,justifyContent:'space-between'}}>
+          {['Occasion','Fabric','Body Design','Border','Pallu','Colour'].map(s => (
+            <div key={s} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+              <div style={{width:8,height:8,borderRadius:'50%',background:q.section===s?sectionColor[s]:T.border,transition:'background 0.3s',border:`1px solid ${q.section===s?sectionColor[s]:T.border}`}} />
+              <span style={{fontSize:7,color:q.section===s?sectionColor[s]:T.textLight,letterSpacing:0.5,fontWeight:q.section===s?600:300}}>{s}</span>
+            </div>
           ))}
         </div>
       </div>
 
       {/* AI Avatar */}
-      <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:32}}>
+      <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:24}}>
         <div style={{
-          width: 72, height: 72, borderRadius: '50%',
-          background: `linear-gradient(135deg,${T.goldDark},${T.gold})`,
+          width:64,height:64,borderRadius:'50%',
+          background:`linear-gradient(135deg,#6A1B9A,${T.gold})`,
           display:'flex',alignItems:'center',justifyContent:'center',
-          boxShadow: `0 0 0 ${isSpeaking?'12px':'6px'} rgba(201,168,67,0.15)`,
-          transition: 'box-shadow 0.3s ease',
-          marginBottom: 16,
-          animation: isSpeaking ? 'pulse 1.5s ease infinite' : 'none'
+          boxShadow:`0 0 0 ${isSpeaking?'14px':'6px'} rgba(106,27,154,0.12)`,
+          transition:'box-shadow 0.3s ease',marginBottom:10,
+          animation:isSpeaking?'pulse 1.5s ease infinite':'none'
         }}>
-          <span style={{fontSize:30}}>🧵</span>
+          <span style={{fontSize:q.icon?24:28}}>{q.icon || '🧵'}</span>
         </div>
         {isSpeaking && (
-          <div style={{display:'flex',gap:3,alignItems:'flex-end',height:20,marginBottom:8}}>
+          <div style={{display:'flex',gap:3,alignItems:'flex-end',height:18}}>
             {[0,1,2,3,4].map(i => (
-              <div key={i} style={{
-                width:3,background:T.gold,borderRadius:2,
-                animation:`waveform 0.8s ease ${i*0.15}s infinite`
-              }} />
+              <div key={i} style={{width:3,background:T.gold,borderRadius:2,animation:`waveform 0.8s ease ${i*0.15}s infinite`}} />
             ))}
           </div>
         )}
       </div>
 
-      {/* Question */}
-      <div style={{
-        textAlign:'center', marginBottom:32,
-        animation: animIn ? 'fadeIn 0.4s ease' : 'none'
-      }}>
-        <h2 style={{
-          fontFamily:'Cormorant Garamond',fontSize:26,fontWeight:400,
-          color:T.text,lineHeight:1.3,marginBottom:8
-        }}>{q.text}</h2>
-        <p style={{fontSize:12,color:T.textLight,letterSpacing:0.5}}>Tap an option or speak your answer</p>
+      {/* Question text */}
+      <div style={{textAlign:'center',marginBottom:8,animation:animIn?'fadeIn 0.35s ease':'none'}}>
+        <h2 style={{fontFamily:'Cormorant Garamond',fontSize:24,fontWeight:400,color:T.text,lineHeight:1.3,marginBottom:6}}>
+          {q.text}
+        </h2>
+        {q.subtext && (
+          <p style={{fontSize:11,color:T.textLight,lineHeight:1.6,fontStyle:'italic'}}>{q.subtext}</p>
+        )}
       </div>
 
-      {/* Options */}
-      <div style={{display:'flex',flexWrap:'wrap',gap:10,justifyContent:'center',marginBottom:32}}>
+      <div className="divider" style={{margin:'16px 0'}} />
+
+      {/* Options - detailed cards */}
+      <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:28}}>
         {q.options.map(opt => (
-          <button key={opt} className={`chip ${answers[q.id]===opt?'active':''}`} onClick={() => handleAnswer(opt)} style={{fontSize:13,padding:'10px 20px'}}>
-            {opt}
+          <button key={opt.value} onClick={() => handleAnswer(opt.value)} style={{
+            display:'flex',alignItems:'center',gap:14,
+            padding:'12px 16px',borderRadius:4,
+            border:`1.5px solid ${T.border}`,
+            background:T.surface,
+            cursor:'pointer',textAlign:'left',
+            transition:'all 0.2s ease',
+            width:'100%'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor='#6A1B9A'; e.currentTarget.style.background='rgba(106,27,154,0.04)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.background=T.surface }}>
+            <div style={{
+              width:32,height:32,borderRadius:'50%',flexShrink:0,
+              background:`linear-gradient(135deg,rgba(106,27,154,0.1),rgba(212,175,55,0.1))`,
+              border:`1px solid ${T.border}`,
+              display:'flex',alignItems:'center',justifyContent:'center',
+              fontSize:12,color:'#6A1B9A',fontWeight:600
+            }}>
+              {opt.value.charAt(0)}
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:500,color:T.text,marginBottom:2}}>{opt.value}</div>
+              {opt.desc && <div style={{fontSize:11,color:T.textLight}}>{opt.desc}</div>}
+            </div>
+            <div style={{color:T.border,fontSize:16,flexShrink:0}}>›</div>
           </button>
         ))}
       </div>
 
       {/* Voice button */}
-      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
+      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
         <button
           onMouseDown={startListening} onTouchStart={startListening}
           onMouseUp={stopListening} onTouchEnd={stopListening}
           style={{
-            width: 72, height: 72, borderRadius: '50%',
-            background: isListening ? `linear-gradient(135deg,#C53030,#E53E3E)` : `linear-gradient(135deg,${T.goldDark},${T.gold})`,
-            border: 'none', color:'white', fontSize:28, cursor:'pointer',
-            boxShadow: isListening ? '0 0 0 12px rgba(197,48,48,0.2),0 4px 20px rgba(197,48,48,0.4)' : `0 4px 20px rgba(201,168,67,0.4)`,
-            transition: 'all 0.3s ease',
-            animation: isListening ? 'pulse 1s ease infinite' : 'none',
+            width:64,height:64,borderRadius:'50%',
+            background:isListening?'linear-gradient(135deg,#C53030,#E53E3E)':`linear-gradient(135deg,#6A1B9A,${T.gold})`,
+            border:'none',color:'white',fontSize:24,cursor:'pointer',
+            boxShadow:isListening?'0 0 0 12px rgba(197,48,48,0.2)':'0 4px 20px rgba(106,27,154,0.3)',
+            transition:'all 0.3s ease',
+            animation:isListening?'pulse 1s ease infinite':'none',
             display:'flex',alignItems:'center',justifyContent:'center'
           }}>
           🎤
         </button>
-        <span className="label-xs" style={{color: isListening ? '#C53030' : T.textLight}}>
+        <span className="label-xs" style={{color:isListening?'#C53030':T.textLight}}>
           {isListening ? 'Listening...' : 'Hold to speak'}
         </span>
         {transcript && (
-          <div style={{
-            background:T.surfaceAlt,border:`1px solid ${T.border}`,
-            borderRadius:4,padding:'8px 16px',fontSize:13,color:T.textMid,
-            maxWidth:300,textAlign:'center'
-          }}>
+          <div style={{background:T.surfaceAlt,border:`1px solid ${T.border}`,borderRadius:4,padding:'8px 16px',fontSize:12,color:T.textMid,maxWidth:300,textAlign:'center'}}>
             "{transcript}"
           </div>
         )}
@@ -979,7 +1282,6 @@ function VoiceQuestionnaire({ onComplete, onBack }) {
   )
 }
 
-// ─── IMAGE UPLOAD PAGE ────────────────────────────────────────────────────────
 function ImageUploadPage({ onBack, onDesignReady, notify }) {
   const [preview, setPreview] = useState(null)
   const [base64Data, setBase64Data] = useState(null)
@@ -1099,7 +1401,7 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
             <div style={{textAlign:'center',padding:32}}>
               <div style={{width:48,height:48,borderRadius:'50%',border:`3px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite',margin:'0 auto 16px'}} />
               <p style={{fontFamily:'Cormorant Garamond',fontSize:18,color:T.textMid,fontStyle:'italic'}}>Analysing your saree...</p>
-              <p style={{fontSize:11,color:T.textLight,marginTop:4}}>Detecting patterns, colors & style</p>
+              <p style={{fontSize:11,color:T.textLight,marginTop:4}}>Detecting patterns, colors &amp; style</p>
             </div>
           )}
 
@@ -1157,6 +1459,7 @@ function AuthPage({ onAuth, notify }) {
   const [form, setForm] = useState({ email: '', password: '' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const isMobile = window.innerWidth < 768
 
   const handleSubmit = async () => {
     if (!form.email || !form.password) { setError('Please fill all fields'); return }
@@ -1169,7 +1472,7 @@ function AuthPage({ onAuth, notify }) {
           setError(r.error.message || 'Signup failed. Please try again.')
           setBusy(false); return
         }
-        // Email confirmation is OFF — auto sign-in immediately after signup
+        // Email confirmation is OFF - auto sign-in immediately after signup
         const r2 = await sb.signIn(form.email, form.password)
         if (r2.access_token && r2.user) {
           sessionStorage.setItem('sb_token', r2.access_token)
@@ -1207,10 +1510,9 @@ function AuthPage({ onAuth, notify }) {
       background:`linear-gradient(135deg,${T.bg} 0%,${T.surfaceAlt} 50%,${T.bg} 100%)`
     }}>
       {/* Left panel - desktop only */}
-      <div style={{
+      {!isMobile && <div style={{
         flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
-        padding:40,background:`linear-gradient(135deg,#2C2416,#4A3B24)`,
-        display: window.innerWidth < 768 ? 'none' : 'flex'
+        padding:40,background:`linear-gradient(135deg,#2C2416,#4A3B24)`
       }}>
         <div style={{textAlign:'center',marginBottom:48}}>
           <div style={{fontSize:16,letterSpacing:8,color:T.goldLight,marginBottom:8,textTransform:'uppercase',fontWeight:300}}>✦ Welcome to ✦</div>
@@ -1231,17 +1533,17 @@ function AuthPage({ onAuth, notify }) {
             <span style={{color:T.goldLight}}>Voice-guided • Pattern library • Instant preview</span>
           </p>
         </div>
-      </div>
+      </div>}
 
       {/* Right panel - auth form */}
       <div style={{
-        width: window.innerWidth < 768 ? '100%' : 440,
+        width: isMobile ? '100%' : 440,
         display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
         padding:40,background:T.surface,
         boxShadow: '-4px 0 40px rgba(44,36,22,0.08)'
       }}>
         {/* Mobile logo */}
-        {window.innerWidth < 768 && (
+        {isMobile && (
           <div style={{textAlign:'center',marginBottom:40}}>
             <div style={{fontSize:10,letterSpacing:6,color:T.gold,marginBottom:6,textTransform:'uppercase'}}>✦ Welcome to ✦</div>
             <h1 style={{fontFamily:'Cormorant Garamond',fontSize:38,fontWeight:300,color:T.text,lineHeight:1.1}}>
@@ -1322,7 +1624,7 @@ function CustomerHome({ user, onNavigate }) {
     { id: 'canvas', icon: '✏️', title: 'Start New Design', desc: 'Jump straight to the live canvas and begin creating', color: `linear-gradient(135deg,${T.goldDark},${T.gold})`, textColor:'white' },
     { id: 'mydesigns', icon: '👗', title: 'My Designs', desc: 'View your saved drafts and submitted designs', color: T.surface, textColor: T.text },
     { id: 'aimode', icon: '🤖', title: 'AI Mode', desc: 'Voice questionnaire or type a prompt to generate', color: T.surface, textColor: T.text },
-    { id: 'imageupload', icon: '📷', title: 'Image Upload', desc: 'Upload or capture a photo — AI recreates the design', color: T.surface, textColor: T.text },
+    { id: 'imageupload', icon: '📷', title: 'Image Upload', desc: 'Upload or capture a photo - AI recreates the design', color: T.surface, textColor: T.text },
   ]
 
   return (
@@ -1495,7 +1797,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
 
       {/* Pattern grid */}
       <div>
-        <p className="label-xs" style={{marginBottom:10}}>Patterns — {activeSection}</p>
+        <p className="label-xs" style={{marginBottom:10}}>Patterns - {activeSection}</p>
         <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6}}>
           {sectionPatterns[activeSection].map(p => (
             <div key={p.id} onClick={()=>setDesign(d=>({...d,[currentPatternKey[activeSection]]:p.id}))}
@@ -1615,7 +1917,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
 
         {/* Content */}
         <div style={{flex:1,overflowY:'auto',padding:'0 16px 100px'}}>
-          {mobileTab==='controls' ? <Controls /> : <SavePanel />}
+          {mobileTab==='controls' ? Controls() : SavePanel()}
         </div>
       </div>
     )
@@ -1630,7 +1932,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
           <button onClick={onBack} className="btn-ghost" style={{padding:'5px 12px',fontSize:10}}>← Back</button>
           <span style={{fontFamily:'Cormorant Garamond',fontSize:16,color:T.text}}>Canvas</span>
         </div>
-        <Controls />
+        {Controls()}
       </div>
 
       {/* Center */}
@@ -1646,7 +1948,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
 
       {/* Right */}
       <div style={{width:220,overflowY:'auto',padding:24,background:T.surface,borderLeft:`1px solid ${T.border}`}}>
-        <SavePanel />
+        {SavePanel()}
       </div>
     </div>
   )
@@ -1765,7 +2067,7 @@ function AIModePage({ onBack, onDesignReady, notify }) {
           }}>🎤</div>
           <div>
             <h3 style={{fontFamily:'Cormorant Garamond',fontSize:20,color:T.text,marginBottom:4}}>Voice Questionnaire</h3>
-            <p style={{fontSize:12,color:T.textLight,lineHeight:1.6}}>Answer 6 guided questions — by speaking or tapping. AI designs your perfect saree.</p>
+            <p style={{fontSize:12,color:T.textLight,lineHeight:1.6}}>Answer 6 guided questions - by speaking or tapping. AI designs your perfect saree.</p>
           </div>
         </div>
         <button className="btn-primary" style={{width:'100%'}} onClick={()=>setMode('questionnaire')}>
