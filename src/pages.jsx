@@ -1,0 +1,535 @@
+// ─── pages.jsx ───────────────────────────────────────────────────────────────
+// AIModePage, MyDesignsPage, DesignerDashboard, TopNav
+import { useState, useEffect } from 'react'
+import { T } from './theme.jsx'
+import { sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, CLAUDE_MODEL, ANTHROPIC_KEY } from './data.jsx'
+import { PatternRenderer, SareeCanvas } from './canvas.jsx'
+import { VoiceQuestionnaire } from './components.jsx'
+
+// ─── AI MODE PAGE ─────────────────────────────────────────────────────────────
+function AIModePage({ onBack, onDesignReady, notify }) {
+  const [mode, setMode] = useState('choose') // choose | questionnaire | prompt | results
+  const [prompt, setPrompt] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [results, setResults] = useState(null)
+  const [questionnaireAnswers, setQuestionnaireAnswers] = useState(null)
+  const [activeRec, setActiveRec] = useState(0)
+
+  const generateFromPrompt = async () => {
+    if (!prompt.trim()) return
+    setIsGenerating(true)
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
+        body: JSON.stringify({
+          model: CLAUDE_MODEL, max_tokens: 800,
+          system: `Saree design expert. Return ONLY valid JSON: {"recommendations":[{"name":"...","description":"...","matchScore":90}],"design":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","explanation":"..."}}. Pattern IDs: body b1-b17, border br1-br12, pallu p1-p12.`,
+          messages: [{ role:'user', content: `Design a saree based on: ${prompt}` }]
+        })
+      })
+      const data = await res.json()
+      const text = data.content?.[0]?.text || '{}'
+      const parsed = JSON.parse(text.replace(/```json|```/g,'').trim())
+      setResults(parsed)
+      setMode('results')
+    } catch { notify('Generation failed. Try again.','error') }
+    setIsGenerating(false)
+  }
+
+  const handleQuestionnaireComplete = (result, answers) => {
+    setQuestionnaireAnswers(answers)
+    setResults(result)
+    setActiveRec(0)
+    setMode('results')
+  }
+
+  if (mode === 'questionnaire') {
+    return (
+      <div style={{minHeight:'100vh',background:T.bg,padding:'32px 20px'}}>
+        <VoiceQuestionnaire onComplete={handleQuestionnaireComplete} onBack={()=>setMode('choose')} />
+      </div>
+    )
+  }
+
+  if (mode === 'results' && results) {
+    const recs = results.recommendations || []
+    const shownDesign = recs[activeRec]?.design || results.design
+
+    return (
+      <div style={{maxWidth:600,margin:'0 auto',padding:'28px 16px 48px'}}>
+
+        {/* Header */}
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:24}}>
+          <button onClick={()=>setMode('choose')} className="btn-ghost"
+            style={{padding:'6px 12px',fontSize:10}}>← Back</button>
+          <div>
+            <h2 style={{fontFamily:'Cormorant Garamond',fontSize:24,fontWeight:400,
+              color:T.text,lineHeight:1}}>Your Design</h2>
+            <p style={{fontSize:10,color:T.textLight,letterSpacing:1.5,
+              textTransform:'uppercase',marginTop:2}}>
+              {recs.length > 0 ? recs.length + ' styles generated for you' : 'AI Generated'}
+            </p>
+          </div>
+        </div>
+
+        {/* Live canvas preview — updates with selected rec */}
+        <div style={{display:'flex',justifyContent:'center',marginBottom:20,
+          background:'radial-gradient(ellipse at center,'+T.surfaceAlt+','+T.bg+')',
+          borderRadius:6,padding:'24px 16px',border:'1px solid '+T.border}}>
+          <SareeCanvas design={shownDesign || results.design} scale={0.88} />
+        </div>
+
+        {/* Explanation */}
+        {(recs[activeRec]?.description || results.design?.explanation) && (
+          <div style={{background:T.surfaceAlt,border:'1px solid '+T.border,
+            borderRadius:4,padding:'12px 16px',marginBottom:20}}>
+            <p style={{fontSize:9,letterSpacing:2,textTransform:'uppercase',
+              color:T.textLight,marginBottom:5}}>Design Notes</p>
+            <p style={{fontSize:13,color:T.textMid,lineHeight:1.7,fontStyle:'italic',
+              fontFamily:'Cormorant Garamond'}}>
+              {recs[activeRec]?.description || results.design?.explanation}
+            </p>
+          </div>
+        )}
+
+        {/* Recommendations with clickable preview */}
+        {recs.length > 0 && (
+          <div style={{marginBottom:24}}>
+            <p style={{fontSize:9,letterSpacing:2,textTransform:'uppercase',
+              color:T.textLight,marginBottom:12}}>Recommended Styles — tap to preview</p>
+
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {recs.map((r,i) => {
+                const isActive = i === activeRec
+                const score = r.score || r.matchScore || 0
+                // colour based on score
+                const scoreColor = score >= 90 ? '#2E7D32' : score >= 80 ? '#E65100' : '#6A1B9A'
+                return (
+                  <button key={i} onClick={() => setActiveRec(i)}
+                    style={{
+                      display:'flex',alignItems:'center',gap:14,
+                      padding:'14px 16px',borderRadius:5,width:'100%',textAlign:'left',
+                      border: isActive ? '2px solid '+T.gold : '1.5px solid '+T.border,
+                      background: isActive ? 'rgba(201,168,67,0.06)' : T.surface,
+                      cursor:'pointer',fontFamily:'Jost',transition:'all 0.2s',
+                      boxShadow: isActive ? '0 2px 12px rgba(201,168,67,0.18)' : 'none'
+                    }}>
+
+                    {/* Score circle */}
+                    <div style={{
+                      width:48,height:48,borderRadius:'50%',flexShrink:0,
+                      background: isActive
+                        ? 'linear-gradient(135deg,'+T.goldDark+','+T.gold+')'
+                        : T.surfaceAlt,
+                      display:'flex',flexDirection:'column',alignItems:'center',
+                      justifyContent:'center',transition:'background 0.2s'
+                    }}>
+                      <span style={{fontSize:14,fontWeight:700,
+                        color: isActive ? 'white' : scoreColor,lineHeight:1}}>
+                        {score}
+                      </span>
+                      <span style={{fontSize:8,color: isActive ? 'rgba(255,255,255,0.8)' : T.textLight,
+                        lineHeight:1,letterSpacing:0.5}}>%</span>
+                    </div>
+
+                    {/* Details */}
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
+                        <span style={{fontFamily:'Cormorant Garamond',fontSize:16,
+                          color:T.text,fontWeight: isActive ? 600 : 400}}>{r.name}</span>
+                        {isActive && (
+                          <span style={{fontSize:8,letterSpacing:1.5,textTransform:'uppercase',
+                            color:T.gold,background:'rgba(201,168,67,0.08)',
+                            padding:'2px 6px',borderRadius:2}}>Previewing</span>
+                        )}
+                      </div>
+                      {/* Mini colour swatches from design */}
+                      {r.design && (
+                        <div style={{display:'flex',gap:4,marginBottom:4}}>
+                          {[r.design.primaryColor,r.design.secondaryColor,r.design.accentColor].map((c,ci)=>(
+                            <div key={ci} style={{width:12,height:12,borderRadius:'50%',
+                              background:c,border:'1px solid '+T.border}} />
+                          ))}
+                          <span style={{fontSize:9,color:T.textLight,marginLeft:2,
+                            alignSelf:'center'}}>
+                            {r.design.bodyPattern} · {r.design.borderPattern} · {r.design.palluPattern}
+                          </span>
+                        </div>
+                      )}
+                      {/* Score bar */}
+                      <div style={{height:3,background:T.border,borderRadius:2,overflow:'hidden'}}>
+                        <div style={{
+                          height:'100%',borderRadius:2,transition:'width 0.5s ease',
+                          width: score+'%',
+                          background:'linear-gradient(90deg,'+scoreColor+','+T.gold+')'
+                        }} />
+                      </div>
+                    </div>
+
+                    {/* Budget chip */}
+                    <div style={{flexShrink:0,textAlign:'right'}}>
+                      <div style={{fontSize:9,color:T.textLight,lineHeight:1.4}}>
+                        {r.budget || r.estimatedBudget || ''}
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* CTA */}
+        <button className="btn-primary"
+          style={{width:'100%',padding:'14px 0',fontSize:13}}
+          onClick={() => onDesignReady(shownDesign || results.design)}>
+          Open in Designer →
+        </button>
+
+      </div>
+    )
+  }
+
+
+  // Choose mode
+  return (
+    <div style={{maxWidth:520,margin:'0 auto',padding:'32px 20px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:32}}>
+        <button onClick={onBack} className="btn-ghost" style={{padding:'6px 14px',fontSize:11}}>← Back</button>
+        <h2 style={{fontFamily:'Cormorant Garamond',fontSize:26,fontWeight:400,color:T.text}}>AI Mode</h2>
+      </div>
+
+      {/* Voice questionnaire section */}
+      <div className="card" style={{padding:24,marginBottom:16}}>
+        <div style={{display:'flex',gap:16,alignItems:'flex-start',marginBottom:20}}>
+          <div style={{
+            width:48,height:48,borderRadius:'50%',flexShrink:0,
+            background:`linear-gradient(135deg,${T.goldDark},${T.gold})`,
+            display:'flex',alignItems:'center',justifyContent:'center',fontSize:22
+          }}>🎤</div>
+          <div>
+            <h3 style={{fontFamily:'Cormorant Garamond',fontSize:20,color:T.text,marginBottom:4}}>Voice Questionnaire</h3>
+            <p style={{fontSize:12,color:T.textLight,lineHeight:1.6}}>Answer 6 guided questions - by speaking or tapping. AI designs your perfect saree.</p>
+          </div>
+        </div>
+        <button className="btn-primary" style={{width:'100%'}} onClick={()=>setMode('questionnaire')}>
+          Start Conversation →
+        </button>
+      </div>
+
+      {/* Divider */}
+      <div style={{display:'flex',alignItems:'center',gap:12,margin:'20px 0'}}>
+        <div style={{flex:1,height:1,background:T.border}} />
+        <span style={{fontSize:10,letterSpacing:2,color:T.textLight,textTransform:'uppercase'}}>or</span>
+        <div style={{flex:1,height:1,background:T.border}} />
+      </div>
+
+      {/* Prompt section */}
+      <div className="card" style={{padding:24}}>
+        <div style={{display:'flex',gap:16,alignItems:'flex-start',marginBottom:20}}>
+          <div style={{
+            width:48,height:48,borderRadius:'50%',flexShrink:0,
+            background:T.surfaceAlt,border:`1px solid ${T.border}`,
+            display:'flex',alignItems:'center',justifyContent:'center',fontSize:22
+          }}>✨</div>
+          <div>
+            <h3 style={{fontFamily:'Cormorant Garamond',fontSize:20,color:T.text,marginBottom:4}}>Type a Prompt</h3>
+            <p style={{fontSize:12,color:T.textLight,lineHeight:1.6}}>Describe your dream saree in your own words and let AI generate it.</p>
+          </div>
+        </div>
+        <textarea className="input-field" rows={3} placeholder="e.g. Traditional red silk wedding saree with peacock pallu and heavy gold border..." value={prompt} onChange={e=>setPrompt(e.target.value)} style={{marginBottom:12,resize:'none',lineHeight:1.6}} />
+        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:14}}>
+          {['Wedding silk saree','Kerala kasavu','Minimal linen office saree','Bridal Banarasi'].map(s=>(
+            <button key={s} className="chip" style={{fontSize:10}} onClick={()=>setPrompt(s)}>{s}</button>
+          ))}
+        </div>
+        <button className="btn-primary" style={{width:'100%'}} onClick={generateFromPrompt} disabled={isGenerating||!prompt.trim()}>
+          {isGenerating ? '✨ Generating...' : '✨ Generate Design'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── MY DESIGNS ───────────────────────────────────────────────────────────────
+function MyDesignsPage({ user, token, onBack, onOpenDesign, notify }) {
+  const [designs, setDesigns] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadDesigns()
+  }, [])
+
+  const loadDesigns = async () => {
+    setLoading(true)
+    try {
+      const data = await sb.select('saved_designs', `user_id=eq.${user.id}&order=created_at.desc`, token)
+      setDesigns(Array.isArray(data) ? data : [])
+    } catch { setDesigns([]) }
+    setLoading(false)
+  }
+
+  const deleteDesign = async (id) => {
+    try {
+      await sb.delete('saved_designs', `id=eq.${id}`, token)
+      setDesigns(d => d.filter(x => x.id !== id))
+      notify('Design deleted','info')
+    } catch { notify('Could not delete','error') }
+  }
+
+  const statusLabel = (s) => {
+    const map = { draft:'Draft', submitted:'Submitted', review:'Under Review', approved:'Approved', production:'Production Ready' }
+    return map[s] || s || 'Draft'
+  }
+
+  return (
+    <div style={{maxWidth:600,margin:'0 auto',padding:'32px 20px'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:32}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <button onClick={onBack} className="btn-ghost" style={{padding:'6px 14px',fontSize:11}}>← Back</button>
+          <h2 style={{fontFamily:'Cormorant Garamond',fontSize:26,fontWeight:400,color:T.text}}>My Designs</h2>
+        </div>
+        <span style={{fontSize:11,color:T.textLight}}>{designs.length} saved</span>
+      </div>
+
+      {loading ? (
+        <div style={{textAlign:'center',padding:60}}>
+          <div style={{width:40,height:40,borderRadius:'50%',border:`2px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite',margin:'0 auto'}} />
+        </div>
+      ) : designs.length === 0 ? (
+        <div style={{textAlign:'center',padding:60}}>
+          <div style={{fontSize:48,marginBottom:16}}>👗</div>
+          <h3 style={{fontFamily:'Cormorant Garamond',fontSize:22,color:T.textMid,marginBottom:8}}>No designs yet</h3>
+          <p style={{fontSize:13,color:T.textLight}}>Start designing to see your creations here.</p>
+        </div>
+      ) : (
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          {designs.map(d => (
+            <div key={d.id} className="card" style={{padding:16,display:'flex',gap:14,alignItems:'center'}}>
+              {/* Color preview */}
+              <div style={{display:'flex',flexDirection:'column',gap:2,flexShrink:0}}>
+                {(d.thumbnail_colors||[d.design_data?.primaryColor,'#C9A843']).slice(0,3).map((c,i)=>(
+                  <div key={i} style={{width:28,height:28,borderRadius:2,background:c||'#ccc'}} />
+                ))}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontFamily:'Cormorant Garamond',fontSize:17,color:T.text,marginBottom:4,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{d.name}</div>
+                <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+                  <span className={`status-${d.status||'draft'}`}>{statusLabel(d.status)}</span>
+                  <span style={{fontSize:10,color:T.textLight}}>{d.created_at ? new Date(d.created_at).toLocaleDateString() : ''}</span>
+                </div>
+              </div>
+              <div style={{display:'flex',gap:8,flexShrink:0}}>
+                <button className="btn-ghost" style={{padding:'5px 10px',fontSize:10}} onClick={()=>onOpenDesign(d.design_data)}>Edit</button>
+                <button onClick={()=>deleteDesign(d.id)} style={{background:'transparent',border:'none',color:T.textLight,cursor:'pointer',fontSize:14,padding:4}}>✕</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── DESIGNER DASHBOARD ───────────────────────────────────────────────────────
+function DesignerDashboard({ user, token, notify, onBack, patterns: propPatterns, palettes: propPalettes, templates: propTemplates }) {
+  const [activeTab, setActiveTab] = useState('requests')
+  const [requests, setRequests] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (activeTab === 'requests') loadRequests()
+  }, [activeTab])
+
+  const loadRequests = async () => {
+    setLoading(true)
+    try {
+      const data = await sb.select('saved_designs', `order=created_at.desc&limit=30`, token)
+      setRequests(Array.isArray(data) ? data : [])
+    } catch { setRequests([]) }
+    setLoading(false)
+  }
+
+  const updateStatus = async (id, status) => {
+    try {
+      await sb.update('saved_designs', { status }, `id=eq.${id}`, token)
+      setRequests(r => r.map(x => x.id===id ? {...x, status} : x))
+      notify(`Status updated to: ${status}`,'success')
+    } catch { notify('Could not update status','error') }
+  }
+
+  // patternLibrary | customerRequests tabs
+  const tabs = [
+    { id:'requests', label:'Customer Requests', icon:'📋' },
+    { id:'patterns', label:'Pattern Library', icon:'🗂️' },
+    { id:'templates', label:'Style Templates', icon:'📐' },
+  ]
+
+  const statusColors = {
+    draft:'#B7791F', submitted:'#2B6CB0', review:'#C53030',
+    approved:'#276749', production:'#6B46C1'
+  }
+
+  return (
+    <div style={{minHeight:'100vh',background:T.bg}}>
+      {/* Header */}
+      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:'16px 24px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{display:'flex',alignItems:'center',gap:16}}>
+          <button onClick={onBack} className="btn-ghost" style={{padding:'5px 12px',fontSize:10}}>← Home</button>
+          <h1 style={{fontFamily:'Cormorant Garamond',fontSize:24,fontWeight:400,color:T.text}}>Designer Dashboard</h1>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{width:8,height:8,borderRadius:'50%',background:T.success}} />
+          <span style={{fontSize:11,color:T.textMid}}>{user?.email}</span>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,padding:'20px 24px',maxWidth:900,margin:'0 auto'}}>
+        {[
+          {label:'Total Requests', value:requests.length, icon:'📋'},
+          {label:'Pending Review', value:requests.filter(r=>r.status==='submitted'||r.status==='review').length, icon:'⏳'},
+          {label:'Approved', value:requests.filter(r=>r.status==='approved').length, icon:'✅'},
+          {label:'In Production', value:requests.filter(r=>r.status==='production').length, icon:'🏭'},
+        ].map(s => (
+          <div key={s.label} className="card" style={{padding:16,textAlign:'center'}}>
+            <div style={{fontSize:24,marginBottom:6}}>{s.icon}</div>
+            <div style={{fontFamily:'Cormorant Garamond',fontSize:28,color:T.gold,marginBottom:4}}>{s.value}</div>
+            <div style={{fontSize:10,color:T.textLight,letterSpacing:0.5}}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div style={{maxWidth:900,margin:'0 auto',padding:'0 24px'}}>
+        <div style={{display:'flex',gap:0,borderBottom:`1px solid ${T.border}`,marginBottom:24}}>
+          {tabs.map(t => (
+            <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{
+              padding:'12px 20px',border:'none',cursor:'pointer',
+              background:'transparent',fontSize:12,letterSpacing:0.5,
+              color:activeTab===t.id?T.gold:T.textMid,
+              borderBottom:`2px solid ${activeTab===t.id?T.gold:'transparent'}`,
+              transition:'all 0.2s',fontFamily:'Jost',fontWeight:activeTab===t.id?500:300
+            }}>{t.icon} {t.label}</button>
+          ))}
+        </div>
+
+        {/* Customer Requests */}
+        {activeTab === 'requests' && (
+          loading ? (
+            <div style={{textAlign:'center',padding:48}}>
+              <div style={{width:40,height:40,borderRadius:'50%',border:`2px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite',margin:'0 auto'}} />
+            </div>
+          ) : requests.length === 0 ? (
+            <div style={{textAlign:'center',padding:60}}>
+              <div style={{fontSize:48,marginBottom:12}}>📭</div>
+              <p style={{fontFamily:'Cormorant Garamond',fontSize:20,color:T.textMid}}>No requests yet</p>
+            </div>
+          ) : (
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
+              {requests.map(r => (
+                <div key={r.id} className="card" style={{padding:16}}>
+                  <div style={{display:'flex',gap:16,alignItems:'center'}}>
+                    {/* Color preview */}
+                    <div style={{display:'flex',gap:2,flexShrink:0}}>
+                      {(r.thumbnail_colors||['#ccc']).map((c,i)=>(
+                        <div key={i} style={{width:20,height:48,borderRadius:2,background:c}} />
+                      ))}
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{fontFamily:'Cormorant Garamond',fontSize:17,color:T.text,marginBottom:4}}>{r.name}</div>
+                      <div style={{fontSize:11,color:T.textLight,marginBottom:8}}>{r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : ''}</div>
+                      {/* Status actions */}
+                      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                        {['review','approved','production'].map(s => (
+                          <button key={s} onClick={()=>updateStatus(r.id,s)} style={{
+                            padding:'4px 10px',border:`1px solid ${r.status===s?statusColors[s]:T.border}`,
+                            background:r.status===s?`${statusColors[s]}15`:'transparent',
+                            color:r.status===s?statusColors[s]:T.textLight,
+                            borderRadius:40,cursor:'pointer',fontSize:9,
+                            letterSpacing:0.8,textTransform:'uppercase',
+                            transition:'all 0.2s'
+                          }}>{s}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{flexShrink:0}}>
+                      <span className={`status-${r.status||'draft'}`}>{r.status||'Draft'}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {/* Pattern Library */}
+        {activeTab === 'patterns' && (
+          <div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:12}}>
+              {(propPatterns&&propPatterns.length>0?propPatterns:SEED_PATTERNS).map(p => (
+                <div key={p.id} className="card" style={{overflow:'hidden'}}>
+                  <PatternRenderer patternId={p.id} color='#8B0000' accentColor='#C9A843' width={120} height={90} />
+                  <div style={{padding:'8px 10px'}}>
+                    <div style={{fontSize:11,color:T.text,fontWeight:400,marginBottom:2}}>{p.name}</div>
+                    <div style={{fontSize:9,color:T.textLight,textTransform:'capitalize'}}>{p.saree_part} · {p.style_type}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Style Templates */}
+        {activeTab === 'templates' && (
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:16}}>
+            {(propTemplates&&propTemplates.length>0?propTemplates:SEED_TEMPLATES).map(t => {
+              const pal = (propPalettes&&propPalettes.length>0?propPalettes:SEED_PALETTES).find(p=>p.id===t.palette_id) || SEED_PALETTES[0]
+              return (
+                <div key={t.id} className="card" style={{padding:0,overflow:'hidden'}}>
+                  <div style={{height:120,display:'flex',alignItems:'center',justifyContent:'center',background:`linear-gradient(135deg,${pal.primary_color},${pal.secondary_color})`}}>
+                    <SareeCanvas design={{primaryColor:pal.primary_color,secondaryColor:pal.secondary_color,accentColor:pal.accent_color,bodyPattern:t.body_pattern_id,borderPattern:t.border_pattern_id,palluPattern:t.pallu_pattern_id}} scale={0.4} />
+                  </div>
+                  <div style={{padding:14}}>
+                    <div style={{fontFamily:'Cormorant Garamond',fontSize:17,color:T.text,marginBottom:4}}>{t.name}</div>
+                    <div style={{fontSize:11,color:T.textLight}}>{t.description}</div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── MAIN NAV ─────────────────────────────────────────────────────────────────
+function TopNav({ user, userRole, onSignOut, onHome }) {
+  return (
+    <div style={{
+      position:'sticky',top:0,zIndex:100,
+      background:`rgba(14,12,9,0.97)`,
+      backdropFilter:'blur(12px)',
+      borderBottom:`1px solid ${T.border}`,
+      padding:'0 24px',height:56,
+      display:'flex',alignItems:'center',justifyContent:'space-between'
+    }}>
+      <button onClick={onHome} style={{background:'transparent',border:'none',cursor:'pointer',padding:0}}>
+        <span style={{fontFamily:'Cormorant Garamond',fontSize:20,fontWeight:400}} className="gold-gradient">
+          ✦ AI Saree Designer
+        </span>
+      </button>
+      <div style={{display:'flex',alignItems:'center',gap:12}}>
+        {userRole === 'designer' && (
+          <span style={{fontSize:9,padding:'3px 10px',background:T.surfaceAlt,border:`1px solid ${T.gold}44`,borderRadius:40,color:T.goldDark,letterSpacing:1,textTransform:'uppercase',fontWeight:500}}>Designer</span>
+        )}
+        <span style={{fontSize:11,color:T.textMid,maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{user?.email}</span>
+        <button className="btn-ghost" style={{padding:'5px 12px',fontSize:10}} onClick={onSignOut}>Sign Out</button>
+      </div>
+    </div>
+  )
+}
+
+export { AIModePage, MyDesignsPage, DesignerDashboard, TopNav }
