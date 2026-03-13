@@ -352,7 +352,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <ellipse rx={4} ry={6} fill={a} opacity={0.7} />
           <ellipse rx={2} ry={3} fill={c} opacity={0.9} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     b5: <>
       <rect width={width} height={height} fill={c} />
@@ -361,7 +361,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <polygon points="0,-8 8,0 0,8 -8,0" fill="none" stroke={a} strokeWidth={1} opacity={0.6} />
           <polygon points="0,-4 4,0 0,4 -4,0" fill={a} opacity={0.4} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     b6: <>
       <rect width={width} height={height} fill={c} />
@@ -369,7 +369,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
         <g key={`${x}-${y}`} transform={`translate(${x*28+14},${y*28+14})`}>
           <polygon points="0,-10 3,-3 10,-3 4,2 6,9 0,5 -6,9 -4,2 -10,-3 -3,-3" fill={a} opacity={0.5} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     b7: <>
       <rect width={width} height={height} fill={c} />
@@ -378,19 +378,19 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <path d={`M0,-12 C6,-8 12,-4 8,0 C12,4 6,8 0,12 C-6,8 -12,4 -8,0 C-12,-4 -6,-8 0,-12Z`} fill={a} opacity={0.5} />
           <circle r={3} fill={c} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     b8: <>
       <rect width={width} height={height} fill={c} />
       {Array.from({length: Math.ceil(width/18)}, (_,x) => Array.from({length: Math.ceil(height/18)}, (_,y) => (
         <circle key={`${x}-${y}`} cx={x*18+9} cy={y*18+9} r={3} fill={a} opacity={0.7} />
-      )))}
+      ))).flat()}
     </>,
     b9: <>
       <rect width={width} height={height} fill={c} />
       {Array.from({length: Math.ceil(width/14)}, (_,x) => Array.from({length: Math.ceil(height/14)}, (_,y) => (
         <circle key={`${x}-${y}`} cx={x*14+7} cy={y*14+7} r={4} fill="none" stroke={a} strokeWidth={1.5} opacity={0.6} />
-      )))}
+      ))).flat()}
     </>,
     b10: <>
       <rect width={width} height={height} fill={c} />
@@ -406,13 +406,13 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <line x1={0} y1={-16} x2={0} y2={16} stroke={a} strokeWidth={0.5} opacity={0.3} />
           <line x1={-14} y1={0} x2={14} y2={0} stroke={a} strokeWidth={0.5} opacity={0.3} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     b12: <>
       <rect width={width} height={height} fill={c} />
       {Array.from({length: Math.ceil(width/20)}, (_,x) => Array.from({length: Math.ceil(height/20)}, (_,y) => (
         <rect key={`${x}-${y}`} x={x*20+4} y={y*20+4} width={12} height={12} fill="none" stroke={a} strokeWidth={1} opacity={0.5} transform={`rotate(45, ${x*20+10}, ${y*20+10})`} />
-      )))}
+      ))).flat()}
     </>,
     b13: <>
       <rect width={width} height={height} fill={c} />
@@ -424,7 +424,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
             <line key={ang} x1={0} y1={0} x2={Math.cos(ang*Math.PI/180)*9} y2={Math.sin(ang*Math.PI/180)*9} stroke={a} strokeWidth={0.8} opacity={0.4} />
           ))}
         </g>
-      )))}
+      ))).flat()}
     </>,
     b14: <>
       <rect width={width} height={height} fill={c} />
@@ -435,7 +435,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <line x1={-7} y1={5} x2={7} y2={5} stroke={a} strokeWidth={1.5} opacity={0.6} />
           <circle cx={0} cy={-10} r={2} fill={a} opacity={0.7} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     b15: <>
       <rect width={width} height={height} fill={c} />
@@ -444,7 +444,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <path d={`M0,-9 C5,-9 9,-5 9,0 C9,5 5,9 0,9 C-5,9 -9,5 -9,0`} fill="none" stroke={a} strokeWidth={1} opacity={0.5} />
           <path d={`M0,-9 C-5,-9 -9,-5 -9,0`} fill="none" stroke={a} strokeWidth={1} opacity={0.3} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     b16: <>
       <rect width={width} height={height} fill={c} />
@@ -463,7 +463,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
             <circle key={ang} cx={Math.cos(ang*Math.PI/180)*8} cy={Math.sin(ang*Math.PI/180)*8} r={1.5} fill={a} opacity={0.6} />
           ))}
         </g>
-      )))}
+      ))).flat()}
     </>,
   }
 
@@ -582,7 +582,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
             <line key={ang} x1={0} y1={0} x2={Math.cos(ang*Math.PI/180)*14} y2={Math.sin(ang*Math.PI/180)*14} stroke={a} strokeWidth={0.8} opacity={0.3} />
           ))}
         </g>
-      )))}
+      ))).flat()}
     </>,
     p4: <>
       <rect width={width} height={height} fill={c} />
@@ -592,7 +592,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <ellipse rx={3} ry={5} fill={c} />
           <ellipse rx={1} ry={2} fill={a} opacity={0.8} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     p5: <rect width={width} height={height} fill={c} />,
     p6: <>
@@ -602,7 +602,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <path d={`M0,-14 C6,-14 12,-6 12,0 C12,6 6,14 0,14 C-6,14 -12,6 -12,0 C-12,-6 -6,-14 0,-14Z`} fill="none" stroke={a} strokeWidth={1.2} opacity={0.6} />
           <polygon points="0,-8 4,-4 4,4 0,8 -4,4 -4,-4" fill={a} opacity={0.3} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     p7: <>
       <rect width={width} height={height} fill={c} />
@@ -615,7 +615,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
             <line key={ang} x1={Math.cos(ang*Math.PI/180)*7} y1={Math.sin(ang*Math.PI/180)*7} x2={Math.cos(ang*Math.PI/180)*12} y2={Math.sin(ang*Math.PI/180)*12} stroke={a} strokeWidth={1} opacity={0.5} />
           ))}
         </g>
-      )))}
+      ))).flat()}
     </>,
     p8: <>
       <rect width={width} height={height} fill={c} />
@@ -624,7 +624,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <ellipse rx={5} ry={7} fill={a} opacity={0.5} />
           <ellipse rx={2} ry={3} fill={c} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     p9: <>
       <rect width={width} height={height} fill={c} />
@@ -645,13 +645,13 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <path d={`M0,-10 C5,-10 10,-5 10,0 C10,5 5,10 0,10 C-5,10 -10,5 -10,0 C-10,-5 -5,-10 0,-10Z`} fill="none" stroke={a} strokeWidth={1} opacity={0.5} />
           <circle r={3} fill={a} opacity={0.4} />
         </g>
-      )))}
+      ))).flat()}
     </>,
     p12: <>
       <rect width={width} height={height} fill={c} />
       {Array.from({length: Math.ceil(width/18)}, (_,x) => Array.from({length: Math.ceil(height/18)}, (_,y) => (
         <rect key={`${x}-${y}`} x={x*18+3} y={y*18+3} width={12} height={12} fill="none" stroke={a} strokeWidth={1} opacity={0.5} />
-      )))}
+      ))).flat()}
     </>,
   }
 
@@ -762,231 +762,266 @@ function Notification({ notification }) {
 }
 
 // ─── VOICE QUESTIONNAIRE ──────────────────────────────────────────────────────
-// ─── DEEP QUESTIONNAIRE SYSTEM ───────────────────────────────────────────────
-// Questions are grouped by saree part. AI decides follow-ups based on answers.
-const QUESTION_BANK = {
-  // ── SECTION 1: Occasion & Intent ──
-  occasion: {
-    id: 'occasion', section: 'Occasion',
-    icon: '✨',
-    text: 'What is this saree being designed for?',
-    subtext: 'This helps us match the right richness and formality.',
-    options: [
-      { value: 'Wedding', desc: 'Bridal or wedding guest wear' },
-      { value: 'Festival', desc: 'Puja, Diwali, Onam, Pongal etc.' },
-      { value: 'Party', desc: 'Celebrations, receptions, get-togethers' },
-      { value: 'Office', desc: 'Professional, everyday elegance' },
-      { value: 'Casual', desc: 'Daily wear, outings, family events' },
-    ]
-  },
-  wearer: {
-    id: 'wearer', section: 'Occasion',
-    icon: '👤',
-    text: 'Who is going to wear this saree?',
-    subtext: 'Age and role influence design choices significantly.',
-    options: [
-      { value: 'Bride', desc: 'The main bride - maximum richness' },
-      { value: 'Mother of Bride', desc: 'Elegant, dignified, complementary' },
-      { value: 'Wedding Guest', desc: 'Festive but not outshining the bride' },
-      { value: 'Young Woman (20s–30s)', desc: 'Trendy, contemporary styles' },
-      { value: 'Mature Woman (40s+)', desc: 'Classic, refined, comfortable' },
-    ]
-  },
+// ─── QUESTIONNAIRE SYSTEM (5 questions, each combining related dimensions) ────
 
-  // ── SECTION 2: Fabric ──
-  fabric: {
-    id: 'fabric', section: 'Fabric',
+const QUESTIONS = [
+  {
+    id: 'occasionAndWearer',
+    section: 'Occasion',
+    icon: '✨',
+    text: 'Who is wearing this, and for what occasion?',
+    subtext: 'This shapes richness, formality, and the entire design direction.',
+    options: [
+      { value: 'Bridal - Bride herself',   desc: 'Wedding day — maximum richness, bridal weight silk' },
+      { value: 'Bridal - Family / Guest',  desc: 'Wedding attendee — festive, not outshining the bride' },
+      { value: 'Festival / Puja',          desc: 'Diwali, Onam, Pongal, temple visits' },
+      { value: 'Party / Reception',        desc: 'Evening celebrations, receptions, get-togethers' },
+      { value: 'Office / Daily Wear',      desc: 'Professional elegance, comfortable for all-day wear' },
+    ]
+  },
+  {
+    id: 'fabricAndStyle',
+    section: 'Fabric & Heritage',
     icon: '🧵',
-    text: 'What fabric would you prefer?',
-    subtext: 'Fabric determines drape, sheen, and overall feel.',
+    text: 'Which fabric tradition speaks to you?',
+    subtext: 'Fabric defines drape, sheen, weight, and cultural identity.',
     options: [
-      { value: 'Kanchipuram Silk', desc: 'Heavy, lustrous - ideal for weddings' },
-      { value: 'Banarasi Silk', desc: 'Rich brocade weave, Mughal heritage' },
-      { value: 'Mysore Silk', desc: 'Lightweight, smooth, everyday elegance' },
-      { value: 'Cotton', desc: 'Breathable, casual to semi-formal' },
-      { value: 'Linen', desc: 'Minimal, modern, office-friendly' },
-      { value: 'Organza', desc: 'Sheer, delicate, contemporary' },
-      { value: 'Georgette', desc: 'Flowy, party and evening wear' },
+      { value: 'Kanchipuram Silk',  desc: 'Heavy, lustrous — quintessential South Indian heritage' },
+      { value: 'Banarasi Silk',     desc: 'Rich Mughal brocade weave — North Indian grandeur' },
+      { value: 'Mysore Silk',       desc: 'Lightweight silk — refined, smooth, everyday elegance' },
+      { value: 'Cotton / Linen',    desc: 'Breathable, clean lines — modern and office-friendly' },
+      { value: 'Georgette / Organza', desc: 'Flowy, sheer — contemporary party and evening wear' },
     ]
   },
-  fabricWeight: {
-    id: 'fabricWeight', section: 'Fabric',
-    icon: '⚖️',
-    text: 'How heavy or light should the saree feel?',
-    subtext: 'This affects drape and how long you can comfortably wear it.',
-    options: [
-      { value: 'Light & Flowy', desc: 'Easy to manage, all-day comfort' },
-      { value: 'Medium Weight', desc: 'Balanced drape and structure' },
-      { value: 'Heavy & Structured', desc: 'Grand presence, traditional feel' },
-    ]
-  },
-
-  // ── SECTION 3: Body Design ──
-  bodyStyle: {
-    id: 'bodyStyle', section: 'Body Design',
+  {
+    id: 'bodyAndRichness',
+    section: 'Body & Richness',
     icon: '🟫',
-    text: 'What should the main body of the saree look like?',
-    subtext: 'The body covers most of the saree - this is the dominant visual.',
+    text: 'How should the body look, and how ornate overall?',
+    subtext: 'Body pattern + overall embellishment level combined.',
     options: [
-      { value: 'Plain / Solid', desc: 'Clean, unadorned - lets border & pallu shine' },
-      { value: 'Subtle Texture', desc: 'Stripes, checks or light weave pattern' },
-      { value: 'All-Over Motifs', desc: 'Small buttas or flowers scattered throughout' },
-      { value: 'Bold Pattern', desc: 'Ikat, geometric or large repeat pattern' },
-      { value: 'Zari Infused', desc: 'Gold thread woven throughout the body' },
+      { value: 'Plain body, minimal embellishment',       desc: 'Clean and modern — let border and pallu do the talking' },
+      { value: 'Subtle texture, balanced elegance',       desc: 'Stripes or checks with tasteful zari accents' },
+      { value: 'Floral buttas, moderate richness',        desc: 'Small flowers scattered throughout, some zari detailing' },
+      { value: 'Temple / Peacock motifs, rich grandeur',  desc: 'Traditional South Indian motifs, heavy zari' },
+      { value: 'Mughal / Geometric, maximum opulence',    desc: 'Bold brocade or ikat patterns, bridal-level richness' },
     ]
   },
-  bodyMotif: {
-    id: 'bodyMotif', section: 'Body Design',
-    icon: '🌸',
-    text: 'What kind of motifs appeal to you for the body?',
-    subtext: 'Only if the body has patterns - skip if you chose plain.',
-    options: [
-      { value: 'Floral', desc: 'Roses, lotus, jasmine - timeless feminine' },
-      { value: 'Peacock', desc: 'Rich, traditional Indian motif' },
-      { value: 'Temple / Rudraksha', desc: 'Sacred geometry, South Indian style' },
-      { value: 'Geometric', desc: 'Modern, structured, clean lines' },
-      { value: 'Tribal / Warli', desc: 'Handloom artisan aesthetic' },
-      { value: 'Mughal / Floral Arch', desc: 'North Indian, Banarasi heritage' },
-    ]
-  },
-
-  // ── SECTION 4: Border ──
-  borderWeight: {
-    id: 'borderWeight', section: 'Border',
-    icon: '📏',
-    text: 'How prominent should the border (kasavu) be?',
-    subtext: 'The border runs along the length of the saree.',
-    options: [
-      { value: 'Thin (1–2cm)', desc: 'Minimal line, modern or casual' },
-      { value: 'Medium (3–5cm)', desc: 'Balanced - suits most occasions' },
-      { value: 'Broad (6–10cm)', desc: 'Statement border, traditional sarees' },
-      { value: 'Grand Zari Border (10cm+)', desc: 'Bridal weight, maximum impact' },
-    ]
-  },
-  borderStyle: {
-    id: 'borderStyle', section: 'Border',
-    icon: '🔰',
-    text: 'What pattern style do you want for the border?',
-    subtext: 'This defines the character of the saree edge.',
-    options: [
-      { value: 'Single Kasavu Line', desc: 'Classic Kerala style, elegant simplicity' },
-      { value: 'Double Kasavu', desc: 'Two gold lines - traditional and festive' },
-      { value: 'Temple / Gopuram', desc: 'Arch motifs, Kanchipuram style' },
-      { value: 'Mango / Paisley', desc: 'Curved teardrop motifs, classic Indian' },
-      { value: 'Peacock Procession', desc: 'Rich birds along the border' },
-      { value: 'Floral Vine', desc: 'Delicate flowers, contemporary feel' },
-      { value: 'Geometric Chain', desc: 'Modern, structured repeat pattern' },
-    ]
-  },
-
-  // ── SECTION 5: Pallu ──
-  palluStyle: {
-    id: 'palluStyle', section: 'Pallu',
-    icon: '🎨',
-    text: 'What overall feel do you want for the pallu?',
-    subtext: 'The pallu is the most visible part - draped over the shoulder.',
-    options: [
-      { value: 'Minimal - same as body', desc: 'Seamless look, no contrast' },
-      { value: 'Contrast colour pallu', desc: 'Different colour from body' },
-      { value: 'Rich & Heavy pallu', desc: 'Dense zari or embroidery' },
-      { value: 'Designer pallu', desc: 'Statement piece with unique motifs' },
-    ]
-  },
-  palluMotif: {
-    id: 'palluMotif', section: 'Pallu',
+  {
+    id: 'borderAndPallu',
+    section: 'Border & Pallu',
     icon: '🦚',
-    text: 'What should the pallu design feature?',
-    subtext: 'The centrepiece of your entire saree.',
+    text: 'What border and pallu combination do you prefer?',
+    subtext: 'The border frames the saree; the pallu is the centrepiece draped over the shoulder.',
     options: [
-      { value: 'Peacock Spread', desc: 'Majestic, bridal, full feather display' },
-      { value: 'Floral Bouquet', desc: 'Dense flowers, feminine and classic' },
-      { value: 'Temple Arch', desc: 'Gopuram arches, sacred geometry' },
-      { value: 'Mughal Garden', desc: 'Vines, flowers, Banarasi heritage' },
-      { value: 'Butta Clusters', desc: 'Small motifs scattered on pallu' },
-      { value: 'Plain with Zari', desc: 'Solid colour with gold shimmer' },
-      { value: 'Geometric', desc: 'Modern angular patterns' },
+      { value: 'Thin gold line, minimal pallu',         desc: 'Understated, modern, office-friendly' },
+      { value: 'Double kasavu, clean pallu',            desc: 'Kerala classic — festive, crisp, traditional' },
+      { value: 'Temple border, floral pallu',           desc: 'South Indian grandeur — rich and ceremonial' },
+      { value: 'Peacock border, peacock pallu',         desc: 'Majestic, bridal — full motif display' },
+      { value: 'Broad zari border, mughal pallu',       desc: 'North Indian bridal opulence — maximum impact' },
     ]
   },
-
-  // ── SECTION 6: Colour ──
-  colorBase: {
-    id: 'colorBase', section: 'Colour',
+  {
+    id: 'colorAndAccent',
+    section: 'Colour',
     icon: '🎨',
-    text: 'What is your base colour preference for the saree?',
-    subtext: 'The primary colour that dominates the body.',
+    text: 'What is your colour vision?',
+    subtext: 'Pick your base tone — accent and contrast will be matched automatically.',
     options: [
-      { value: 'Deep Red / Maroon', desc: 'Classic bridal, powerful and rich' },
-      { value: 'Royal Blue / Navy', desc: 'Regal, sophisticated' },
-      { value: 'Forest Green / Emerald', desc: 'Lush, festive, traditional' },
-      { value: 'Cream / Off-White', desc: 'Pure, elegant, Kerala style' },
-      { value: 'Pink / Rose Gold', desc: 'Feminine, party-ready' },
-      { value: 'Purple / Violet', desc: 'Royal, modern and luxurious' },
-      { value: 'Black', desc: 'Bold, modern, evening wear' },
-      { value: 'Pastel (any)', desc: 'Soft, contemporary, gentle hues' },
+      { value: 'Deep Red / Maroon',       desc: 'Classic bridal — powerful, timeless, auspicious' },
+      { value: 'Royal Blue / Navy',       desc: 'Regal, sophisticated, strikingly elegant' },
+      { value: 'Forest Green / Emerald',  desc: 'Lush, festive — a traditional favourite' },
+      { value: 'Cream / Off-White',       desc: 'Pure Kerala elegance — kasavu gold on white' },
+      { value: 'Pink / Rose Gold',        desc: 'Feminine, contemporary, perfect for parties' },
+      { value: 'Purple / Violet',         desc: 'Royal and modern — luxurious statement colour' },
+      { value: 'Black',                   desc: 'Bold, dramatic — a stunning evening statement' },
+      { value: 'Pastel / Soft tones',     desc: 'Gentle, airy — contemporary and wearable' },
     ]
   },
-  colorAccent: {
-    id: 'colorAccent', section: 'Colour',
-    icon: '✨',
-    text: 'What accent or contrast colour should complement it?',
-    subtext: 'Used for borders, zari, and pallu highlights.',
-    options: [
-      { value: 'Gold Zari', desc: 'Traditional gold thread - never fails' },
-      { value: 'Silver Zari', desc: 'Modern, cool-toned elegance' },
-      { value: 'Contrast (complementary colour)', desc: 'Opposite on the colour wheel' },
-      { value: 'Same Family (deeper shade)', desc: 'Tonal, subtle, refined' },
-      { value: 'Ivory / Cream', desc: 'Soft contrast, very wearable' },
+]
+
+// ── DETERMINISTIC DESIGN MAPPER ──────────────────────────────────────────────
+// Produces visibly different designs for every answer combination.
+// No API call needed — works 100% of the time.
+
+const COLOR_MAP = {
+  'Deep Red / Maroon':      { primary: '#8B0000', secondary: '#F5F5DC', accent: '#D4AF37' },
+  'Royal Blue / Navy':      { primary: '#1a237e', secondary: '#E8D5B7', accent: '#C9A843' },
+  'Forest Green / Emerald': { primary: '#1B5E20', secondary: '#F1F8E9', accent: '#D4AF37' },
+  'Cream / Off-White':      { primary: '#F5F0DC', secondary: '#FFFDF5', accent: '#C9A843' },
+  'Pink / Rose Gold':       { primary: '#880E4F', secondary: '#FCE4EC', accent: '#D4AF37' },
+  'Purple / Violet':        { primary: '#4A148C', secondary: '#F3E5F5', accent: '#D4AF37' },
+  'Black':                  { primary: '#1A1A1A', secondary: '#F5F0DC', accent: '#D4AF37' },
+  'Pastel / Soft tones':    { primary: '#7B5EA7', secondary: '#FFF9C4', accent: '#C9A843' },
+}
+
+// body pattern driven by bodyAndRichness
+const BODY_MAP = {
+  'Plain body, minimal embellishment':       'b1',
+  'Subtle texture, balanced elegance':       'b2',
+  'Floral buttas, moderate richness':        'b4',
+  'Temple / Peacock motifs, rich grandeur':  'b6',
+  'Mughal / Geometric, maximum opulence':    'b11',
+}
+
+// border + pallu driven by borderAndPallu
+const BORDER_PALLU_MAP = {
+  'Thin gold line, minimal pallu':        { border: 'br7',  pallu: 'p5'  },
+  'Double kasavu, clean pallu':           { border: 'br2',  pallu: 'p9'  },
+  'Temple border, floral pallu':          { border: 'br3',  pallu: 'p4'  },
+  'Peacock border, peacock pallu':        { border: 'br5',  pallu: 'p3'  },
+  'Broad zari border, mughal pallu':      { border: 'br6',  pallu: 'p7'  },
+}
+
+// fabric adjustments layered on top
+const FABRIC_ADJUSTMENTS = {
+  'Kanchipuram Silk':      { bodyPush: 'b6',  borderPush: 'br3', palluPush: 'p6'  },
+  'Banarasi Silk':         { bodyPush: 'b11', borderPush: 'br6', palluPush: 'p7'  },
+  'Mysore Silk':           { bodyPush: null,  borderPush: 'br2', palluPush: null  },
+  'Cotton / Linen':        { bodyPush: 'b2',  borderPush: 'br1', palluPush: 'p5'  },
+  'Georgette / Organza':   { bodyPush: null,  borderPush: 'br8', palluPush: 'p4'  },
+}
+
+// richness layer — only overrides if explicitly maxed/minimal
+const RICHNESS_LAYER = {
+  'Plain body, minimal embellishment':      { borderPush: 'br7', palluPush: 'p5'  },
+  'Mughal / Geometric, maximum opulence':   { borderPush: 'br6', palluPush: 'p1'  },
+}
+
+function buildDesignFromAnswers(answers) {
+  const colorKey = answers.colorAndAccent || 'Deep Red / Maroon'
+  const colors   = COLOR_MAP[colorKey] || COLOR_MAP['Deep Red / Maroon']
+
+  const bodyKey  = answers.bodyAndRichness || 'Plain body, minimal embellishment'
+  let body       = BODY_MAP[bodyKey] || 'b1'
+
+  const bpKey    = answers.borderAndPallu || 'Double kasavu, clean pallu'
+  const bp       = BORDER_PALLU_MAP[bpKey] || { border: 'br2', pallu: 'p9' }
+  let border     = bp.border
+  let pallu      = bp.pallu
+
+  // Layer 1: fabric nudges patterns toward heritage style
+  const fabKey   = answers.fabricAndStyle || ''
+  // match partial key (Cotton / Linen, Georgette / Organza etc.)
+  const fabAdj   = Object.entries(FABRIC_ADJUSTMENTS).find(([k]) => fabKey.startsWith(k))
+  if (fabAdj) {
+    const adj = fabAdj[1]
+    // Only apply fabric body push if body is plain (fabric adds character)
+    if (adj.bodyPush && body === 'b1') body = adj.bodyPush
+    if (adj.borderPush) border = adj.borderPush
+    if (adj.palluPush && pallu === 'p9') pallu = adj.palluPush
+  }
+
+  // Layer 2: richness extreme overrides
+  const richAdj = RICHNESS_LAYER[bodyKey]
+  if (richAdj) {
+    if (richAdj.borderPush) border = richAdj.borderPush
+    if (richAdj.palluPush)  pallu  = richAdj.palluPush
+  }
+
+  // Layer 3: occasion final override
+  const occ = answers.occasionAndWearer || ''
+  if (occ === 'Bridal - Bride herself') {
+    if (body === 'b1' || body === 'b2') body = 'b6'
+    border = 'br6'; pallu = 'p1'
+  }
+  if (occ === 'Office / Daily Wear') {
+    if (border === 'br6') border = 'br7'
+    if (pallu  === 'p1')  pallu  = 'p5'
+    if (body   === 'b11') body   = 'b2'
+  }
+
+  // secondary color tweak for cream
+  const secondary = colorKey === 'Cream / Off-White' ? '#C9A843' : colors.secondary
+
+  return { primaryColor: colors.primary, secondaryColor: secondary, accentColor: colors.accent, bodyPattern: body, borderPattern: border, palluPattern: pallu }
+}
+
+// ── RECOMMENDATION ENGINE ─────────────────────────────────────────────────────
+// Generates 3 design variants: primary match + 2 alternatives with their own designs
+
+function generateRecommendations(answers) {
+  const occ  = answers.occasionAndWearer || ''
+  const fab  = answers.fabricAndStyle    || ''
+  const body = answers.bodyAndRichness   || ''
+  const col  = answers.colorAndAccent    || ''
+
+  // Build primary design from answers
+  const primaryDesign = buildDesignFromAnswers(answers)
+
+  // Build variant A: same occasion, different fabric heritage
+  const variantA_answers = { ...answers }
+  if (fab.includes('Kanchipuram')) { variantA_answers.fabricAndStyle = 'Banarasi Silk' }
+  else if (fab.includes('Banarasi')) { variantA_answers.fabricAndStyle = 'Kanchipuram Silk' }
+  else if (fab.includes('Cotton')) { variantA_answers.fabricAndStyle = 'Mysore Silk' }
+  else if (fab.includes('Georgette')) { variantA_answers.fabricAndStyle = 'Banarasi Silk' }
+  else { variantA_answers.fabricAndStyle = 'Kanchipuram Silk' }
+  const variantA_design = buildDesignFromAnswers(variantA_answers)
+
+  // Build variant B: lighter / simpler version
+  const variantB_answers = { ...answers }
+  if (body.includes('maximum') || body.includes('rich grandeur')) {
+    variantB_answers.bodyAndRichness = 'Floral buttas, moderate richness'
+    variantB_answers.borderAndPallu  = 'Temple border, floral pallu'
+  } else {
+    variantB_answers.bodyAndRichness = 'Temple / Peacock motifs, rich grandeur'
+    variantB_answers.borderAndPallu  = 'Peacock border, peacock pallu'
+  }
+  const variantB_design = buildDesignFromAnswers(variantB_answers)
+
+  // Name + describe based on fabric + occasion
+  const fabricLabel = fab || 'Silk'
+  const isBridal    = occ.includes('Bridal')
+
+  const getRecs = () => {
+    if (isBridal && fab.includes('Kanchipuram')) return [
+      { name: 'Classic Kanchipuram Bridal',   score: 97, budget: '₹40K–₹1.2L', description: 'Heavy temple-motif silk with grand zari border — the definitive South Indian bridal.', design: primaryDesign  },
+      { name: 'Banarasi Grand Bridal',        score: 84, budget: '₹35K–₹1L',   description: 'Mughal brocade richness with intricate gold weave — a stunning North Indian alternative.', design: variantA_design },
+      { name: 'Rich Floral Silk',             score: 76, budget: '₹20K–₹60K',  description: 'Softer floral pallu with peacock border — elegant and lighter than full bridal weight.', design: variantB_design },
     ]
-  },
-}
-
-// AI-driven question flow - determines next question based on answers
-function getNextQuestionId(answers, currentId) {
-  const flow = {
-    'occasion': 'wearer',
-    'wearer': 'fabric',
-    'fabric': (a) => (a.fabric === 'Linen' || a.fabric === 'Organza') ? 'bodyStyle' : 'fabricWeight',
-    'fabricWeight': 'bodyStyle',
-    'bodyStyle': (a) => a.bodyStyle === 'Plain / Solid' ? 'borderWeight' : 'bodyMotif',
-    'bodyMotif': 'borderWeight',
-    'borderWeight': 'borderStyle',
-    'borderStyle': 'palluStyle',
-    'palluStyle': (a) => a.palluStyle === 'Minimal - same as body' ? 'colorBase' : 'palluMotif',
-    'palluMotif': 'colorBase',
-    'colorBase': 'colorAccent',
-    'colorAccent': null, // done
+    if (isBridal && fab.includes('Banarasi')) return [
+      { name: 'Banarasi Grand Bridal',        score: 97, budget: '₹35K–₹1L',   description: 'Mughal brocade splendour with deep gold zari weave — ultimate North Indian bridal.', design: primaryDesign  },
+      { name: 'Kanchipuram Bridal',           score: 85, budget: '₹40K–₹1.2L', description: 'South Indian temple-motif silk — equally grand, different heritage.', design: variantA_design },
+      { name: 'Designer Floral Bridal',       score: 74, budget: '₹25K–₹70K',  description: 'Lush floral pallu on silk base — contemporary bridal with a romantic feel.', design: variantB_design },
+    ]
+    if (occ.includes('Festival')) return [
+      { name: 'Kerala Kasavu Festival',       score: 94, budget: '₹5K–₹20K',   description: 'Cream and gold kasavu — the quintessential festival saree for Onam and Vishu.', design: primaryDesign  },
+      { name: 'Silk Festive Elegance',        score: 86, budget: '₹12K–₹35K',  description: 'Vibrant silk with peacock motifs — ideal for Diwali and Navratri celebrations.', design: variantA_design },
+      { name: 'Chanderi Festival',            score: 78, budget: '₹8K–₹22K',   description: 'Lightweight with gold zari — comfortable for long festival days outdoors.', design: variantB_design },
+    ]
+    if (occ.includes('Office')) return [
+      { name: 'Crisp Linen Office Classic',   score: 95, budget: '₹3K–₹12K',   description: 'Minimal border, clean body — professional, breathable and effortlessly elegant.', design: primaryDesign  },
+      { name: 'Mysore Silk Light',            score: 86, budget: '₹8K–₹25K',   description: 'Lightweight silk that moves from office to evening effortlessly.', design: variantA_design },
+      { name: 'Handloom Cotton',              score: 79, budget: '₹2K–₹8K',    description: 'Artisan-woven checks or stripes — comfortable for long working hours.', design: variantB_design },
+    ]
+    if (occ.includes('Party')) return [
+      { name: 'Georgette Evening Drape',      score: 93, budget: '₹6K–₹20K',   description: 'Flowy georgette with embellished border — stunning at any evening event.', design: primaryDesign  },
+      { name: 'Organza Shimmer',              score: 85, budget: '₹8K–₹25K',   description: 'Sheer organza with delicate embroidery — light and glamorous.', design: variantA_design },
+      { name: 'Designer Printed Silk',        score: 77, budget: '₹10K–₹30K',  description: 'Contemporary print silk with unique motifs — modern party statement.', design: variantB_design },
+    ]
+    // Generic fallback
+    return [
+      { name: fabricLabel + ' Classic',       score: 90, budget: '₹10K–₹35K',  description: 'Crafted precisely from your choices — a perfectly balanced saree for your occasion.', design: primaryDesign  },
+      { name: 'Heritage Silk Variant',        score: 80, budget: '₹15K–₹50K',  description: 'Same colour palette in a different silk heritage — equally beautiful, different character.', design: variantA_design },
+      { name: 'Contemporary Alternative',     score: 72, budget: '₹8K–₹25K',   description: 'A lighter, more relaxed version of your preference — versatile and modern.', design: variantB_design },
+    ]
   }
-  const next = flow[currentId]
-  if (!next) return null
-  if (typeof next === 'function') return next(answers)
-  return next
-}
 
-function getQuestionSequence(answers) {
-  const seq = []
-  let current = 'occasion'
-  while (current) {
-    seq.push(current)
-    current = getNextQuestionId(answers, current)
-  }
-  return seq
+  return getRecs()
 }
 
 function VoiceQuestionnaire({ onComplete, onBack }) {
-  const [questionIds, setQuestionIds] = useState(['occasion'])
-  const [currentIdx, setCurrentIdx] = useState(0)
-  const [answers, setAnswers] = useState({})
+  const [currentIdx, setCurrentIdx]   = useState(0)
+  const [answers,    setAnswers]      = useState({})
   const [isListening, setIsListening] = useState(false)
-  const [transcript, setTranscript] = useState('')
-  const [isSpeaking, setIsSpeaking] = useState(false)
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [animIn, setAnimIn] = useState(true)
+  const [transcript,  setTranscript]  = useState('')
+  const [isSpeaking,  setIsSpeaking]  = useState(false)
+  const [isGenerating,setIsGenerating]= useState(false)
+  const [animIn,      setAnimIn]      = useState(true)
   const recognitionRef = useRef(null)
 
-  const currentId = questionIds[currentIdx]
-  const q = QUESTION_BANK[currentId]
-  // Estimate total - recalculate based on current answers
-  const estimatedTotal = getQuestionSequence(answers).length
+  const q      = QUESTIONS[currentIdx]
+  const totalQ = QUESTIONS.length
 
   const speak = useCallback((text) => {
     if (!window.speechSynthesis) return
@@ -994,7 +1029,7 @@ function VoiceQuestionnaire({ onComplete, onBack }) {
     const u = new SpeechSynthesisUtterance(text)
     u.rate = 0.88; u.pitch = 1.05
     u.onstart = () => setIsSpeaking(true)
-    u.onend = () => setIsSpeaking(false)
+    u.onend   = () => setIsSpeaking(false)
     window.speechSynthesis.speak(u)
   }, [])
 
@@ -1006,143 +1041,102 @@ function VoiceQuestionnaire({ onComplete, onBack }) {
     return () => { window.speechSynthesis?.cancel() }
   }, [currentIdx, speak])
 
-  const handleAnswer = (optionValue) => {
-    const newAnswers = { ...answers, [currentId]: optionValue }
+  const handleAnswer = (value) => {
+    const newAnswers = { ...answers, [q.id]: value }
     setAnswers(newAnswers)
-    speak(`Got it - ${optionValue}.`)
-
-    // Recalculate the full question path based on new answers
-    const newSequence = getQuestionSequence(newAnswers)
-    setQuestionIds(newSequence)
-
+    speak('Got it.')
     setTimeout(() => {
-      const nextIdx = currentIdx + 1
-      if (nextIdx < newSequence.length) {
-        setCurrentIdx(nextIdx)
+      if (currentIdx < QUESTIONS.length - 1) {
+        setCurrentIdx(i => i + 1)
       } else {
-        handleComplete(newAnswers)
+        finalize(newAnswers)
       }
-    }, 700)
+    }, 600)
   }
 
-  const handleComplete = async (finalAnswers) => {
+  const finalize = (finalAnswers) => {
     setIsGenerating(true)
-    speak('Perfect! Designing your ideal saree now - this will take just a moment.')
-    try {
-      const prefLines = Object.entries(finalAnswers).map(([k,v]) => {
-        const section = QUESTION_BANK[k] ? QUESTION_BANK[k].section : k
-        const question = QUESTION_BANK[k] ? QUESTION_BANK[k].text : k
-        return section + ' - ' + question + ': ' + v
-      })
-      const userPrompt = "Customer's detailed preferences:\n" + prefLines.join('\n') + "\n\nDesign the perfect saree for this customer."
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': ANTHROPIC_KEY,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model: CLAUDE_MODEL, max_tokens: 1200,
-          system: `You are a master Indian saree designer with 30 years of experience. 
-Based on the customer's detailed preferences, create a precise saree design recommendation.
-
-Return ONLY valid JSON in this exact format:
-{
-  "recommendations": [
-    {"name":"Kanchipuram Bridal Silk","description":"Detailed description of why this suits them","matchScore":96,"fabric":"Kanchipuram Silk","estimatedBudget":"₹25,000–₹80,000"},
-    {"name":"Second option name","description":"...","matchScore":88,"fabric":"...","estimatedBudget":"..."}
-  ],
-  "design": {
-    "primaryColor":"#8B0000",
-    "secondaryColor":"#F5F5DC",
-    "accentColor":"#C9A843",
-    "bodyPattern":"b6",
-    "borderPattern":"br3",
-    "palluPattern":"p3",
-    "sareeStyle":"Kanchipuram Silk",
-    "fabric":"Kanchipuram Silk",
-    "occasion":"Wedding",
-    "keyFeatures":["Heavy zari border","Peacock pallu","Rich body motifs"],
-    "stylingTip":"Pair with a contrast blouse in emerald green for a stunning combination.",
-    "explanation":"Detailed explanation of design choices made."
-  }
-}
-
-Pattern IDs available:
-- Body: b1(Plain), b2(Stripes), b3(Checks), b4(Floral Butta), b5(Ikat Diamond), b6(Temple Motifs), b7(Peacock Grid), b8(Zari Dots), b9(Bandhani), b10(Leheriya Wave), b11(Mughal Arch), b12(Geometric), b13(Lotus), b14(Warli), b15(Kashmiri), b16(Pinstripe), b17(Meenakari)
-- Border: br1(Single Kasavu), br2(Double Kasavu), br3(Temple), br4(Mango), br5(Peacock), br6(Broad Zari), br7(Thin Gold), br8(Floral Chain), br9(Geometric Steps), br10(Wave), br11(Diamond Chain), br12(Lotus Row)
-- Pallu: p1(Rich Zari), p2(Contrast), p3(Peacock), p4(Floral), p5(Minimal), p6(Temple Arch), p7(Mughal Garden), p8(Butta Scatter), p9(Stripe), p10(Embroidered Vines), p11(Kashmiri), p12(Geometric)
-
-Match patterns intelligently to the customer's preferences. Use hex color codes that match their stated color preference precisely.`,
-          messages: [{
-            role: 'user',
-            content: userPrompt
-          }]
-        })
-      })
-      const data = await res.json()
-      const text = data.content?.[0]?.text || ''
-      const clean = text.replace(/```json|```/g, '').trim()
-      const parsed = JSON.parse(clean)
-      onComplete(parsed, finalAnswers)
-    } catch(e) {
-      console.error('AI generation error:', e)
+    speak('Perfect! Designing your saree now.')
+    // Small delay so loading screen renders, then compute synchronously
+    setTimeout(() => {
+      const primaryDesign = buildDesignFromAnswers(finalAnswers)
+      const recommendations = generateRecommendations(finalAnswers)
+      const occ = finalAnswers.occasionAndWearer || ''
+      const fab = finalAnswers.fabricAndStyle    || ''
+      const col = finalAnswers.colorAndAccent    || ''
+      const explanation =
+        'A ' + (fab || 'silk') + ' saree in ' + (col || 'classic') + ' tones, ' +
+        'designed for ' + (occ || 'your occasion') + '. ' +
+        'The body pattern and pallu were selected to match your richness and border preferences.'
       onComplete({
-        recommendations: [{ name: 'Classic Silk Saree', description: 'A timeless design based on your preferences.', matchScore: 85, fabric: finalAnswers.fabric || 'Silk', estimatedBudget: '₹15,000–₹40,000' }],
-        design: { primaryColor: '#8B0000', secondaryColor: '#F5F5DC', accentColor: '#D4AF37', bodyPattern: 'b6', borderPattern: 'br3', palluPattern: 'p6', explanation: 'Classic silk saree design based on your preferences.' }
+        recommendations,
+        design: { ...primaryDesign, explanation, sareeStyle: fab }
       }, finalAnswers)
-    }
+    }, 400)
   }
 
   const startListening = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) { alert('Voice input not supported. Please tap an option.'); return }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SR) { alert('Voice not supported — please tap an option.'); return }
     window.speechSynthesis?.cancel()
-    const recognition = new SpeechRecognition()
-    recognition.continuous = false; recognition.interimResults = true; recognition.lang = 'en-IN'
-    recognitionRef.current = recognition
-    recognition.onstart = () => { setIsListening(true); setTranscript('') }
-    recognition.onresult = (e) => {
+    const rec = new SR()
+    rec.continuous = false; rec.interimResults = true; rec.lang = 'en-IN'
+    recognitionRef.current = rec
+    rec.onstart  = () => { setIsListening(true); setTranscript('') }
+    rec.onresult = (e) => {
       const t = Array.from(e.results).map(r => r[0].transcript).join('')
       setTranscript(t)
-      if (e.results[e.results.length-1].isFinal) {
-        const opts = q.options.map(o => o.value)
-        const match = opts.find(o => t.toLowerCase().includes(o.toLowerCase().split(' ')[0]))
-        if (match) { setIsListening(false); handleAnswer(match) }
+      if (e.results[e.results.length - 1].isFinal) {
+        const match = q.options.find(o =>
+          t.toLowerCase().includes(o.value.toLowerCase().split(' ')[0].toLowerCase())
+        )
+        if (match) { setIsListening(false); handleAnswer(match.value) }
       }
     }
-    recognition.onend = () => setIsListening(false)
-    recognition.onerror = () => setIsListening(false)
-    recognition.start()
+    rec.onend   = () => setIsListening(false)
+    rec.onerror = () => setIsListening(false)
+    rec.start()
   }
-
   const stopListening = () => { recognitionRef.current?.stop(); setIsListening(false) }
 
+  // ── Loading screen ──────────────────────────────────────────────────────────
   if (isGenerating) {
     return (
-      <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:60,gap:24,minHeight:400}}>
+      <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+        minHeight:400,padding:40,gap:24}}>
         <div style={{position:'relative',width:80,height:80}}>
-          <div style={{position:'absolute',inset:0,borderRadius:'50%',border:`3px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite'}} />
-          <div style={{position:'absolute',inset:8,borderRadius:'50%',border:`2px solid rgba(106,27,154,0.2)`,borderBottomColor:'#6A1B9A',animation:'spin 1.5s linear infinite reverse'}} />
-          <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>🧵</div>
+          <div style={{position:'absolute',inset:0,borderRadius:'50%',
+            border:'3px solid '+T.goldLight,borderTopColor:T.gold,animation:'spin 1s linear infinite'}} />
+          <div style={{position:'absolute',inset:8,borderRadius:'50%',
+            border:'2px solid rgba(106,27,154,0.15)',borderBottomColor:'#6A1B9A',
+            animation:'spin 1.4s linear infinite reverse'}} />
+          <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',
+            justifyContent:'center',fontSize:28}}>🧵</div>
         </div>
         <div style={{textAlign:'center'}}>
-          <div style={{fontFamily:'Cormorant Garamond',fontSize:24,color:T.text,fontStyle:'italic',marginBottom:8}}>
-            Crafting your perfect saree...
+          <div style={{fontFamily:'Cormorant Garamond',fontSize:24,color:T.text,
+            fontStyle:'italic',marginBottom:6}}>Crafting your saree...</div>
+          <div style={{fontSize:11,letterSpacing:1.5,textTransform:'uppercase',color:T.textLight}}>
+            Mapping your preferences to design elements
           </div>
-          <div className="label-xs" style={{color:T.textLight}}>AI is analysing your preferences</div>
         </div>
-        {/* Show answers summary while loading */}
-        <div style={{background:T.surfaceAlt,border:`1px solid ${T.border}`,borderRadius:4,padding:16,maxWidth:320,width:'100%'}}>
-          <p className="label-xs" style={{marginBottom:10}}>Your selections</p>
-          {Object.entries(answers).map(([k,v]) => (
-            <div key={k} style={{display:'flex',justifyContent:'space-between',fontSize:11,color:T.textMid,padding:'3px 0',borderBottom:`1px solid ${T.borderLight}`}}>
-              <span style={{color:T.textLight}}>{QUESTION_BANK[k]?.section}</span>
-              <span style={{fontWeight:500}}>{v}</span>
-            </div>
-          ))}
+        <div style={{background:T.surfaceAlt,border:'1px solid '+T.border,borderRadius:4,
+          padding:16,width:'100%',maxWidth:320}}>
+          <p style={{fontSize:9,letterSpacing:2,textTransform:'uppercase',color:T.textLight,marginBottom:10}}>
+            Your answers
+          </p>
+          {Object.entries(answers).map(([k,v]) => {
+            const qObj = QUESTIONS.find(x => x.id === k)
+            return (
+              <div key={k} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',
+                padding:'5px 0',borderBottom:'1px solid '+T.borderLight,gap:8}}>
+                <span style={{fontSize:10,color:T.textLight,whiteSpace:'nowrap'}}>
+                  {qObj ? qObj.section : k}
+                </span>
+                <span style={{fontSize:10,fontWeight:500,color:T.text,textAlign:'right'}}>{v}</span>
+              </div>
+            )
+          })}
         </div>
       </div>
     )
@@ -1150,130 +1144,135 @@ Match patterns intelligently to the customer's preferences. Use hex color codes 
 
   if (!q) return null
 
-  const progress = ((currentIdx) / Math.max(estimatedTotal, 1)) * 100
-  const sectionColor = {
-    'Occasion': '#6A1B9A', 'Fabric': '#1565C0', 'Body Design': '#2E7D32',
-    'Border': '#E65100', 'Pallu': '#AD1457', 'Colour': '#D4AF37'
+  const SECTION_COLORS = {
+    'Occasion':'#6A1B9A', 'Fabric & Heritage':'#1565C0',
+    'Body & Richness':'#2E7D32', 'Border & Pallu':'#E65100', 'Colour':'#B8860B'
   }
-  const currentSectionColor = sectionColor[q.section] || T.gold
+  const sColor = SECTION_COLORS[q.section] || T.goldDark
 
   return (
     <div style={{maxWidth:520,margin:'0 auto',padding:'0 16px 40px'}}>
 
-      {/* Section indicator */}
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <div style={{width:8,height:8,borderRadius:'50%',background:currentSectionColor}} />
-          <span style={{fontSize:10,letterSpacing:2,textTransform:'uppercase',color:currentSectionColor,fontWeight:600}}>{q.section}</span>
+      {/* Header row */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+        <div style={{display:'flex',alignItems:'center',gap:6}}>
+          <div style={{width:7,height:7,borderRadius:'50%',background:sColor}} />
+          <span style={{fontSize:10,letterSpacing:2,textTransform:'uppercase',
+            color:sColor,fontWeight:600}}>{q.section}</span>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <span className="label-xs">Q{currentIdx+1} of ~{estimatedTotal}</span>
-          <button onClick={onBack} className="btn-ghost" style={{padding:'4px 10px',fontSize:10}}>← Back</button>
+          <span style={{fontSize:10,letterSpacing:1.5,textTransform:'uppercase',
+            color:T.textLight}}>{currentIdx + 1} / {totalQ}</span>
+          <button onClick={onBack} className="btn-ghost"
+            style={{padding:'4px 10px',fontSize:10}}>✕</button>
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div style={{marginBottom:28}}>
-        <div style={{height:3,background:T.border,borderRadius:2,overflow:'hidden'}}>
-          <div style={{height:'100%',width:`${progress}%`,background:`linear-gradient(90deg,#6A1B9A,${T.gold})`,borderRadius:2,transition:'width 0.5s ease'}} />
-        </div>
-        {/* Section dots */}
-        <div style={{display:'flex',gap:4,marginTop:8,justifyContent:'space-between'}}>
-          {['Occasion','Fabric','Body Design','Border','Pallu','Colour'].map(s => (
-            <div key={s} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
-              <div style={{width:8,height:8,borderRadius:'50%',background:q.section===s?sectionColor[s]:T.border,transition:'background 0.3s',border:`1px solid ${q.section===s?sectionColor[s]:T.border}`}} />
-              <span style={{fontSize:7,color:q.section===s?sectionColor[s]:T.textLight,letterSpacing:0.5,fontWeight:q.section===s?600:300}}>{s}</span>
-            </div>
-          ))}
-        </div>
+      {/* Step dots */}
+      <div style={{display:'flex',gap:5,marginBottom:24}}>
+        {QUESTIONS.map((_,i) => (
+          <div key={i} style={{
+            flex:1, height:4, borderRadius:2, transition:'background 0.3s',
+            background: i < currentIdx ? T.gold : i === currentIdx ? '#6A1B9A' : T.border
+          }} />
+        ))}
       </div>
 
-      {/* AI Avatar */}
-      <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:24}}>
+      {/* Avatar */}
+      <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:20}}>
         <div style={{
-          width:64,height:64,borderRadius:'50%',
-          background:`linear-gradient(135deg,#6A1B9A,${T.gold})`,
+          width:60,height:60,borderRadius:'50%',
+          background:'linear-gradient(135deg,#6A1B9A,'+T.gold+')',
           display:'flex',alignItems:'center',justifyContent:'center',
-          boxShadow:`0 0 0 ${isSpeaking?'14px':'6px'} rgba(106,27,154,0.12)`,
-          transition:'box-shadow 0.3s ease',marginBottom:10,
-          animation:isSpeaking?'pulse 1.5s ease infinite':'none'
-        }}>
-          <span style={{fontSize:q.icon?24:28}}>{q.icon || '🧵'}</span>
-        </div>
+          boxShadow:'0 0 0 '+(isSpeaking?'14px':'6px')+' rgba(106,27,154,0.1)',
+          transition:'box-shadow 0.3s',
+          animation:isSpeaking?'pulse 1.5s ease infinite':'none',fontSize:22
+        }}>{q.icon}</div>
         {isSpeaking && (
-          <div style={{display:'flex',gap:3,alignItems:'flex-end',height:18}}>
-            {[0,1,2,3,4].map(i => (
-              <div key={i} style={{width:3,background:T.gold,borderRadius:2,animation:`waveform 0.8s ease ${i*0.15}s infinite`}} />
+          <div style={{display:'flex',gap:3,alignItems:'flex-end',height:14,marginTop:8}}>
+            {[0,1,2,3,4].map(i=>(
+              <div key={i} style={{width:3,borderRadius:2,background:T.gold,
+                animation:'waveform 0.8s ease '+(i*0.14)+'s infinite'}} />
             ))}
           </div>
         )}
       </div>
 
       {/* Question text */}
-      <div style={{textAlign:'center',marginBottom:8,animation:animIn?'fadeIn 0.35s ease':'none'}}>
-        <h2 style={{fontFamily:'Cormorant Garamond',fontSize:24,fontWeight:400,color:T.text,lineHeight:1.3,marginBottom:6}}>
-          {q.text}
-        </h2>
+      <div style={{textAlign:'center',marginBottom:18,
+        animation:animIn?'fadeIn 0.3s ease':'none'}}>
+        <h2 style={{fontFamily:'Cormorant Garamond',fontSize:22,fontWeight:400,
+          color:T.text,lineHeight:1.35,marginBottom:5}}>{q.text}</h2>
         {q.subtext && (
-          <p style={{fontSize:11,color:T.textLight,lineHeight:1.6,fontStyle:'italic'}}>{q.subtext}</p>
+          <p style={{fontSize:11,color:T.textLight,fontStyle:'italic',lineHeight:1.6}}>
+            {q.subtext}
+          </p>
         )}
       </div>
 
-      <div className="divider" style={{margin:'16px 0'}} />
-
-      {/* Options - detailed cards */}
-      <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:28}}>
+      {/* Options */}
+      <div style={{display:'flex',flexDirection:'column',gap:7,marginBottom:24}}>
         {q.options.map(opt => (
-          <button key={opt.value} onClick={() => handleAnswer(opt.value)} style={{
-            display:'flex',alignItems:'center',gap:14,
-            padding:'12px 16px',borderRadius:4,
-            border:`1.5px solid ${T.border}`,
-            background:T.surface,
-            cursor:'pointer',textAlign:'left',
-            transition:'all 0.2s ease',
-            width:'100%'
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor='#6A1B9A'; e.currentTarget.style.background='rgba(106,27,154,0.04)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor=T.border; e.currentTarget.style.background=T.surface }}>
-            <div style={{
-              width:32,height:32,borderRadius:'50%',flexShrink:0,
-              background:`linear-gradient(135deg,rgba(106,27,154,0.1),rgba(212,175,55,0.1))`,
-              border:`1px solid ${T.border}`,
-              display:'flex',alignItems:'center',justifyContent:'center',
-              fontSize:12,color:'#6A1B9A',fontWeight:600
+          <button key={opt.value} onClick={() => handleAnswer(opt.value)}
+            style={{display:'flex',alignItems:'center',gap:12,padding:'11px 14px',
+              borderRadius:4,border:'1.5px solid '+T.border,background:T.surface,
+              cursor:'pointer',textAlign:'left',width:'100%',fontFamily:'Jost',
+              transition:'all 0.18s ease'}}
+            onMouseEnter={e=>{
+              e.currentTarget.style.borderColor='#6A1B9A'
+              e.currentTarget.style.background='rgba(106,27,154,0.04)'
+            }}
+            onMouseLeave={e=>{
+              e.currentTarget.style.borderColor=T.border
+              e.currentTarget.style.background=T.surface
             }}>
-              {opt.value.charAt(0)}
+            <div style={{
+              width:30,height:30,borderRadius:'50%',flexShrink:0,
+              background:'linear-gradient(135deg,rgba(106,27,154,0.08),rgba(212,175,55,0.08))',
+              border:'1px solid '+T.border,display:'flex',alignItems:'center',
+              justifyContent:'center',fontSize:11,color:'#6A1B9A',fontWeight:700
+            }}>{opt.value.charAt(0)}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:12,fontWeight:500,color:T.text,marginBottom:1}}>
+                {opt.value}
+              </div>
+              {opt.desc && (
+                <div style={{fontSize:10,color:T.textLight,lineHeight:1.4}}>
+                  {opt.desc}
+                </div>
+              )}
             </div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:13,fontWeight:500,color:T.text,marginBottom:2}}>{opt.value}</div>
-              {opt.desc && <div style={{fontSize:11,color:T.textLight}}>{opt.desc}</div>}
-            </div>
-            <div style={{color:T.border,fontSize:16,flexShrink:0}}>›</div>
+            <span style={{color:T.border,fontSize:14,flexShrink:0}}>›</span>
           </button>
         ))}
       </div>
 
       {/* Voice button */}
-      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
+      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
         <button
           onMouseDown={startListening} onTouchStart={startListening}
-          onMouseUp={stopListening} onTouchEnd={stopListening}
+          onMouseUp={stopListening}   onTouchEnd={stopListening}
           style={{
-            width:64,height:64,borderRadius:'50%',
-            background:isListening?'linear-gradient(135deg,#C53030,#E53E3E)':`linear-gradient(135deg,#6A1B9A,${T.gold})`,
-            border:'none',color:'white',fontSize:24,cursor:'pointer',
-            boxShadow:isListening?'0 0 0 12px rgba(197,48,48,0.2)':'0 4px 20px rgba(106,27,154,0.3)',
-            transition:'all 0.3s ease',
+            width:56,height:56,borderRadius:'50%',border:'none',
+            background: isListening
+              ? 'linear-gradient(135deg,#C53030,#E53E3E)'
+              : 'linear-gradient(135deg,#6A1B9A,'+T.gold+')',
+            color:'white',fontSize:20,cursor:'pointer',
+            boxShadow: isListening
+              ? '0 0 0 10px rgba(197,48,48,0.18)'
+              : '0 4px 18px rgba(106,27,154,0.28)',
+            transition:'all 0.3s',
             animation:isListening?'pulse 1s ease infinite':'none',
             display:'flex',alignItems:'center',justifyContent:'center'
-          }}>
-          🎤
-        </button>
-        <span className="label-xs" style={{color:isListening?'#C53030':T.textLight}}>
+          }}>🎤</button>
+        <span style={{fontSize:10,letterSpacing:1.5,textTransform:'uppercase',
+          color:isListening?'#C53030':T.textLight}}>
           {isListening ? 'Listening...' : 'Hold to speak'}
         </span>
         {transcript && (
-          <div style={{background:T.surfaceAlt,border:`1px solid ${T.border}`,borderRadius:4,padding:'8px 16px',fontSize:12,color:T.textMid,maxWidth:300,textAlign:'center'}}>
+          <div style={{background:T.surfaceAlt,border:'1px solid '+T.border,
+            borderRadius:3,padding:'6px 14px',fontSize:11,color:T.textMid,
+            maxWidth:280,textAlign:'center',fontStyle:'italic'}}>
             "{transcript}"
           </div>
         )}
@@ -1281,6 +1280,7 @@ Match patterns intelligently to the customer's preferences. Use hex color codes 
     </div>
   )
 }
+
 
 function ImageUploadPage({ onBack, onDesignReady, notify }) {
   const [preview, setPreview] = useState(null)
@@ -1961,6 +1961,7 @@ function AIModePage({ onBack, onDesignReady, notify }) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [results, setResults] = useState(null)
   const [questionnaireAnswers, setQuestionnaireAnswers] = useState(null)
+  const [activeRec, setActiveRec] = useState(0)
 
   const generateFromPrompt = async () => {
     if (!prompt.trim()) return
@@ -1987,6 +1988,7 @@ function AIModePage({ onBack, onDesignReady, notify }) {
   const handleQuestionnaireComplete = (result, answers) => {
     setQuestionnaireAnswers(answers)
     setResults(result)
+    setActiveRec(0)
     setMode('results')
   }
 
@@ -1999,55 +2001,144 @@ function AIModePage({ onBack, onDesignReady, notify }) {
   }
 
   if (mode === 'results' && results) {
+    const recs = results.recommendations || []
+    const shownDesign = recs[activeRec]?.design || results.design
+
     return (
-      <div style={{maxWidth:560,margin:'0 auto',padding:'32px 20px'}}>
-        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:32}}>
-          <button onClick={()=>setMode('choose')} className="btn-ghost" style={{padding:'6px 14px',fontSize:11}}>← Back</button>
-          <h2 style={{fontFamily:'Cormorant Garamond',fontSize:26,fontWeight:400,color:T.text}}>Your Design</h2>
+      <div style={{maxWidth:600,margin:'0 auto',padding:'28px 16px 48px'}}>
+
+        {/* Header */}
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:24}}>
+          <button onClick={()=>setMode('choose')} className="btn-ghost"
+            style={{padding:'6px 12px',fontSize:10}}>← Back</button>
+          <div>
+            <h2 style={{fontFamily:'Cormorant Garamond',fontSize:24,fontWeight:400,
+              color:T.text,lineHeight:1}}>Your Design</h2>
+            <p style={{fontSize:10,color:T.textLight,letterSpacing:1.5,
+              textTransform:'uppercase',marginTop:2}}>
+              {recs.length > 0 ? recs.length + ' styles generated for you' : 'AI Generated'}
+            </p>
+          </div>
         </div>
 
-        {/* Preview */}
-        <div style={{display:'flex',justifyContent:'center',marginBottom:28}}>
-          <SareeCanvas design={results.design || {primaryColor:'#8B0000',secondaryColor:'#F5F5DC',accentColor:'#C9A843',bodyPattern:'b6',borderPattern:'br3',palluPattern:'p6'}} scale={0.9} />
+        {/* Live canvas preview — updates with selected rec */}
+        <div style={{display:'flex',justifyContent:'center',marginBottom:20,
+          background:'radial-gradient(ellipse at center,'+T.surfaceAlt+','+T.bg+')',
+          borderRadius:6,padding:'24px 16px',border:'1px solid '+T.border}}>
+          <SareeCanvas design={shownDesign || results.design} scale={0.88} />
         </div>
 
         {/* Explanation */}
-        {results.design?.explanation && (
-          <div style={{background:T.surfaceAlt,border:`1px solid ${T.border}`,borderRadius:4,padding:16,marginBottom:20}}>
-            <p className="label-xs" style={{marginBottom:6}}>AI Design Notes</p>
-            <p style={{fontSize:13,color:T.textMid,lineHeight:1.7,fontStyle:'italic',fontFamily:'Cormorant Garamond'}}>{results.design.explanation}</p>
+        {(recs[activeRec]?.description || results.design?.explanation) && (
+          <div style={{background:T.surfaceAlt,border:'1px solid '+T.border,
+            borderRadius:4,padding:'12px 16px',marginBottom:20}}>
+            <p style={{fontSize:9,letterSpacing:2,textTransform:'uppercase',
+              color:T.textLight,marginBottom:5}}>Design Notes</p>
+            <p style={{fontSize:13,color:T.textMid,lineHeight:1.7,fontStyle:'italic',
+              fontFamily:'Cormorant Garamond'}}>
+              {recs[activeRec]?.description || results.design?.explanation}
+            </p>
           </div>
         )}
 
-        {/* Recommendations */}
-        {results.recommendations?.length > 0 && (
+        {/* Recommendations with clickable preview */}
+        {recs.length > 0 && (
           <div style={{marginBottom:24}}>
-            <p className="label-xs" style={{marginBottom:12}}>Recommended Styles</p>
-            <div style={{display:'flex',flexDirection:'column',gap:10}}>
-              {results.recommendations.map((r,i) => (
-                <div key={i} className="card" style={{padding:'14px 16px',display:'flex',alignItems:'center',gap:12}}>
-                  <div style={{
-                    width:40,height:40,borderRadius:'50%',flexShrink:0,
-                    background:`linear-gradient(135deg,${T.goldDark},${T.gold})`,
-                    display:'flex',alignItems:'center',justifyContent:'center',
-                    color:'white',fontSize:12,fontWeight:600
-                  }}>{r.matchScore || 90}%</div>
-                  <div>
-                    <div style={{fontFamily:'Cormorant Garamond',fontSize:16,color:T.text,marginBottom:2}}>{r.name}</div>
-                    <div style={{fontSize:11,color:T.textLight,lineHeight:1.4}}>{r.description}</div>
-                  </div>
-                </div>
-              ))}
+            <p style={{fontSize:9,letterSpacing:2,textTransform:'uppercase',
+              color:T.textLight,marginBottom:12}}>Recommended Styles — tap to preview</p>
+
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {recs.map((r,i) => {
+                const isActive = i === activeRec
+                const score = r.score || r.matchScore || 0
+                // colour based on score
+                const scoreColor = score >= 90 ? '#2E7D32' : score >= 80 ? '#E65100' : '#6A1B9A'
+                return (
+                  <button key={i} onClick={() => setActiveRec(i)}
+                    style={{
+                      display:'flex',alignItems:'center',gap:14,
+                      padding:'14px 16px',borderRadius:5,width:'100%',textAlign:'left',
+                      border: isActive ? '2px solid #6A1B9A' : '1.5px solid '+T.border,
+                      background: isActive ? 'rgba(106,27,154,0.04)' : T.surface,
+                      cursor:'pointer',fontFamily:'Jost',transition:'all 0.2s',
+                      boxShadow: isActive ? '0 2px 12px rgba(106,27,154,0.12)' : 'none'
+                    }}>
+
+                    {/* Score circle */}
+                    <div style={{
+                      width:48,height:48,borderRadius:'50%',flexShrink:0,
+                      background: isActive
+                        ? 'linear-gradient(135deg,#6A1B9A,'+T.gold+')'
+                        : 'linear-gradient(135deg,'+T.surfaceAlt+','+T.border+')',
+                      display:'flex',flexDirection:'column',alignItems:'center',
+                      justifyContent:'center',transition:'background 0.2s'
+                    }}>
+                      <span style={{fontSize:14,fontWeight:700,
+                        color: isActive ? 'white' : scoreColor,lineHeight:1}}>
+                        {score}
+                      </span>
+                      <span style={{fontSize:8,color: isActive ? 'rgba(255,255,255,0.8)' : T.textLight,
+                        lineHeight:1,letterSpacing:0.5}}>%</span>
+                    </div>
+
+                    {/* Details */}
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
+                        <span style={{fontFamily:'Cormorant Garamond',fontSize:16,
+                          color:T.text,fontWeight: isActive ? 600 : 400}}>{r.name}</span>
+                        {isActive && (
+                          <span style={{fontSize:8,letterSpacing:1.5,textTransform:'uppercase',
+                            color:'#6A1B9A',background:'rgba(106,27,154,0.08)',
+                            padding:'2px 6px',borderRadius:2}}>Previewing</span>
+                        )}
+                      </div>
+                      {/* Mini colour swatches from design */}
+                      {r.design && (
+                        <div style={{display:'flex',gap:4,marginBottom:4}}>
+                          {[r.design.primaryColor,r.design.secondaryColor,r.design.accentColor].map((c,ci)=>(
+                            <div key={ci} style={{width:12,height:12,borderRadius:'50%',
+                              background:c,border:'1px solid '+T.border}} />
+                          ))}
+                          <span style={{fontSize:9,color:T.textLight,marginLeft:2,
+                            alignSelf:'center'}}>
+                            {r.design.bodyPattern} · {r.design.borderPattern} · {r.design.palluPattern}
+                          </span>
+                        </div>
+                      )}
+                      {/* Score bar */}
+                      <div style={{height:3,background:T.border,borderRadius:2,overflow:'hidden'}}>
+                        <div style={{
+                          height:'100%',borderRadius:2,transition:'width 0.5s ease',
+                          width: score+'%',
+                          background:'linear-gradient(90deg,'+scoreColor+','+T.gold+')'
+                        }} />
+                      </div>
+                    </div>
+
+                    {/* Budget chip */}
+                    <div style={{flexShrink:0,textAlign:'right'}}>
+                      <div style={{fontSize:9,color:T.textLight,lineHeight:1.4}}>
+                        {r.budget || r.estimatedBudget || ''}
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
 
-        <button className="btn-primary" style={{width:'100%',padding:16,fontSize:13}} onClick={() => onDesignReady(results.design)}>
+        {/* CTA */}
+        <button className="btn-primary"
+          style={{width:'100%',padding:'14px 0',fontSize:13}}
+          onClick={() => onDesignReady(shownDesign || results.design)}>
           Open in Designer →
         </button>
+
       </div>
     )
   }
+
 
   // Choose mode
   return (
