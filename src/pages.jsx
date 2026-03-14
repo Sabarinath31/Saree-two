@@ -15,26 +15,65 @@ function AIModePage({ onBack, onDesignReady, notify }) {
   const [questionnaireAnswers, setQuestionnaireAnswers] = useState(null)
   const [activeRec, setActiveRec] = useState(0)
 
+  // Fallback: derive a design from keywords in the prompt text
+  const promptFallback = (text) => {
+    const t = text.toLowerCase()
+    const primaryColor   = t.includes('blue') ? '#191970' : t.includes('green') ? '#006400' : t.includes('white') || t.includes('cream') ? '#F5F5DC' : t.includes('pink') ? '#C2185B' : t.includes('black') ? '#1A1A1A' : t.includes('yellow') || t.includes('mustard') ? '#B8860B' : '#8B0000'
+    const secondaryColor = primaryColor === '#F5F5DC' ? '#C9A843' : '#F5F5DC'
+    const accentColor    = '#C9A843'
+    const bodyPattern    = t.includes('peacock') ? 'b7' : t.includes('mughal') || t.includes('banarasi') ? 'b11' : t.includes('temple') || t.includes('kanchipuram') ? 'b6' : t.includes('floral') ? 'b4' : t.includes('checks') || t.includes('cotton') ? 'b3' : t.includes('plain') || t.includes('linen') ? 'b1' : 'b4'
+    const borderPattern  = t.includes('bridal') || t.includes('wedding') ? 'br6' : t.includes('temple') ? 'br3' : t.includes('minimal') || t.includes('office') ? 'br7' : 'br3'
+    const palluPattern   = t.includes('bridal') || t.includes('wedding') ? 'p1' : t.includes('peacock') ? 'p3' : t.includes('minimal') ? 'p5' : 'p4'
+    return { primaryColor, secondaryColor, accentColor, bodyPattern, borderPattern, palluPattern, explanation: 'Design generated from your description.' }
+  }
+
   const generateFromPrompt = async () => {
     if (!prompt.trim()) return
     setIsGenerating(true)
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
-        body: JSON.stringify({
-          model: CLAUDE_MODEL, max_tokens: 800,
-          system: `Saree design expert. Return ONLY valid JSON: {"recommendations":[{"name":"...","description":"...","matchScore":90}],"design":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","explanation":"..."}}. Pattern IDs: body b1-b17, border br1-br12, pallu p1-p12.`,
-          messages: [{ role:'user', content: `Design a saree based on: ${prompt}` }]
+      // Try AI first
+      if (ANTHROPIC_KEY) {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
+          body: JSON.stringify({
+            model: CLAUDE_MODEL, max_tokens: 800,
+            system: `Saree design expert. Return ONLY valid JSON with no markdown: {"recommendations":[{"name":"...","description":"...","matchScore":90,"design":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b6","borderPattern":"br3","palluPattern":"p6"}}],"design":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","explanation":"..."}}. Pattern IDs: body b1-b17, border br1-br12, pallu p1-p12.`,
+            messages: [{ role:'user', content: `Design a saree based on: ${prompt}` }]
+          })
         })
-      })
-      const data = await res.json()
-      const text = data.content?.[0]?.text || '{}'
-      const parsed = JSON.parse(text.replace(/```json|```/g,'').trim())
-      setResults(parsed)
-      setMode('results')
-    } catch { notify('Generation failed. Try again.','error') }
+        const data = await res.json()
+        if (data.error) throw new Error(data.error.message || 'API error')
+        const text   = data.content?.[0]?.text || ''
+        const clean  = text.replace(/```json|```/g,'').trim()
+        const parsed = JSON.parse(clean)
+        // Ensure each recommendation has a design object
+        if (parsed.recommendations) {
+          parsed.recommendations = parsed.recommendations.map(r => ({
+            ...r,
+            design: r.design || parsed.design || promptFallback(prompt)
+          }))
+        }
+        setResults(parsed)
+        setIsGenerating(false)
+        setMode('results')
+        return
+      }
+    } catch (e) {
+      console.warn('AI generation failed, using fallback:', e.message)
+    }
+    // Fallback: keyword-based design (no API needed)
+    const fallbackDesign = promptFallback(prompt)
+    setResults({
+      design: fallbackDesign,
+      recommendations: [
+        { name: 'Your Design',         score: 90, budget: '₹10K–₹40K', description: 'Generated from your description.',           design: fallbackDesign },
+        { name: 'Classic Alternative', score: 80, budget: '₹15K–₹50K', description: 'A heritage variant of your chosen style.',  design: { ...fallbackDesign, bodyPattern:'b6', borderPattern:'br3', palluPattern:'p6' } },
+        { name: 'Modern Variant',      score: 72, budget: '₹8K–₹25K',  description: 'A lighter, contemporary interpretation.',   design: { ...fallbackDesign, bodyPattern:'b2', borderPattern:'br7', palluPattern:'p5' } },
+      ]
+    })
     setIsGenerating(false)
+    setMode('results')
   }
 
   const handleQuestionnaireComplete = (result, answers) => {
