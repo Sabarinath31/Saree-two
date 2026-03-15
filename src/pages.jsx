@@ -314,14 +314,15 @@ function AIModePage({ onBack, onDesignReady, notify }) {
   )
 }
 
-// ─── MY DESIGNS ───────────────────────────────────────────────────────────────
+// ─── MY DESIGNS — CATALOGUE VIEW ─────────────────────────────────────────────
 function MyDesignsPage({ user, token, onBack, onOpenDesign, notify }) {
-  const [designs, setDesigns] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [designs,    setDesigns]    = useState([])
+  const [loading,    setLoading]    = useState(true)
+  const [search,     setSearch]     = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [selected,   setSelected]   = useState(null)   // detail modal
 
-  useEffect(() => {
-    loadDesigns()
-  }, [])
+  useEffect(() => { loadDesigns() }, [])
 
   const loadDesigns = async () => {
     setLoading(true)
@@ -336,60 +337,284 @@ function MyDesignsPage({ user, token, onBack, onOpenDesign, notify }) {
     try {
       await sb.delete('saved_designs', `id=eq.${id}`, token)
       setDesigns(d => d.filter(x => x.id !== id))
-      notify('Design deleted','info')
-    } catch { notify('Could not delete','error') }
+      if (selected?.id === id) setSelected(null)
+      notify('Design removed from catalogue', 'info')
+    } catch { notify('Could not delete', 'error') }
   }
 
-  const statusLabel = (s) => {
-    const map = { draft:'Draft', submitted:'Submitted', review:'Under Review', approved:'Approved', production:'Production Ready' }
-    return map[s] || s || 'Draft'
+  const STATUS_MAP = {
+    draft:      { label:'Draft',           cls:'status-draft'      },
+    submitted:  { label:'Submitted',       cls:'status-submitted'  },
+    review:     { label:'Under Review',    cls:'status-review'     },
+    approved:   { label:'Approved',        cls:'status-approved'   },
+    production: { label:'Production Ready',cls:'status-production' },
   }
 
+  const PATTERN_NAMES = {
+    b1:'Plain', b2:'Stripes', b3:'Checks', b4:'Floral Butta', b5:'Ikat Diamond',
+    b6:'Temple Motifs', b7:'Peacock Grid', b8:'Zari Dots', b9:'Bandhani',
+    b10:'Leheriya', b11:'Mughal Arch', b12:'Geometric', b13:'Lotus',
+    b14:'Warli', b15:'Kashmiri', b16:'Pinstripe', b17:'Meenakari',
+    br1:'Single Kasavu', br2:'Double Kasavu', br3:'Temple', br4:'Mango',
+    br5:'Peacock', br6:'Broad Zari', br7:'Thin Gold', br8:'Floral Chain',
+    br9:'Geo Steps', br10:'Wave', br11:'Diamond', br12:'Lotus Row',
+    p1:'Rich Zari', p2:'Contrast', p3:'Peacock', p4:'Floral', p5:'Minimal',
+    p6:'Temple Arch', p7:'Mughal Garden', p8:'Butta Scatter', p9:'Stripe',
+    p10:'Vines', p11:'Kashmiri', p12:'Geometric',
+  }
+
+  // Filter + search
+  const filtered = designs.filter(d => {
+    const matchSearch = !search || d.name?.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = filterStatus === 'all' || (d.status || 'draft') === filterStatus
+    return matchSearch && matchStatus
+  })
+
+  const statusCounts = designs.reduce((acc, d) => {
+    const s = d.status || 'draft'
+    acc[s] = (acc[s] || 0) + 1
+    return acc
+  }, {})
+
+  // ── Detail Modal ──────────────────────────────────────────────────────────────
+  const DetailModal = ({ d }) => {
+    const dd = d.design_data || {}
+    const st = STATUS_MAP[d.status] || STATUS_MAP.draft
+    return (
+      <div style={{
+        position:'fixed',inset:0,zIndex:200,
+        background:'rgba(14,12,9,0.92)',
+        display:'flex',alignItems:'center',justifyContent:'center',
+        padding:20,backdropFilter:'blur(4px)',
+      }} onClick={()=>setSelected(null)}>
+        <div style={{
+          background:T.surface,border:`1px solid ${T.border}`,borderRadius:6,
+          width:'100%',maxWidth:480,maxHeight:'92vh',overflowY:'auto',
+          animation:'slideUp 0.25s ease',
+        }} onClick={e=>e.stopPropagation()}>
+
+          {/* Canvas preview */}
+          <div style={{
+            background:`radial-gradient(ellipse at center,${T.surfaceAlt},${T.bg})`,
+            display:'flex',justifyContent:'center',padding:'28px 0 20px',
+            borderBottom:`1px solid ${T.border}`,position:'relative',
+          }}>
+            <SareeCanvas design={dd} scale={0.95} />
+            <button onClick={()=>setSelected(null)} style={{
+              position:'absolute',top:12,right:12,background:'rgba(0,0,0,0.6)',
+              border:'none',color:T.textMid,borderRadius:'50%',
+              width:28,height:28,cursor:'pointer',fontSize:14,
+              display:'flex',alignItems:'center',justifyContent:'center',
+            }}>✕</button>
+          </div>
+
+          {/* Info */}
+          <div style={{padding:'20px 22px'}}>
+            <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14,gap:10}}>
+              <h3 style={{fontFamily:'Cormorant Garamond',fontSize:22,fontWeight:400,color:T.text,lineHeight:1.2}}>{d.name}</h3>
+              <span className={st.cls} style={{flexShrink:0,marginTop:3}}>{st.label}</span>
+            </div>
+
+            {/* Colour swatches */}
+            <div style={{display:'flex',gap:6,marginBottom:16}}>
+              {[
+                {label:'Body',   color:dd.primaryColor},
+                {label:'Accent', color:dd.secondaryColor},
+                {label:'Zari',   color:dd.accentColor},
+              ].map(c=>(
+                <div key={c.label} style={{flex:1,textAlign:'center'}}>
+                  <div style={{height:28,borderRadius:3,background:c.color||'#ccc',border:`1px solid ${T.border}`,marginBottom:4}} />
+                  <span style={{fontSize:9,color:T.textLight,letterSpacing:0.8,textTransform:'uppercase'}}>{c.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Pattern details */}
+            <div style={{background:T.surfaceAlt,borderRadius:4,padding:'12px 14px',marginBottom:16,border:`1px solid ${T.border}`}}>
+              <p style={{fontSize:9,letterSpacing:2,textTransform:'uppercase',color:T.textLight,marginBottom:10}}>Pattern Details</p>
+              {[
+                {label:'Body',   val: PATTERN_NAMES[dd.bodyPattern]   || dd.bodyPattern},
+                {label:'Border', val: PATTERN_NAMES[dd.borderPattern] || dd.borderPattern},
+                {label:'Pallu',  val: PATTERN_NAMES[dd.palluPattern]  || dd.palluPattern},
+              ].map(r=>(
+                <div key={r.label} style={{display:'flex',justifyContent:'space-between',padding:'5px 0',borderBottom:`1px solid ${T.borderLight}`}}>
+                  <span style={{fontSize:11,color:T.textLight}}>{r.label}</span>
+                  <span style={{fontSize:11,fontWeight:500,color:T.text}}>{r.val || '—'}</span>
+                </div>
+              ))}
+            </div>
+
+            <p style={{fontSize:10,color:T.textLight,marginBottom:18}}>
+              Added {d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : '—'}
+            </p>
+
+            {/* Actions */}
+            <div style={{display:'flex',gap:10}}>
+              <button className="btn-primary" style={{flex:1}} onClick={()=>{setSelected(null);onOpenDesign(dd)}}>
+                ✦ Edit Design
+              </button>
+              <button className="btn-ghost" style={{padding:'10px 14px',fontSize:11,color:T.error,borderColor:T.error+'55'}}
+                onClick={()=>deleteDesign(d.id)}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Catalogue card ────────────────────────────────────────────────────────────
+  const CatalogueCard = ({ d }) => {
+    const dd    = d.design_data || {}
+    const st    = STATUS_MAP[d.status] || STATUS_MAP.draft
+    const dateStr = d.created_at
+      ? new Date(d.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'})
+      : ''
+    return (
+      <div onClick={()=>setSelected(d)} style={{
+        background:T.surface,border:`1px solid ${T.border}`,borderRadius:5,
+        overflow:'hidden',cursor:'pointer',transition:'all 0.22s ease',
+        display:'flex',flexDirection:'column',
+      }}
+        onMouseEnter={e=>{e.currentTarget.style.borderColor=T.gold+'88';e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow=`0 8px 28px rgba(0,0,0,0.45)`}}
+        onMouseLeave={e=>{e.currentTarget.style.borderColor=T.border;e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='none'}}
+      >
+        {/* Saree canvas preview */}
+        <div style={{
+          background:`radial-gradient(ellipse at center,${T.surfaceAlt} 0%,${T.bg} 100%)`,
+          display:'flex',alignItems:'center',justifyContent:'center',
+          padding:'18px 8px 14px',
+          borderBottom:`1px solid ${T.border}`,
+          position:'relative',minHeight:200,
+        }}>
+          <SareeCanvas design={dd} scale={0.58} />
+          {/* Status badge overlay */}
+          <div style={{position:'absolute',top:8,left:8}}>
+            <span className={st.cls}>{st.label}</span>
+          </div>
+        </div>
+
+        {/* Card info */}
+        <div style={{padding:'12px 14px',flex:1,display:'flex',flexDirection:'column',gap:8}}>
+          <h4 style={{
+            fontFamily:'Cormorant Garamond',fontSize:16,fontWeight:400,
+            color:T.text,lineHeight:1.2,
+            whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',
+          }}>{d.name}</h4>
+
+          {/* Pattern chips */}
+          <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+            {[dd.bodyPattern, dd.borderPattern, dd.palluPattern].filter(Boolean).map((pid,i)=>(
+              <span key={i} style={{
+                fontSize:9,padding:'2px 7px',borderRadius:40,
+                background:T.surfaceAlt,border:`1px solid ${T.border}`,
+                color:T.textLight,letterSpacing:0.5,
+              }}>{PATTERN_NAMES[pid] || pid}</span>
+            ))}
+          </div>
+
+          {/* Colour swatches */}
+          <div style={{display:'flex',gap:3,marginTop:'auto'}}>
+            {[dd.primaryColor, dd.secondaryColor, dd.accentColor].filter(Boolean).map((c,i)=>(
+              <div key={i} style={{
+                flex:1,height:8,borderRadius:40,
+                background:c,border:`1px solid ${T.border}`,
+              }} />
+            ))}
+          </div>
+
+          {/* Footer row */}
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:4,borderTop:`1px solid ${T.borderLight}`}}>
+            <span style={{fontSize:9,color:T.textLight,letterSpacing:0.5}}>{dateStr}</span>
+            <span style={{fontSize:10,color:T.goldDark,letterSpacing:0.5}}>View →</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Page render ───────────────────────────────────────────────────────────────
   return (
-    <div style={{maxWidth:600,margin:'0 auto',padding:'32px 20px'}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:32}}>
+    <div style={{padding:'28px 20px 60px',maxWidth:1100,margin:'0 auto'}}>
+
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:24,flexWrap:'wrap',gap:12}}>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
           <button onClick={onBack} className="btn-ghost" style={{padding:'6px 14px',fontSize:11}}>← Back</button>
-          <h2 style={{fontFamily:'Cormorant Garamond',fontSize:26,fontWeight:400,color:T.text}}>My Designs</h2>
+          <div>
+            <h2 style={{fontFamily:'Cormorant Garamond',fontSize:26,fontWeight:400,color:T.text,lineHeight:1}}>
+              Saree Catalogue
+            </h2>
+            <p style={{fontSize:10,color:T.textLight,letterSpacing:1.5,textTransform:'uppercase',marginTop:3}}>
+              {designs.length} design{designs.length !== 1 ? 's' : ''} saved
+            </p>
+          </div>
         </div>
-        <span style={{fontSize:11,color:T.textLight}}>{designs.length} saved</span>
       </div>
 
-      {loading ? (
-        <div style={{textAlign:'center',padding:60}}>
-          <div style={{width:40,height:40,borderRadius:'50%',border:`2px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite',margin:'0 auto'}} />
-        </div>
-      ) : designs.length === 0 ? (
-        <div style={{textAlign:'center',padding:60}}>
-          <div style={{fontSize:48,marginBottom:16}}>👗</div>
-          <h3 style={{fontFamily:'Cormorant Garamond',fontSize:22,color:T.textMid,marginBottom:8}}>No designs yet</h3>
-          <p style={{fontSize:13,color:T.textLight}}>Start designing to see your creations here.</p>
-        </div>
-      ) : (
-        <div style={{display:'flex',flexDirection:'column',gap:14}}>
-          {designs.map(d => (
-            <div key={d.id} className="card" style={{padding:16,display:'flex',gap:14,alignItems:'center'}}>
-              {/* Color preview */}
-              <div style={{display:'flex',flexDirection:'column',gap:2,flexShrink:0}}>
-                {(d.thumbnail_colors||[d.design_data?.primaryColor,'#C9A843']).slice(0,3).map((c,i)=>(
-                  <div key={i} style={{width:28,height:28,borderRadius:2,background:c||'#ccc'}} />
-                ))}
-              </div>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontFamily:'Cormorant Garamond',fontSize:17,color:T.text,marginBottom:4,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{d.name}</div>
-                <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
-                  <span className={`status-${d.status||'draft'}`}>{statusLabel(d.status)}</span>
-                  <span style={{fontSize:10,color:T.textLight}}>{d.created_at ? new Date(d.created_at).toLocaleDateString() : ''}</span>
-                </div>
-              </div>
-              <div style={{display:'flex',gap:8,flexShrink:0}}>
-                <button className="btn-ghost" style={{padding:'5px 10px',fontSize:10}} onClick={()=>onOpenDesign(d.design_data)}>Edit</button>
-                <button onClick={()=>deleteDesign(d.id)} style={{background:'transparent',border:'none',color:T.textLight,cursor:'pointer',fontSize:14,padding:4}}>✕</button>
-              </div>
-            </div>
-          ))}
+      {/* Search + filter bar */}
+      {designs.length > 0 && (
+        <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap',alignItems:'center'}}>
+          <input
+            className="input-field"
+            style={{flex:1,minWidth:180,maxWidth:320,padding:'9px 14px',fontSize:12}}
+            placeholder="Search designs..."
+            value={search}
+            onChange={e=>setSearch(e.target.value)}
+          />
+          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            {['all','draft','submitted','review','approved','production'].map(s=>{
+              const count = s === 'all' ? designs.length : (statusCounts[s]||0)
+              if (s !== 'all' && count === 0) return null
+              return (
+                <button key={s} onClick={()=>setFilterStatus(s)}
+                  className={filterStatus===s ? 'chip active' : 'chip'}
+                  style={{fontSize:10,padding:'4px 12px'}}>
+                  {s === 'all' ? 'All' : STATUS_MAP[s]?.label || s}
+                  {count > 0 && <span style={{marginLeft:5,opacity:0.7}}>{count}</span>}
+                </button>
+              )
+            })}
+          </div>
         </div>
       )}
+
+      {/* Content */}
+      {loading ? (
+        <div style={{textAlign:'center',padding:80}}>
+          <div style={{width:44,height:44,borderRadius:'50%',border:`3px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite',margin:'0 auto 16px'}} />
+          <p style={{fontFamily:'Cormorant Garamond',fontSize:17,color:T.textMid,fontStyle:'italic'}}>Loading catalogue...</p>
+        </div>
+      ) : designs.length === 0 ? (
+        <div style={{textAlign:'center',padding:'80px 20px'}}>
+          <div style={{fontSize:56,marginBottom:16}}>👗</div>
+          <h3 style={{fontFamily:'Cormorant Garamond',fontSize:24,color:T.textMid,marginBottom:8,fontWeight:400}}>
+            Your catalogue is empty
+          </h3>
+          <p style={{fontSize:13,color:T.textLight,lineHeight:1.7,maxWidth:320,margin:'0 auto'}}>
+            Save designs from the canvas or AI mode — they'll appear here as a browsable catalogue.
+          </p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div style={{textAlign:'center',padding:60}}>
+          <p style={{fontSize:14,color:T.textMid}}>No designs match your filter.</p>
+          <button className="btn-ghost" style={{marginTop:12,fontSize:11}} onClick={()=>{setSearch('');setFilterStatus('all')}}>
+            Clear filters
+          </button>
+        </div>
+      ) : (
+        <div style={{
+          display:'grid',
+          gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',
+          gap:16,
+        }}>
+          {filtered.map(d => <CatalogueCard key={d.id} d={d} />)}
+        </div>
+      )}
+
+      {/* Detail modal */}
+      {selected && <DetailModal d={selected} />}
     </div>
   )
 }
