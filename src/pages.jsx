@@ -85,8 +85,31 @@ function AIModePage({ onBack, onDesignReady, notify }) {
 
   if (mode === 'questionnaire') {
     return (
-      <div style={{minHeight:'100vh',background:T.bg,padding:'32px 20px'}}>
+      <div style={{minHeight:'100dvh',background:T.bg,padding:'32px 20px'}}>
         <VoiceQuestionnaire onComplete={handleQuestionnaireComplete} onBack={()=>setMode('choose')} />
+      </div>
+    )
+  }
+
+  // Loading screen while prompt is generating
+  if (isGenerating) {
+    return (
+      <div style={{minHeight:'100dvh',background:T.bg,display:'flex',flexDirection:'column',
+        alignItems:'center',justifyContent:'center',gap:20,padding:40}}>
+        <div style={{position:'relative',width:72,height:72}}>
+          <div style={{position:'absolute',inset:0,borderRadius:'50%',
+            border:'3px solid '+T.border,borderTopColor:T.gold,
+            animation:'spin 1s linear infinite'}} />
+          <div style={{position:'absolute',inset:10,display:'flex',alignItems:'center',
+            justifyContent:'center',fontSize:26}}>🧵</div>
+        </div>
+        <div style={{textAlign:'center'}}>
+          <p style={{fontFamily:'Cormorant Garamond',fontSize:24,color:T.text,
+            fontStyle:'italic',marginBottom:6}}>Designing your saree...</p>
+          <p style={{fontSize:11,color:T.textLight,letterSpacing:1.5,textTransform:'uppercase'}}>
+            Analysing your prompt
+          </p>
+        </div>
       </div>
     )
   }

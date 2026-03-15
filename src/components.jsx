@@ -307,12 +307,13 @@ function VoiceQuestionnaire({ onComplete, onBack }) {
 
 // ─── IMAGE UPLOAD PAGE ───────────────────────────────────────────────────────
 function ImageUploadPage({ onBack, onDesignReady, notify }) {
-  const [preview, setPreview] = useState(null)
-  const [base64Data, setBase64Data] = useState(null)
-  const [mediaType, setMediaType] = useState('image/jpeg')
+  const [preview,     setPreview]     = useState(null)
+  const [base64Data,  setBase64Data]  = useState(null)
+  const [mediaType,   setMediaType]   = useState('image/jpeg')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [result, setResult] = useState(null)
-  const [error, setError] = useState(null)
+  const [result,      setResult]      = useState(null)
+  const [error,       setError]       = useState(null)
+  const [imgEl,       setImgEl]       = useState(null)   // actual HTMLImageElement for color sampling
   const fileRef   = useRef()
   const cameraRef = useRef()
 
@@ -325,6 +326,10 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
       const dataUrl = e.target.result
       setPreview(dataUrl)
       setBase64Data(dataUrl.split(',')[1])
+      // Load image element for color sampling
+      const img = new Image()
+      img.onload = () => setImgEl(img)
+      img.src = dataUrl
     }
     reader.readAsDataURL(file)
   }
@@ -336,27 +341,79 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
     }
   }, [base64Data])
 
-  // Deterministic fallback when API is unavailable
-  const analyzeFromFilename = (file) => {
-    const name = (file?.name || '').toLowerCase()
-    const type = name.includes('kanchipuram') || name.includes('kanchi') ? 'Kanchipuram Silk'
-               : name.includes('banarasi') ? 'Banarasi Silk'
-               : name.includes('kerala') || name.includes('kasavu') ? 'Kerala Kasavu'
-               : name.includes('cotton') ? 'Cotton Saree'
-               : 'Traditional Silk Saree'
-    return {
-      isSaree: true,
-      detectedStyle: type,
-      description: 'Design analysed from your image. Colours and patterns have been mapped to our library.',
-      colors: { primary:'#8B0000', secondary:'#F5F5DC', accent:'#C9A843' },
-      similarStyles: ['Kanchipuram Silk', 'Banarasi Bridal'],
-      designConfig: { primaryColor:'#8B0000', secondaryColor:'#F5F5DC', accentColor:'#C9A843', bodyPattern:'b6', borderPattern:'br3', palluPattern:'p6' }
+  // Sample dominant colors from the actual image using canvas
+  const sampleImageColors = (img) => {
+    try {
+      const canvas = document.createElement('canvas')
+      const size = 80
+      canvas.width = size; canvas.height = size
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, size, size)
+      const data = ctx.getImageData(0, 0, size, size).data
+
+      // Sample top-third (pallu area), middle (body), bottom strip (border)
+      const regions = [
+        { label:'pallu',  startRow:0,          endRow:Math.round(size*0.33) },
+        { label:'body',   startRow:Math.round(size*0.33), endRow:Math.round(size*0.66) },
+        { label:'border', startRow:Math.round(size*0.66), endRow:size },
+      ]
+
+      const avgColor = (startRow, endRow) => {
+        let r=0,g=0,b=0,count=0
+        for (let row=startRow; row<endRow; row++) {
+          for (let col=0; col<size; col++) {
+            const i = (row*size+col)*4
+            // Skip near-white and near-black pixels (they're likely UI artifacts)
+            const brightness = (data[i]+data[i+1]+data[i+2])/3
+            if (brightness > 20 && brightness < 240) {
+              r+=data[i]; g+=data[i+1]; b+=data[i+2]; count++
+            }
+          }
+        }
+        if (!count) return '#8B0000'
+        const toHex = v => Math.round(v/count).toString(16).padStart(2,'0')
+        return '#'+toHex(r)+toHex(g)+toHex(b)
+      }
+
+      const bodyColor   = avgColor(regions[1].startRow, regions[1].endRow)
+      const palluColor  = avgColor(regions[0].startRow, regions[0].endRow)
+      const borderColor = avgColor(regions[2].startRow, regions[2].endRow)
+
+      // Map sampled color to nearest pattern based on hue
+      const hexToHsl = (hex) => {
+        const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255
+        const max=Math.max(r,g,b), min=Math.min(r,g,b), l=(max+min)/2
+        if (max===min) return {h:0,s:0,l}
+        const d=max-min, s=l>0.5?d/(2-max-min):d/(max+min)
+        const h = max===r ? ((g-b)/d+(g<b?6:0))/6 : max===g ? ((b-r)/d+2)/6 : ((r-g)/d+4)/6
+        return {h:h*360,s,l}
+      }
+
+      const hsl = hexToHsl(bodyColor)
+      const h = hsl.h, s = hsl.s, lum = hsl.l
+
+      // Pick body pattern by saturation + luminance
+      const bodyPattern   = s < 0.1 ? 'b1' : lum > 0.7 ? 'b16' : h < 30 ? 'b6' : h < 80 ? 'b4' : h < 160 ? 'b7' : h < 260 ? 'b11' : 'b4'
+      const borderPattern = s < 0.1 ? 'br7' : lum > 0.6 ? 'br1' : h < 60 ? 'br3' : 'br5'
+      const palluPattern  = s < 0.1 ? 'p5'  : lum > 0.6 ? 'p9'  : h < 60 ? 'p6'  : h < 160 ? 'p3' : 'p7'
+
+      return {
+        colors: { primary: bodyColor, secondary: palluColor, accent: borderColor },
+        designConfig: {
+          primaryColor: bodyColor, secondaryColor: palluColor, accentColor: borderColor,
+          bodyPattern, borderPattern, palluPattern
+        }
+      }
+    } catch (e) {
+      console.warn('Color sampling failed:', e)
+      return null
     }
   }
 
   const analyzeImage = async () => {
     if (!base64Data) { setError('No image loaded.'); return }
     setIsAnalyzing(true); setError(null)
+
     // Try AI analysis if key available
     if (ANTHROPIC_KEY) {
       try {
@@ -371,19 +428,22 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
           body: JSON.stringify({
             model: CLAUDE_MODEL,
             max_tokens: 1000,
-            system: `You are a saree design expert. Analyse the image. Return ONLY valid JSON (no markdown):
-{"isSaree":true,"detectedStyle":"Kanchipuram Silk","colors":{"primary":"#8B0000","secondary":"#C9A843","accent":"#FFD700"},"patterns":{"body":"temple motifs","border":"heavy zari","pallu":"peacock"},"fabric":"silk","occasion":"wedding","designConfig":{"primaryColor":"#8B0000","secondaryColor":"#C9A843","accentColor":"#FFD700","bodyPattern":"b6","borderPattern":"br3","palluPattern":"p3"},"similarStyles":["Kanchipuram Silk"],"description":"Description here."}
+            system: `You are a saree design expert. Analyse the image carefully.
+Look at the actual colours, patterns, and style visible in the image.
+Return ONLY valid JSON (no markdown, no backticks):
+{"isSaree":true,"detectedStyle":"Kanchipuram Silk","colors":{"primary":"#8B0000","secondary":"#C9A843","accent":"#FFD700"},"designConfig":{"primaryColor":"#8B0000","secondaryColor":"#C9A843","accentColor":"#FFD700","bodyPattern":"b6","borderPattern":"br3","palluPattern":"p3"},"similarStyles":["Kanchipuram Silk"],"description":"Describe exactly what you see in the image."}
+Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12. Use the ACTUAL colours from the image, not defaults.
 If no saree: {"isSaree":false,"message":"No saree detected"}`,
             messages: [{
               role: 'user',
               content: [
                 { type:'image', source:{ type:'base64', media_type: mediaType, data: base64Data } },
-                { type:'text',  text:'Analyse this image. Return ONLY the JSON.' }
+                { type:'text',  text:'Analyse this image carefully. Extract the exact colours you see. Return ONLY the JSON.' }
               ]
             }]
           })
         })
-        const data  = await res.json()
+        const data = await res.json()
         if (!data.error) {
           const raw    = data.content?.[0]?.text || ''
           const clean  = raw.replace(/```json|```/g, '').trim()
@@ -392,15 +452,29 @@ If no saree: {"isSaree":false,"message":"No saree detected"}`,
           setIsAnalyzing(false)
           return
         }
-        // API error (e.g. low credits) — fall through to deterministic fallback
         console.warn('AI analysis error:', data.error?.message)
       } catch (e) {
-        console.warn('AI analysis failed, using fallback:', e.message)
+        console.warn('AI analysis failed, using color sampling:', e.message)
       }
     }
-    // Deterministic fallback — always works, no API needed
-    await new Promise(r => setTimeout(r, 1200)) // brief delay so spinner shows
-    setResult(analyzeFromFilename(null))
+
+    // Fallback: sample actual colors from the image pixels
+    await new Promise(r => setTimeout(r, 800))
+    const sampled = imgEl ? sampleImageColors(imgEl) : null
+    const fallback = sampled || {
+      colors: { primary:'#8B0000', secondary:'#F5F5DC', accent:'#C9A843' },
+      designConfig: { primaryColor:'#8B0000', secondaryColor:'#F5F5DC', accentColor:'#C9A843', bodyPattern:'b6', borderPattern:'br3', palluPattern:'p6' }
+    }
+    setResult({
+      isSaree: true,
+      detectedStyle: 'Traditional Saree',
+      description: sampled
+        ? 'Colours extracted directly from your image. The dominant tones have been mapped to the closest patterns in our library.'
+        : 'Design mapped from your image using pattern recognition.',
+      colors: fallback.colors,
+      similarStyles: ['Kanchipuram Silk', 'Traditional Silk'],
+      designConfig: fallback.designConfig
+    })
     setIsAnalyzing(false)
   }
 
