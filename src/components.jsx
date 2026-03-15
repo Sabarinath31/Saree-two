@@ -1,7 +1,7 @@
 // ─── components.jsx ──────────────────────────────────────────────────────────
 // Notification, VoiceQuestionnaire, ImageUploadPage, AuthPage,
 // CustomerHome, DesignerCanvas
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { T } from './theme.jsx'
 import {
   sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, PATTERN_NAMES,
@@ -447,12 +447,17 @@ If no saree: {"isSaree":false,"message":"No saree detected"}`,
         if (!data.error) {
           const raw    = data.content?.[0]?.text || ''
           const clean  = raw.replace(/```json|```/g, '').trim()
-          const parsed = JSON.parse(clean)
-          setResult(parsed)
-          setIsAnalyzing(false)
-          return
+          try {
+            const parsed = JSON.parse(clean)
+            setResult(parsed)
+            setIsAnalyzing(false)
+            return
+          } catch (parseErr) {
+            console.warn('AI response JSON parse failed, using pixel sampling:', parseErr.message)
+          }
+        } else {
+          console.warn('AI analysis error:', data.error?.message)
         }
-        console.warn('AI analysis error:', data.error?.message)
       } catch (e) {
         console.warn('AI analysis failed, using color sampling:', e.message)
       }
