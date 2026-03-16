@@ -6,7 +6,7 @@ import { T } from './theme.jsx'
 import {
   sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, PATTERN_NAMES,
   QUESTIONS, buildDesignFromAnswers, generateRecommendations,
-  CLAUDE_MODEL, ANTHROPIC_KEY,
+  GEMINI_MODEL, GEMINI_API_URL, GEMINI_KEY,
 } from './data.jsx'
 import { PatternRenderer, SareeCanvas, exportSareeAsPNG } from './canvas.jsx'
 
@@ -414,52 +414,49 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
     if (!base64Data) { setError('No image loaded.'); return }
     setIsAnalyzing(true); setError(null)
 
-    // Try AI analysis if key available
-    if (ANTHROPIC_KEY) {
+    // Try Gemini vision analysis if key available
+    if (GEMINI_KEY) {
       try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': ANTHROPIC_KEY,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true',
-          },
-          body: JSON.stringify({
-            model: CLAUDE_MODEL,
-            max_tokens: 1000,
-            system: `You are a saree design expert. Analyse the image carefully.
+        const prompt = `You are a saree design expert. Analyse this image carefully.
 Look at the actual colours, patterns, and style visible in the image.
-Return ONLY valid JSON (no markdown, no backticks):
+Return ONLY valid JSON with no markdown or backticks:
 {"isSaree":true,"detectedStyle":"Kanchipuram Silk","colors":{"primary":"#8B0000","secondary":"#C9A843","accent":"#FFD700"},"designConfig":{"primaryColor":"#8B0000","secondaryColor":"#C9A843","accentColor":"#FFD700","bodyPattern":"b6","borderPattern":"br3","palluPattern":"p3"},"similarStyles":["Kanchipuram Silk"],"description":"Describe exactly what you see in the image."}
 Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12. Use the ACTUAL colours from the image, not defaults.
-If no saree: {"isSaree":false,"message":"No saree detected"}`,
-            messages: [{
-              role: 'user',
-              content: [
-                { type:'image', source:{ type:'base64', media_type: mediaType, data: base64Data } },
-                { type:'text',  text:'Analyse this image carefully. Extract the exact colours you see. Return ONLY the JSON.' }
-              ]
-            }]
-          })
-        })
+If no saree detected: {"isSaree":false,"message":"No saree detected"}`
+        const res = await fetch(
+          `${GEMINI_API_URL}/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                role: 'user',
+                parts: [
+                  { inline_data: { mime_type: mediaType, data: base64Data } },
+                  { text: prompt }
+                ]
+              }],
+              generationConfig: { maxOutputTokens: 1000, temperature: 0.2 }
+            })
+          }
+        )
         const data = await res.json()
         if (!data.error) {
-          const raw    = data.content?.[0]?.text || ''
-          const clean  = raw.replace(/```json|```/g, '').trim()
+          const raw   = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+          const clean = raw.replace(/```json|```/g, '').trim()
           try {
             const parsed = JSON.parse(clean)
             setResult(parsed)
             setIsAnalyzing(false)
             return
           } catch (parseErr) {
-            console.warn('AI response JSON parse failed, using pixel sampling:', parseErr.message)
+            console.warn('Gemini response JSON parse failed, using pixel sampling:', parseErr.message)
           }
         } else {
-          console.warn('AI analysis error:', data.error?.message)
+          console.warn('Gemini analysis error:', data.error?.message)
         }
       } catch (e) {
-        console.warn('AI analysis failed, using color sampling:', e.message)
+        console.warn('Gemini analysis failed, using color sampling:', e.message)
       }
     }
 
@@ -928,21 +925,34 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
     if (!aiPrompt.trim()) return
     setIsGenerating(true)
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
-        body: JSON.stringify({
-          model: CLAUDE_MODEL, max_tokens: 600,
-          system: `You are a saree design AI. Return ONLY valid JSON: {"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","explanation":"..."} Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12.`,
-          messages: [{ role:'user', content: `Design a saree: ${aiPrompt}` }]
-        })
-      })
-      const data = await res.json()
-      const text = data.content?.[0]?.text || '{}'
-      const parsed = JSON.parse(text.replace(/```json|```/g,'').trim())
-      setDesign(d => ({...d,...parsed}))
-      setAiResult(parsed.explanation)
-    } catch { notify('AI generation failed. Try again.','error') }
+      if (GEMINI_KEY) {
+        const sysPrompt = `You are a saree design AI. Return ONLY valid JSON with no markdown or backticks:
+{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","explanation":"..."}
+Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12.`
+        const res = await fetch(
+          `${GEMINI_API_URL}/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role:'user', parts:[{ text: sysPrompt + '\n\nDesign a saree: ' + aiPrompt }] }],
+              generationConfig: { maxOutputTokens: 600, temperature: 0.7 }
+            })
+          }
+        )
+        const data = await res.json()
+        if (!data.error) {
+          const text   = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
+          const clean  = text.replace(/```json|```/g, '').trim()
+          const parsed = JSON.parse(clean)
+          setDesign(d => ({...d, ...parsed}))
+          setAiResult(parsed.explanation)
+          setIsGenerating(false)
+          return
+        }
+      }
+    } catch (e) { console.warn('AI generation failed:', e.message) }
+    notify('AI generation failed. Try again.', 'error')
     setIsGenerating(false)
   }
 

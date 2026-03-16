@@ -2,7 +2,7 @@
 // AIModePage, MyDesignsPage, DesignerDashboard, TopNav
 import { useState, useEffect } from 'react'
 import { T } from './theme.jsx'
-import { sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, CLAUDE_MODEL, ANTHROPIC_KEY } from './data.jsx'
+import { sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, GEMINI_MODEL, GEMINI_API_URL, GEMINI_KEY } from './data.jsx'
 import { PatternRenderer, SareeCanvas } from './canvas.jsx'
 import { VoiceQuestionnaire } from './components.jsx'
 
@@ -31,23 +31,26 @@ function AIModePage({ onBack, onDesignReady, notify }) {
     if (!prompt.trim()) return
     setIsGenerating(true)
     try {
-      // Try AI first
-      if (ANTHROPIC_KEY) {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
-          body: JSON.stringify({
-            model: CLAUDE_MODEL, max_tokens: 800,
-            system: `Saree design expert. Return ONLY valid JSON with no markdown: {"recommendations":[{"name":"...","description":"...","matchScore":90,"design":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b6","borderPattern":"br3","palluPattern":"p6"}}],"design":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","explanation":"..."}}. Pattern IDs: body b1-b17, border br1-br12, pallu p1-p12.`,
-            messages: [{ role:'user', content: `Design a saree based on: ${prompt}` }]
-          })
-        })
+      if (GEMINI_KEY) {
+        const sysPrompt = `You are a saree design expert. Return ONLY valid JSON with no markdown or backticks:
+{"recommendations":[{"name":"...","description":"...","matchScore":90,"design":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b6","borderPattern":"br3","palluPattern":"p6"}}],"design":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","explanation":"..."}}
+Pattern IDs — body: b1-b17, border: br1-br12, pallu: p1-p12. Return exactly 3 recommendations.`
+        const res = await fetch(
+          `${GEMINI_API_URL}/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role:'user', parts:[{ text: sysPrompt + '\n\nDesign a saree based on: ' + prompt }] }],
+              generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+            })
+          }
+        )
         const data = await res.json()
-        if (data.error) throw new Error(data.error.message || 'API error')
-        const text   = data.content?.[0]?.text || ''
-        const clean  = text.replace(/```json|```/g,'').trim()
+        if (data.error) throw new Error(data.error.message || 'Gemini API error')
+        const text  = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+        const clean = text.replace(/```json|```/g, '').trim()
         const parsed = JSON.parse(clean)
-        // Ensure each recommendation has a design object
         if (parsed.recommendations) {
           parsed.recommendations = parsed.recommendations.map(r => ({
             ...r,
@@ -60,7 +63,7 @@ function AIModePage({ onBack, onDesignReady, notify }) {
         return
       }
     } catch (e) {
-      console.warn('AI generation failed, using fallback:', e.message)
+      console.warn('Gemini generation failed, using fallback:', e.message)
     }
     // Fallback: keyword-based design (no API needed)
     const fallbackDesign = promptFallback(prompt)

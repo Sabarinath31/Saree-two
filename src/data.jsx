@@ -4,10 +4,12 @@
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 export const SUPABASE_URL = 'https://glvmekmiwyyasnepceqp.supabase.co'
 export const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdsdm1la21pd3l5YXNuZXBjZXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzEwNjIsImV4cCI6MjA4ODkwNzA2Mn0.-Fx8aPqpxSHIkm9RAkVT92nXNyFPSBUYLmWhuEr3ONU'
-export const CLAUDE_MODEL  = 'claude-sonnet-4-20250514'
-// 🔑 Set VITE_ANTHROPIC_KEY in your .env file
-export const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_KEY || ''
-console.log('API Key loaded:', ANTHROPIC_KEY ? 'YES ✅' : 'MISSING ❌')
+export const GEMINI_MODEL   = 'gemini-1.5-flash'
+export const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
+
+// 🔑 Set VITE_GEMINI_KEY in your .env file
+export const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY || ''
+console.log('Gemini API Key:', GEMINI_KEY ? 'YES ✅' : 'MISSING ❌')
 
 // ─── SUPABASE CLIENT ──────────────────────────────────────────────────────────
 const _h = (token) => ({
