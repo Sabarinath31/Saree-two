@@ -1,7 +1,7 @@
 // ─── components.jsx ──────────────────────────────────────────────────────────
 // Notification, VoiceQuestionnaire, ImageUploadPage, AuthPage,
 // CustomerHome, DesignerCanvas
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { T } from './theme.jsx'
 import {
   sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, PATTERN_NAMES,
@@ -892,6 +892,247 @@ function CustomerHome({ user, onNavigate, templates: propTemplates, palettes: pr
   )
 }
 
+// ─── DRAPED PREVIEW ───────────────────────────────────────────────────────────
+// Loads the mannequin base image and overlays design colours using multiply blend.
+// The base image should be a light/white draped saree on a mannequin.
+// Place your mannequin image at: /mannequin-base.png in your project's public folder.
+function DrapedPreview({ design, height = 400 }) {
+  const canvasRef   = useRef(null)
+  const imgRef      = useRef(null)
+  const [loaded,    setLoaded]  = useState(false)
+  const [error,     setError]   = useState(false)
+
+  // Load the base mannequin image once
+  useEffect(() => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload  = () => { imgRef.current = img; setLoaded(true) }
+    img.onerror = () => setError(true)
+    // ⬇ Place your mannequin PNG in /public/mannequin-base.png
+    img.src = '/mannequin-base.png'
+  }, [])
+
+  // Rerender whenever design colours change
+  useEffect(() => {
+    if (!loaded || !canvasRef.current || !imgRef.current) return
+    renderDrape()
+  }, [loaded, design.primaryColor, design.secondaryColor, design.accentColor,
+      design.bodyPattern, design.borderPattern, design.palluPattern])
+
+  const hexToRgb = (hex) => {
+    const clean = hex.replace('#','')
+    return {
+      r: parseInt(clean.slice(0,2),16),
+      g: parseInt(clean.slice(2,4),16),
+      b: parseInt(clean.slice(4,6),16),
+    }
+  }
+
+  const renderDrape = () => {
+    const canvas = canvasRef.current
+    const img    = imgRef.current
+    if (!canvas || !img) return
+
+    // Fit canvas to image aspect ratio
+    const aspect = img.naturalWidth / img.naturalHeight
+    canvas.height = canvas.offsetHeight || height
+    canvas.width  = canvas.height * aspect
+
+    const ctx = canvas.getContext('2d')
+    const W = canvas.width, H = canvas.height
+
+    // Step 1: draw base image
+    ctx.clearRect(0, 0, W, H)
+    ctx.drawImage(img, 0, 0, W, H)
+
+    // Step 2: read pixel data to analyse brightness zones
+    const baseData = ctx.getImageData(0, 0, W, H)
+
+    // Step 3: apply multiply blend manually per pixel
+    // Multiply: result = (base * overlay) / 255
+    // For light areas (high brightness) → colour shows through clearly
+    // For dark shadow areas (low brightness) → stays dark, preserving fold depth
+    const primary  = hexToRgb(design.primaryColor)
+    const secondary = hexToRgb(design.secondaryColor)
+    const accent   = hexToRgb(design.accentColor)
+
+    // Build output pixel data
+    const outData = ctx.createImageData(W, H)
+
+    for (let i = 0; i < baseData.data.length; i += 4) {
+      const br = baseData.data[i]
+      const bg = baseData.data[i+1]
+      const bb = baseData.data[i+2]
+      const ba = baseData.data[i+3]
+
+      if (ba < 10) {
+        // Fully transparent pixel (PNG alpha) — keep transparent
+        outData.data[i]   = 0
+        outData.data[i+1] = 0
+        outData.data[i+2] = 0
+        outData.data[i+3] = 0
+        continue
+      }
+
+      // Brightness of this pixel (0–255)
+      const brightness = (br * 0.299 + bg * 0.587 + bb * 0.114)
+
+      // Zone detection by pixel position
+      const px = (i/4) % W
+      const py = Math.floor((i/4) / W)
+      const relY = py / H
+
+      // Choose colour zone based on vertical position
+      // pallu flows on right side of image / top drape
+      // border band near bottom
+      // blouse top area (mannequin torso)
+      let col
+      if (relY < 0.18) {
+        // Top area — blouse/torso, use secondary
+        col = secondary
+      } else if (relY > 0.82 && relY < 0.92) {
+        // Border band — use accent
+        col = accent
+      } else if (relY > 0.92) {
+        // Hem — secondary
+        col = secondary
+      } else if (px / W > 0.6 && relY < 0.55) {
+        // Right upper zone — flowing pallu, use primary with slight accent mix
+        col = {
+          r: Math.round(primary.r * 0.85 + accent.r * 0.15),
+          g: Math.round(primary.g * 0.85 + accent.g * 0.15),
+          b: Math.round(primary.b * 0.85 + accent.b * 0.15),
+        }
+      } else {
+        // Main body — primary colour
+        col = primary
+      }
+
+      // Multiply blend: (base * colour) / 255
+      // Then boost slightly for vibrancy since base is light
+      const factor = 1.15
+      const r = Math.min(255, Math.round((br * col.r / 255) * factor))
+      const g = Math.min(255, Math.round((bg * col.g / 255) * factor))
+      const b = Math.min(255, Math.round((bb * col.b / 255) * factor))
+
+      // Preserve very dark shadow pixels (fold depth)
+      // If base is very dark, keep it dark regardless of colour
+      if (brightness < 40) {
+        outData.data[i]   = Math.round(br * 0.6)
+        outData.data[i+1] = Math.round(bg * 0.6)
+        outData.data[i+2] = Math.round(bb * 0.6)
+      } else {
+        outData.data[i]   = r
+        outData.data[i+1] = g
+        outData.data[i+2] = b
+      }
+      outData.data[i+3] = ba
+    }
+
+    ctx.putImageData(outData, 0, 0)
+
+    // Step 4: draw SVG pattern overlay on top with soft-light blend
+    // This adds the weave texture / motif on top of the colour
+    drawPatternOverlay(ctx, W, H, design)
+  }
+
+  const drawPatternOverlay = (ctx, W, H, design) => {
+    // Draw subtle repeating zari dot pattern over the body area
+    // using screen blend for a soft shimmery gold effect
+    ctx.save()
+    ctx.globalCompositeOperation = 'screen'
+    ctx.globalAlpha = 0.12
+    ctx.fillStyle = design.accentColor
+
+    const spacing = Math.round(W / 8)
+    for (let x = spacing/2; x < W; x += spacing) {
+      for (let y = Math.round(H*0.18); y < Math.round(H*0.82); y += spacing) {
+        ctx.beginPath()
+        ctx.arc(x, y, spacing * 0.18, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // Border band highlight
+    ctx.globalAlpha = 0.2
+    ctx.fillStyle = design.accentColor
+    ctx.fillRect(0, Math.round(H*0.82), W, Math.round(H*0.1))
+
+    ctx.restore()
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <div style={{
+        display:'flex',flexDirection:'column',alignItems:'center',
+        justifyContent:'center',gap:12,padding:32,
+        background:T.surfaceAlt,borderRadius:6,
+        border:`1px dashed ${T.border}`,
+        height, color:T.textLight, textAlign:'center',
+      }}>
+        <div style={{fontSize:36}}>👗</div>
+        <p style={{fontSize:12,lineHeight:1.6,maxWidth:220}}>
+          Add <code style={{color:T.gold,fontSize:11}}>mannequin-base.png</code> to your
+          project's <code style={{color:T.gold,fontSize:11}}>/public</code> folder to enable
+          the draped preview.
+        </p>
+        <p style={{fontSize:10,color:T.textLight,maxWidth:220}}>
+          Use the cream/white saree mannequin image you uploaded — rename it and place it in /public/.
+        </p>
+      </div>
+    )
+  }
+
+  if (!loaded) {
+    return (
+      <div style={{
+        display:'flex',alignItems:'center',justifyContent:'center',
+        height, background:T.surfaceAlt,borderRadius:6,
+      }}>
+        <div style={{width:36,height:36,borderRadius:'50%',
+          border:`3px solid ${T.goldLight}`,borderTopColor:T.gold,
+          animation:'spin 1s linear infinite'}} />
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      display:'flex',flexDirection:'column',alignItems:'center',
+      gap:8, position:'relative',
+    }}>
+      <canvas
+        ref={canvasRef}
+        style={{
+          height, width:'auto', maxWidth:'100%',
+          borderRadius:6,
+          boxShadow:'0 8px 40px rgba(0,0,0,0.6)',
+          display:'block',
+        }}
+      />
+      {/* Colour swatches shown below mannequin */}
+      <div style={{display:'flex',gap:6,alignItems:'center'}}>
+        {[
+          {label:'Body',   color:design.primaryColor},
+          {label:'Accent', color:design.secondaryColor},
+          {label:'Zari',   color:design.accentColor},
+        ].map(s=>(
+          <div key={s.label} style={{textAlign:'center'}}>
+            <div style={{
+              width:20,height:20,borderRadius:'50%',
+              background:s.color,border:`1px solid ${T.border}`,
+              margin:'0 auto 3px',
+            }}/>
+            <span style={{fontSize:8,color:T.textLight,
+              letterSpacing:0.8,textTransform:'uppercase'}}>{s.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── DESIGNER CANVAS ──────────────────────────────────────────────────────────
 function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: propPatterns, palettes: propPalettes }) {
   const isMobile = window.innerWidth < 768
@@ -903,6 +1144,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
   const [designName, setDesignName] = useState('My Saree Design')
   const [activeSection, setActiveSection] = useState('body')
   const [mobileTab, setMobileTab] = useState('controls')
+  const [previewTab, setPreviewTab] = useState('flat')   // 'flat' | 'draped'
   const [saving, setSaving] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -1188,17 +1430,39 @@ Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12.`
           <button className="btn-ghost" style={{padding:'5px 10px',fontSize:10}} onClick={saveDesign}>{saving?'...':'Save'}</button>
         </div>
 
-        {/* Canvas - top 42% */}
-        <div style={{height:'42%',display:'flex',alignItems:'center',justifyContent:'center',background:`radial-gradient(ellipse at center,${T.surfaceAlt} 0%,${T.bg} 70%)`,padding:12,position:'relative'}}>
-          {isGenerating && (
-            <div style={{position:'absolute',inset:0,background:'rgba(14,12,9,0.85)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',zIndex:10}}>
-              <div style={{width:32,height:32,borderRadius:'50%',border:`2px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite',marginBottom:8}} />
-              <span style={{fontSize:11,color:T.textMid}}>Generating...</span>
-            </div>
-          )}
-          <SareeCanvas design={design} scale={0.62} />
-          <div style={{position:'absolute',bottom:8,left:'50%',transform:'translateX(-50%)',display:'flex',gap:5}}>
-            {[design.primaryColor,design.secondaryColor,design.accentColor].map((c,i)=>(
+        {/* Canvas - top 42% with preview tabs */}
+        <div style={{height:'42%',display:'flex',flexDirection:'column',background:`radial-gradient(ellipse at center,${T.surfaceAlt} 0%,${T.bg} 70%)`,position:'relative'}}>
+
+          {/* Mobile preview tabs */}
+          <div style={{display:'flex',borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+            {[['flat','Flat'],['draped','Draped']].map(([id,label])=>(
+              <button key={id} onClick={()=>setPreviewTab(id)} style={{
+                flex:1,padding:'6px 0',border:'none',cursor:'pointer',
+                background:'transparent',fontSize:9,letterSpacing:1.5,
+                fontWeight:previewTab===id?500:300,textTransform:'uppercase',
+                color:previewTab===id?T.gold:T.textMid,
+                borderBottom:`2px solid ${previewTab===id?T.gold:'transparent'}`,
+                transition:'all 0.2s',fontFamily:'Jost',
+              }}>{label}</button>
+            ))}
+          </div>
+
+          {/* Preview content */}
+          <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:8,position:'relative',overflow:'hidden'}}>
+            {isGenerating && (
+              <div style={{position:'absolute',inset:0,background:'rgba(14,12,9,0.85)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',zIndex:10}}>
+                <div style={{width:32,height:32,borderRadius:'50%',border:`2px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite',marginBottom:8}} />
+                <span style={{fontSize:11,color:T.textMid}}>Generating...</span>
+              </div>
+            )}
+            {previewTab === 'flat'
+              ? <SareeCanvas design={design} scale={0.62} />
+              : <DrapedPreview design={design} height={200} />
+            }
+          </div>
+
+          <div style={{position:'absolute',bottom:6,left:'50%',transform:'translateX(-50%)',display:'flex',gap:5}}>
+            {previewTab==='flat' && [design.primaryColor,design.secondaryColor,design.accentColor].map((c,i)=>(
               <div key={i} style={{width:10,height:10,borderRadius:'50%',background:c,border:`1px solid ${T.border}`}} />
             ))}
           </div>
@@ -1239,14 +1503,43 @@ Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12.`
       </div>
 
       {/* Center */}
-      <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',background:`radial-gradient(ellipse at center,${T.surfaceAlt} 0%,${T.bg} 70%)`,position:'relative'}}>
-        {isGenerating && (
-          <div style={{position:'absolute',inset:0,background:'rgba(14,12,9,0.8)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',zIndex:10}}>
-            <div style={{width:48,height:48,borderRadius:'50%',border:`3px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite',marginBottom:12}} />
-            <span style={{fontFamily:'Cormorant Garamond',fontSize:20,color:T.textMid,fontStyle:'italic'}}>AI is creating...</span>
-          </div>
-        )}
-        <SareeCanvas design={design} scale={1.1} />
+      <div style={{flex:1,display:'flex',flexDirection:'column',background:`radial-gradient(ellipse at center,${T.surfaceAlt} 0%,${T.bg} 70%)`,position:'relative',overflow:'hidden'}}>
+
+        {/* Preview tab switcher */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:0,
+          padding:'12px 0 0',borderBottom:`1px solid ${T.border}`,
+          background:'rgba(14,12,9,0.4)',flexShrink:0}}>
+          {[['flat','✦ Flat'],['draped','👗 Draped']].map(([id,label])=>(
+            <button key={id} onClick={()=>setPreviewTab(id)} style={{
+              padding:'8px 24px',border:'none',cursor:'pointer',
+              background:'transparent',fontSize:11,letterSpacing:1.5,
+              fontWeight:previewTab===id?500:300,textTransform:'uppercase',
+              color:previewTab===id?T.gold:T.textMid,
+              borderBottom:`2px solid ${previewTab===id?T.gold:'transparent'}`,
+              transition:'all 0.2s',fontFamily:'Jost',
+            }}>{label}</button>
+          ))}
+        </div>
+
+        {/* Preview area */}
+        <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',
+          padding:24,position:'relative',overflow:'auto'}}>
+          {isGenerating && (
+            <div style={{position:'absolute',inset:0,background:'rgba(14,12,9,0.8)',
+              display:'flex',flexDirection:'column',alignItems:'center',
+              justifyContent:'center',zIndex:10}}>
+              <div style={{width:48,height:48,borderRadius:'50%',
+                border:`3px solid ${T.goldLight}`,borderTopColor:T.gold,
+                animation:'spin 1s linear infinite',marginBottom:12}} />
+              <span style={{fontFamily:'Cormorant Garamond',fontSize:20,
+                color:T.textMid,fontStyle:'italic'}}>AI is creating...</span>
+            </div>
+          )}
+          {previewTab === 'flat'
+            ? <SareeCanvas design={design} scale={1.1} />
+            : <DrapedPreview design={design} height={480} />
+          }
+        </div>
       </div>
 
       {/* Right */}
@@ -1260,5 +1553,5 @@ Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12.`
 // ─── EXPORTS ──────────────────────────────────────────────────────────────────
 export {
   Notification, VoiceQuestionnaire, ImageUploadPage,
-  AuthPage, CustomerHome, DesignerCanvas,
+  AuthPage, CustomerHome, DesignerCanvas, DrapedPreview,
 }
