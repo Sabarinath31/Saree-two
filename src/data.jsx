@@ -10,6 +10,9 @@ export const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/
 // 🔑 Set VITE_GEMINI_KEY in your .env file
 export const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY || ''
 console.log('Gemini API Key:', GEMINI_KEY ? 'YES ✅' : 'MISSING ❌')
+export const HF_TOKEN         = import.meta.env.VITE_HF_TOKEN || ''
+export const REPLICATE_TOKEN  = import.meta.env.VITE_REPLICATE_TOKEN || ''
+export const TOGETHER_TOKEN   = import.meta.env.VITE_TOGETHER_TOKEN || ''
 
 // ─── SUPABASE CLIENT ──────────────────────────────────────────────────────────
 const _h = (token) => ({
