@@ -1,7 +1,7 @@
 // ─── components.jsx ──────────────────────────────────────────────────────────
 // Notification, VoiceQuestionnaire, ImageUploadPage, AuthPage,
 // CustomerHome, DesignerCanvas
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { T } from './theme.jsx'
 import {
   sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, PATTERN_NAMES,

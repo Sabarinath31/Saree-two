@@ -5,368 +5,8 @@ import { T } from './theme.jsx'
 function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843', width = 200, height = 200 }) {
   const c = color
   const a = accentColor
-  const patterns = {
-    b1: <rect width={width} height={height} fill={c} />,
-    b2: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/12)}, (_,i) => <line key={i} x1={i*12} y1={0} x2={i*12} y2={height} stroke={a} strokeWidth={0.8} opacity={0.5} />)}
-    </>,
-    b3: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(height/16)}, (_,i) => <line key={`h${i}`} x1={0} y1={i*16} x2={width} y2={i*16} stroke={a} strokeWidth={0.8} opacity={0.4} />)}
-      {Array.from({length: Math.ceil(width/16)}, (_,i) => <line key={`v${i}`} x1={i*16} y1={0} x2={i*16} y2={height} stroke={a} strokeWidth={0.8} opacity={0.4} />)}
-    </>,
-    b4: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/20)}, (_,x) => Array.from({length: Math.ceil(height/20)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*20+10},${y*20+10})`}>
-          {/* Shadow */}
-          <ellipse rx={4} ry={6} fill="rgba(0,0,0,0.22)" transform="translate(0.4,0.6)" />
-          {/* Outer petal — metallic gold */}
-          <ellipse rx={4} ry={6} fill={a} opacity={0.75} />
-          {/* Inner highlight */}
-          <ellipse rx={2.5} ry={4} fill="rgba(255,255,255,0.2)" />
-          {/* Centre */}
-          <ellipse rx={2} ry={3} fill={c} opacity={0.92} />
-          <ellipse rx={1} ry={1.5} fill={a} opacity={0.8} />
-        </g>
-      ))).flat()}
-    </>,
-    b5: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/24)}, (_,x) => Array.from({length: Math.ceil(height/24)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*24+12},${y*24+12})`}>
-          <polygon points="0,-8 8,0 0,8 -8,0" fill="none" stroke={a} strokeWidth={1} opacity={0.6} />
-          <polygon points="0,-4 4,0 0,4 -4,0" fill={a} opacity={0.4} />
-        </g>
-      ))).flat()}
-    </>,
-    b6: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/28)}, (_,x) => Array.from({length: Math.ceil(height/28)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*28+14},${y*28+14})`}>
-          {/* Shadow layer */}
-          <polygon points="0,-10 3,-3 10,-3 4,2 6,9 0,5 -6,9 -4,2 -10,-3 -3,-3" fill="rgba(0,0,0,0.25)" transform="translate(0.5,0.8)" />
-          {/* Main motif with metallic fill */}
-          <polygon points="0,-10 3,-3 10,-3 4,2 6,9 0,5 -6,9 -4,2 -10,-3 -3,-3" fill={a} opacity={0.72} />
-          {/* Highlight stroke for 3D look */}
-          <polygon points="0,-10 3,-3 10,-3 4,2 6,9 0,5 -6,9 -4,2 -10,-3 -3,-3" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth={0.5} />
-        </g>
-      ))).flat()}
-    </>,
-    b7: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/32)}, (_,x) => Array.from({length: Math.ceil(height/32)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*32+16},${y*32+16})`}>
-          {/* Drop shadow */}
-          <path d="M0,-12 C6,-8 12,-4 8,0 C12,4 6,8 0,12 C-6,8 -12,4 -8,0 C-12,-4 -6,-8 0,-12Z" fill="rgba(0,0,0,0.2)" transform="translate(0.6,0.8)" />
-          {/* Peacock body */}
-          <path d="M0,-12 C6,-8 12,-4 8,0 C12,4 6,8 0,12 C-6,8 -12,4 -8,0 C-12,-4 -6,-8 0,-12Z" fill={a} opacity={0.68} />
-          {/* Inner highlight */}
-          <path d="M0,-8 C3,-5 7,-2 5,0 C7,2 3,5 0,8 C-3,5 -7,2 -5,0 C-7,-2 -3,-5 0,-8Z" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth={0.6} />
-          {/* Centre eye */}
-          <circle r={3} fill={c} />
-          <circle r={1.5} fill={a} opacity={0.9} />
-        </g>
-      ))).flat()}
-    </>,
-    b8: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/18)}, (_,x) => Array.from({length: Math.ceil(height/18)}, (_,y) => (
-        <circle key={`${x}-${y}`} cx={x*18+9} cy={y*18+9} r={3} fill={a} opacity={0.7} />
-      ))).flat()}
-    </>,
-    b9: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/14)}, (_,x) => Array.from({length: Math.ceil(height/14)}, (_,y) => (
-        <circle key={`${x}-${y}`} cx={x*14+7} cy={y*14+7} r={4} fill="none" stroke={a} strokeWidth={1.5} opacity={0.6} />
-      ))).flat()}
-    </>,
-    b10: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(height/10)}, (_,i) => (
-        <path key={i} d={`M0,${i*10} Q${width/4},${i*10-5} ${width/2},${i*10} Q${3*width/4},${i*10+5} ${width},${i*10}`} fill="none" stroke={a} strokeWidth={1.2} opacity={0.5} />
-      ))}
-    </>,
-    b11: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/36)}, (_,x) => Array.from({length: Math.ceil(height/40)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*36+18},${y*40+20})`}>
-          <path d={`M0,-16 C8,-16 14,-8 14,0 C14,8 8,16 0,16 C-8,16 -14,8 -14,0 C-14,-8 -8,-16 0,-16Z`} fill="none" stroke={a} strokeWidth={1} opacity={0.5} />
-          <line x1={0} y1={-16} x2={0} y2={16} stroke={a} strokeWidth={0.5} opacity={0.3} />
-          <line x1={-14} y1={0} x2={14} y2={0} stroke={a} strokeWidth={0.5} opacity={0.3} />
-        </g>
-      ))).flat()}
-    </>,
-    b12: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/20)}, (_,x) => Array.from({length: Math.ceil(height/20)}, (_,y) => (
-        <rect key={`${x}-${y}`} x={x*20+4} y={y*20+4} width={12} height={12} fill="none" stroke={a} strokeWidth={1} opacity={0.5} transform={`rotate(45, ${x*20+10}, ${y*20+10})`} />
-      ))).flat()}
-    </>,
-    b13: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/26)}, (_,x) => Array.from({length: Math.ceil(height/26)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*26+13},${y*26+13})`}>
-          <circle r={5} fill={a} opacity={0.4} />
-          <circle r={9} fill="none" stroke={a} strokeWidth={1} opacity={0.3} />
-          {[0,45,90,135,180,225,270,315].map(ang => (
-            <line key={ang} x1={0} y1={0} x2={Math.cos(ang*Math.PI/180)*9} y2={Math.sin(ang*Math.PI/180)*9} stroke={a} strokeWidth={0.8} opacity={0.4} />
-          ))}
-        </g>
-      ))).flat()}
-    </>,
-    b14: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/30)}, (_,x) => Array.from({length: Math.ceil(height/30)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*30+15},${y*30+15})`}>
-          <line x1={0} y1={-10} x2={-7} y2={5} stroke={a} strokeWidth={1.5} opacity={0.6} />
-          <line x1={0} y1={-10} x2={7} y2={5} stroke={a} strokeWidth={1.5} opacity={0.6} />
-          <line x1={-7} y1={5} x2={7} y2={5} stroke={a} strokeWidth={1.5} opacity={0.6} />
-          <circle cx={0} cy={-10} r={2} fill={a} opacity={0.7} />
-        </g>
-      ))).flat()}
-    </>,
-    b15: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/22)}, (_,x) => Array.from({length: Math.ceil(height/22)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*22+11},${y*22+11})`}>
-          <path d={`M0,-9 C5,-9 9,-5 9,0 C9,5 5,9 0,9 C-5,9 -9,5 -9,0`} fill="none" stroke={a} strokeWidth={1} opacity={0.5} />
-          <path d={`M0,-9 C-5,-9 -9,-5 -9,0`} fill="none" stroke={a} strokeWidth={1} opacity={0.3} />
-        </g>
-      ))).flat()}
-    </>,
-    b16: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil((width+height)/14)}, (_,i) => (
-        <line key={i} x1={i*14-height} y1={0} x2={i*14} y2={height} stroke={a} strokeWidth={0.7} opacity={0.4} />
-      ))}
-    </>,
-    b17: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/24)}, (_,x) => Array.from({length: Math.ceil(height/24)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*24+12},${y*24+12})`}>
-          <circle r={8} fill={a} opacity={0.3} />
-          <circle r={5} fill={a} opacity={0.4} />
-          <circle r={2} fill={a} opacity={0.8} />
-          {[0,60,120,180,240,300].map(ang => (
-            <circle key={ang} cx={Math.cos(ang*Math.PI/180)*8} cy={Math.sin(ang*Math.PI/180)*8} r={1.5} fill={a} opacity={0.6} />
-          ))}
-        </g>
-      ))).flat()}
-    </>,
-  }
 
-  const border_patterns = {
-    br1: <>
-      <rect width={width} height={height} fill={c} />
-      <rect y={height*0.3} width={width} height={height*0.4} fill={a} opacity={0.8} />
-      <rect y={height*0.4} width={width} height={height*0.2} fill={c} opacity={0.6} />
-    </>,
-    br2: <>
-      <rect width={width} height={height} fill={c} />
-      <rect y={height*0.15} width={width} height={height*0.2} fill={a} opacity={0.8} />
-      <rect y={height*0.65} width={width} height={height*0.2} fill={a} opacity={0.8} />
-    </>,
-    br3: <>
-      <rect width={width} height={height} fill={a} />
-      {/* Metallic sheen on gold border base */}
-      <rect width={width} height={height} fill="rgba(255,255,255,0.08)" />
-      {Array.from({length: Math.ceil(width/16)}, (_,i) => (
-        <g key={i} transform={`translate(${i*16+8}, ${height/2})`}>
-          {/* Shadow */}
-          <polygon points="0,-8 6,0 0,8 -6,0" fill="rgba(0,0,0,0.22)" transform="translate(0.5,0.6)" />
-          {/* Main diamond */}
-          <polygon points="0,-8 6,0 0,8 -6,0" fill={c} />
-          {/* Gold centre */}
-          <polygon points="0,-4 3,0 0,4 -3,0" fill={a} />
-          {/* Highlight */}
-          <polygon points="0,-4 3,0 0,4 -3,0" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={0.5} />
-        </g>
-      ))}
-    </>,
-    br4: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/20)}, (_,i) => (
-        <g key={i} transform={`translate(${i*20+10}, ${height/2})`}>
-          <ellipse rx={6} ry={8} fill={a} opacity={0.7} />
-          <ellipse rx={3} ry={4} fill={c} />
-        </g>
-      ))}
-    </>,
-    br5: <>
-      <rect width={width} height={height} fill={a} />
-      {Array.from({length: Math.ceil(width/28)}, (_,i) => (
-        <g key={i} transform={`translate(${i*28+14}, ${height/2})`}>
-          <path d={`M0,-10 C5,-6 10,-2 6,2 C10,6 5,10 0,10 C-5,10 -10,6 -6,2 C-10,-2 -5,-6 0,-10Z`} fill={c} opacity={0.9} />
-          <circle r={2} fill={a} />
-        </g>
-      ))}
-    </>,
-    br6: <>
-      <rect width={width} height={height} fill={a} />
-      {Array.from({length: Math.ceil(width/12)}, (_,i) => (
-        <rect key={i} x={i*12} y={0} width={8} height={height} fill={c} opacity={0.15} />
-      ))}
-      <rect y={height*0.2} width={width} height={height*0.6} fill={c} opacity={0.1} />
-    </>,
-    br7: <>
-      <rect width={width} height={height} fill={c} />
-      <line x1={0} y1={height/2} x2={width} y2={height/2} stroke={a} strokeWidth={2} />
-    </>,
-    br8: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/18)}, (_,i) => (
-        <g key={i} transform={`translate(${i*18+9}, ${height/2})`}>
-          <circle r={5} fill={a} opacity={0.6} />
-          <circle r={2} fill={c} />
-        </g>
-      ))}
-    </>,
-    br9: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/14)}, (_,i) => (
-        <polygon key={i} points={`${i*14},0 ${i*14+7},${height} ${i*14+14},0`} fill={a} opacity={0.5} />
-      ))}
-    </>,
-    br10: <>
-      <rect width={width} height={height} fill={c} />
-      <path d={'M0,' + (height/2) + ' ' + Array.from({length: Math.ceil(width/20)}, (_,i) => 'Q' + (i*20+10) + ',' + (i%2===0?0:height) + ' ' + ((i+1)*20) + ',' + (height/2)).join(' ')} fill="none" stroke={a} strokeWidth={2} opacity={0.8} />
-    </>,
-    br11: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/16)}, (_,i) => (
-        <polygon key={i} points={`${i*16+8},${height*0.1} ${i*16+14},${height/2} ${i*16+8},${height*0.9} ${i*16+2},${height/2}`} fill={a} opacity={0.6} />
-      ))}
-    </>,
-    br12: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/22)}, (_,i) => (
-        <g key={i} transform={`translate(${i*22+11}, ${height/2})`}>
-          <ellipse rx={7} ry={5} fill={a} opacity={0.5} />
-          <ellipse rx={4} ry={3} fill={c} />
-          <ellipse rx={2} ry={1.5} fill={a} opacity={0.7} />
-        </g>
-      ))}
-    </>,
-  }
-
-  const pallu_patterns = {
-    p1: <>
-      <rect width={width} height={height} fill={a} />
-      {Array.from({length: Math.ceil(width/8)}, (_,i) => (
-        <rect key={i} x={i*8} y={0} width={5} height={height} fill={c} opacity={0.2} />
-      ))}
-      {Array.from({length: Math.ceil(height/8)}, (_,i) => (
-        <rect key={`h${i}`} x={0} y={i*8} width={width} height={3} fill={c} opacity={0.1} />
-      ))}
-    </>,
-    p2: <>
-      <rect width={width} height={height} fill={a} />
-      <rect width={width} height={height/2} fill={c} opacity={0.9} />
-      {Array.from({length: Math.ceil(width/20)}, (_,i) => (
-        <g key={i} transform={`translate(${i*20+10}, ${height*0.75})`}>
-          <polygon points="0,-8 6,0 0,8 -6,0" fill={c} opacity={0.7} />
-        </g>
-      ))}
-    </>,
-    p3: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/30)}, (_,x) => Array.from({length: Math.ceil(height/30)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*30+15},${y*30+15})`}>
-          {/* Peacock feather drop shadow */}
-          <path d="M0,-12 C6,-8 12,-4 8,0 C12,4 6,8 0,12 C-6,8 -12,4 -8,0 C-12,-4 -6,-8 0,-12Z" fill="rgba(0,0,0,0.2)" transform="translate(0.6,0.8)" />
-          {/* Feather body */}
-          <path d={`M0,-12 C6,-8 12,-4 8,0 C12,4 6,8 0,12 C-6,8 -12,4 -8,0 C-12,-4 -6,-8 0,-12Z`} fill={a} opacity={0.72} />
-          {/* Inner highlight */}
-          <path d="M0,-12 C6,-8 12,-4 8,0 C12,4 6,8 0,12 C-6,8 -12,4 -8,0 C-12,-4 -6,-8 0,-12Z" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth={0.6} />
-          {/* Spoke lines */}
-          {[0,60,120,180,240,300].map(ang => (
-            <line key={ang} x1={0} y1={0} x2={Math.cos(ang*Math.PI/180)*14} y2={Math.sin(ang*Math.PI/180)*14} stroke={a} strokeWidth={0.9} opacity={0.38} />
-          ))}
-          {/* Centre eye */}
-          <circle r={3} fill={c} />
-          <circle r={1.5} fill={a} opacity={0.9} />
-        </g>
-      ))).flat()}
-    </>,
-    p4: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/22)}, (_,x) => Array.from({length: Math.ceil(height/22)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*22+11},${y*22+11})`}>
-          <ellipse rx={6} ry={9} fill={a} opacity={0.5} />
-          <ellipse rx={3} ry={5} fill={c} />
-          <ellipse rx={1} ry={2} fill={a} opacity={0.8} />
-        </g>
-      ))).flat()}
-    </>,
-    p5: <rect width={width} height={height} fill={c} />,
-    p6: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/26)}, (_,x) => Array.from({length: Math.ceil(height/32)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*26+13},${y*32+16})`}>
-          <path d={`M0,-14 C6,-14 12,-6 12,0 C12,6 6,14 0,14 C-6,14 -12,6 -12,0 C-12,-6 -6,-14 0,-14Z`} fill="none" stroke={a} strokeWidth={1.2} opacity={0.6} />
-          <polygon points="0,-8 4,-4 4,4 0,8 -4,4 -4,-4" fill={a} opacity={0.3} />
-        </g>
-      ))).flat()}
-    </>,
-    p7: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/32)}, (_,x) => Array.from({length: Math.ceil(height/36)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*32+16},${y*36+18})`}>
-          <circle r={12} fill="none" stroke={a} strokeWidth={1} opacity={0.4} />
-          <circle r={7} fill={a} opacity={0.2} />
-          <circle r={3} fill={a} opacity={0.6} />
-          {[0,45,90,135,180,225,270,315].map(ang => (
-            <line key={ang} x1={Math.cos(ang*Math.PI/180)*7} y1={Math.sin(ang*Math.PI/180)*7} x2={Math.cos(ang*Math.PI/180)*12} y2={Math.sin(ang*Math.PI/180)*12} stroke={a} strokeWidth={1} opacity={0.5} />
-          ))}
-        </g>
-      ))).flat()}
-    </>,
-    p8: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/20)}, (_,x) => Array.from({length: Math.ceil(height/20)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*20+10},${y*20+10})`}>
-          <ellipse rx={5} ry={7} fill={a} opacity={0.5} />
-          <ellipse rx={2} ry={3} fill={c} />
-        </g>
-      ))).flat()}
-    </>,
-    p9: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/14)}, (_,i) => (
-        <rect key={i} x={i*14} y={0} width={7} height={height} fill={a} opacity={0.3} />
-      ))}
-    </>,
-    p10: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: 4}, (_,i) => (
-        <path key={i} d={`M${(i+0.5)*width/4},0 C${(i+1)*width/4},${height/4} ${i*width/4},${height/2} ${(i+0.5)*width/4},${3*height/4} C${(i+1)*width/4},${height} ${i*width/4},${height} ${(i+0.5)*width/4},${height}`} fill="none" stroke={a} strokeWidth={1.5} opacity={0.6} />
-      ))}
-    </>,
-    p11: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/24)}, (_,x) => Array.from({length: Math.ceil(height/24)}, (_,y) => (
-        <g key={`${x}-${y}`} transform={`translate(${x*24+12},${y*24+12})`}>
-          <path d={`M0,-10 C5,-10 10,-5 10,0 C10,5 5,10 0,10 C-5,10 -10,5 -10,0 C-10,-5 -5,-10 0,-10Z`} fill="none" stroke={a} strokeWidth={1} opacity={0.5} />
-          <circle r={3} fill={a} opacity={0.4} />
-        </g>
-      ))).flat()}
-    </>,
-    p12: <>
-      <rect width={width} height={height} fill={c} />
-      {Array.from({length: Math.ceil(width/18)}, (_,x) => Array.from({length: Math.ceil(height/18)}, (_,y) => (
-        <rect key={`${x}-${y}`} x={x*18+3} y={y*18+3} width={12} height={12} fill="none" stroke={a} strokeWidth={1} opacity={0.5} />
-      ))).flat()}
-    </>,
-  }
-
-  const part = patternId?.startsWith('br') ? border_patterns : patternId?.startsWith('p') ? pallu_patterns : patterns
-  const isBorder = patternId?.startsWith('br')
-  const isPallu  = patternId?.startsWith('p')
-
-  // ── Silk & zari colour helpers ──────────────────────────────────────────────
-  // Lighten a hex colour by amt (0–255)
+  // ── Colour helpers — must be defined before patterns object ──────────────────
   const hexLight = (hex, amt) => {
     const n = parseInt((hex||'#888888').replace('#',''), 16)
     const r = Math.min(255, (n>>16)+amt)
@@ -378,8 +18,707 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
   const cLight = hexLight(c, 28)
   const cDark  = hexDark(c, 22)
   const cVDark = hexDark(c, 40)
-  const aLight = hexLight(a, 55)   // bright zari highlight
-  const aDark  = hexDark(a, 30)    // deep zari shadow
+  const aLight = hexLight(a, 55)
+  const aDark  = hexDark(a, 30)
+
+  // ── spacing helpers ───────────────────────────────────────────────────────────
+  const W = width, H = height
+  // Mango/paisley path at given size (s = half-height)
+  const mangoPath = (s) => `M0,${-s} C${s*0.6},${-s*0.9} ${s*0.9},${-s*0.3} ${s*0.5},${s*0.3} C${s*0.8},${s*0.7} ${s*0.3},${s} 0,${s} C${-s*0.4},${s} ${-s*0.5},${s*0.5} ${-s*0.4},${s*0.2} C${-s*0.3},${-s*0.4} ${-s*0.4},${-s*0.8} 0,${-s}Z`
+  // 5-petal flower path
+  const flowerPetal = (r, ir) => [0,72,144,216,288].map(ang => {
+    const x1=(Math.cos((ang-90)*Math.PI/180)*r).toFixed(2), y1=(Math.sin((ang-90)*Math.PI/180)*r).toFixed(2)
+    const x2=(Math.cos((ang+36-90)*Math.PI/180)*ir).toFixed(2), y2=(Math.sin((ang+36-90)*Math.PI/180)*ir).toFixed(2)
+    const x3=(Math.cos((ang+72-90)*Math.PI/180)*r).toFixed(2), y3=(Math.sin((ang+72-90)*Math.PI/180)*r).toFixed(2)
+    return `${ang===0?'M':'L'}${x1},${y1} Q${x2},${y2} ${x3},${y3}`
+  }).join(' ')+'Z'
+
+  const patterns = {
+    // b1 — Plain Silk: smooth base with subtle weft grain
+    b1: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(H/4)},(_,i)=>(
+        <line key={i} x1={0} y1={i*4+2} x2={W} y2={i*4+2} stroke={cVDark} strokeWidth="0.3" opacity="0.06"/>
+      ))}
+    </>,
+
+    // b2 — Stripes: broad zari stripes alternating with body colour, typical Banarasi
+    b2: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/24)},(_,i)=>(
+        <g key={i}>
+          <rect x={i*24} y={0} width={10} height={H} fill={a} opacity="0.55"/>
+          <rect x={i*24+1} y={0} width={2} height={H} fill={aLight} opacity="0.4"/>
+          <rect x={i*24+7} y={0} width={1} height={H} fill={aLight} opacity="0.25"/>
+        </g>
+      ))}
+    </>,
+
+    // b3 — Checks: Chettinad-style woven checks
+    b3: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/20)},(_,i)=>(
+        <rect key={`v${i}`} x={i*20} y={0} width={10} height={H} fill={a} opacity="0.18"/>
+      ))}
+      {Array.from({length:Math.ceil(H/20)},(_,i)=>(
+        <rect key={`h${i}`} x={0} y={i*20} width={W} height={10} fill={a} opacity="0.18"/>
+      ))}
+      {Array.from({length:Math.ceil(W/20)},(_,x)=>Array.from({length:Math.ceil(H/20)},(_,y)=>(
+        <rect key={`c${x}-${y}`} x={x*20} y={y*20} width={10} height={10} fill={a} opacity="0.22"/>
+      ))).flat()}
+      {Array.from({length:Math.ceil(W/20)},(_,i)=>(
+        <line key={`vl${i}`} x1={i*20+10} y1={0} x2={i*20+10} y2={H} stroke={a} strokeWidth="0.6" opacity="0.3"/>
+      ))}
+      {Array.from({length:Math.ceil(H/20)},(_,i)=>(
+        <line key={`hl${i}`} x1={0} y1={i*20+10} x2={W} y2={i*20+10} stroke={a} strokeWidth="0.6" opacity="0.3"/>
+      ))}
+    </>,
+    // b4 — Floral Butta: classic mango/teardrop butta in offset rows (Kanjivaram)
+    b4: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/26)},(_,x)=>Array.from({length:Math.ceil(H/28)},(_,y)=>{
+        const cx=x*26+(y%2===0?13:26), cy=y*28+14, s=10
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          <path d={mangoPath(s)} fill={a} opacity="0.82"/>
+          <path d={mangoPath(s*0.62)} fill={c} opacity="0.78"/>
+          <path d={mangoPath(s*0.35)} fill={a} opacity="0.9"/>
+          <circle r="1.5" fill={aLight} opacity="0.95"/>
+          <path d={`M0,${-s} C1.2,${-s-3} 3,${-s-2} 2,${-s}`} fill="none" stroke={a} strokeWidth="1" opacity="0.8"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // b5 — Ikat Diamond: Pochampally staggered diamond
+    b5: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/22)},(_,x)=>Array.from({length:Math.ceil(H/22)},(_,y)=>{
+        const cx=x*22+(y%2===0?11:22), cy=y*22+11
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          <polygon points="0,-9 9,0 0,9 -9,0" fill={a} opacity="0.55"/>
+          <polygon points="0,-6 6,0 0,6 -6,0" fill={c} opacity="0.9"/>
+          <polygon points="0,-3.5 3.5,0 0,3.5 -3.5,0" fill={a} opacity="0.75"/>
+          <line x1="0" y1="-9" x2="0" y2="9" stroke={a} strokeWidth="0.4" opacity="0.3"/>
+          <line x1="-9" y1="0" x2="9" y2="0" stroke={a} strokeWidth="0.4" opacity="0.3"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // b6 — Temple Motifs: Kanjivaram 8-petal temple medallion
+    b6: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/28)},(_,x)=>Array.from({length:Math.ceil(H/28)},(_,y)=>{
+        const cx=x*28+(y%2===0?14:28), cy=y*28+14
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          <circle r="10" fill="none" stroke={a} strokeWidth="1.2" opacity="0.65"/>
+          {[0,45,90,135,180,225,270,315].map(ang=>(
+            <ellipse key={ang}
+              cx={(Math.cos((ang-90)*Math.PI/180)*5.5).toFixed(1)}
+              cy={(Math.sin((ang-90)*Math.PI/180)*5.5).toFixed(1)}
+              rx="2.2" ry="3.8" fill={a} opacity="0.7"
+              transform={`rotate(${ang},${(Math.cos((ang-90)*Math.PI/180)*5.5).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*5.5).toFixed(1)})`}
+            />
+          ))}
+          <circle r="3" fill={a} opacity="0.9"/>
+          <circle r="1.5" fill={c} opacity="1"/>
+          <circle r="0.6" fill={aLight} opacity="1"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // b7 — Peacock Grid: standing peacock with fanned tail (Paithani)
+    b7: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/36)},(_,x)=>Array.from({length:Math.ceil(H/38)},(_,y)=>{
+        const cx=x*36+(y%2===0?18:36), cy=y*38+19
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          {[-3,-2,-1,0,1,2,3].map(i=>(
+            <path key={i} d={`M0,2 C${i*4},${-8+i*i*0.5} ${i*5+2},${-14} ${i*3},${-16}`}
+              fill="none" stroke={a} strokeWidth="1.2" opacity={0.55+Math.abs(i)*0.04}/>
+          ))}
+          {[-2,-1,0,1,2].map(i=>(
+            <circle key={i} cx={i*3} cy={-14-i*i*0.4} r="1.2" fill={a} opacity="0.8"/>
+          ))}
+          <ellipse rx="3.5" ry="5" cy="4" fill={a} opacity="0.8"/>
+          <ellipse rx="2" ry="3" cy="4" fill={c} opacity="0.85"/>
+          <circle cx="0" cy="-1" r="2.5" fill={a} opacity="0.85"/>
+          <circle cx="0" cy="-1" r="1.2" fill={c} opacity="0.9"/>
+          <path d="M0,-3.5 C-1,-6 0,-7 1,-6 C2,-5 1,-3.5 0,-3.5Z" fill={a} opacity="0.9"/>
+          <circle cx="0" cy="-7" r="1" fill={a} opacity="0.95"/>
+          <path d="M1.5,-1 L3.5,-0.5" stroke={a} strokeWidth="0.8" opacity="0.9"/>
+          <path d="M-1.5,9 L-2,13 M1.5,9 L2,13" stroke={a} strokeWidth="0.8" opacity="0.6" strokeLinecap="round"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // b8 — Zari Dots: diamond butti scatter in zari
+    b8: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/20)},(_,x)=>Array.from({length:Math.ceil(H/20)},(_,y)=>{
+        const cx=x*20+(y%2===0?10:20), cy=y*20+10
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          <polygon points="0,-5 5,0 0,5 -5,0" fill={a} opacity="0.75"/>
+          <polygon points="0,-3 3,0 0,3 -3,0" fill={c} opacity="0.9"/>
+          <polygon points="0,-1.5 1.5,0 0,1.5 -1.5,0" fill={a} opacity="0.9"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // b9 — Bandhani: resist-dye dot clusters in offset grid
+    b9: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/22)},(_,x)=>Array.from({length:Math.ceil(H/22)},(_,y)=>{
+        const cx=x*22+(y%2===0?11:22), cy=y*22+11
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          <circle r="3.5" fill="none" stroke={a} strokeWidth="1" opacity="0.25"/>
+          <circle r="2" fill={a} opacity="0.5"/>
+          <circle r="1" fill={c} opacity="0.9"/>
+          {[0,90,180,270].map(ang=>(
+            <circle key={ang} cx={(Math.cos(ang*Math.PI/180)*4).toFixed(1)} cy={(Math.sin(ang*Math.PI/180)*4).toFixed(1)} r="1.2" fill={a} opacity="0.65"/>
+          ))}
+        </g>
+      })).flat()}
+    </>,
+
+    // b10 — Leheriya Wave: diagonal chevron wave stripes (Rajasthani)
+    b10: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil((W+H)/14)},(_,i)=>(
+        <path key={`d1${i}`} d={`M${i*14-H},0 L${i*14},${H}`}
+          fill="none" stroke={a} strokeWidth={i%3===0?1.8:0.8} opacity={i%3===0?0.6:0.3}/>
+      ))}
+      {Array.from({length:Math.ceil((W+H)/28)},(_,i)=>(
+        <path key={`d2${i}`} d={`M${W-i*28+H},0 L${W-i*28},${H}`}
+          fill="none" stroke={a} strokeWidth="1.5" opacity="0.45"/>
+      ))}
+    </>,
+
+    // b11 — Mughal Arch: jaal lattice of pointed arches (Banarasi)
+    b11: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/30)},(_,x)=>Array.from({length:Math.ceil(H/30)},(_,y)=>{
+        const cx=x*30+15, cy=y*30+15
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          <path d="M-10,12 L-10,-2 C-10,-14 10,-14 10,-2 L10,12"
+            fill="none" stroke={a} strokeWidth="1.4" opacity="0.65"/>
+          <path d="M-6,12 L-6,0 C-6,-8 6,-8 6,0 L6,12"
+            fill="none" stroke={a} strokeWidth="0.7" opacity="0.35"/>
+          <polygon points="0,-14 3,-10 0,-8 -3,-10" fill={a} opacity="0.8"/>
+          <circle cy="4" r="2.5" fill={a} opacity="0.4"/>
+          <circle cy="4" r="1.2" fill={c} opacity="0.9"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // b12 — Geometric: diagonal trellis jaali (Chanderi)
+    b12: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil((W+H)/18)},(_,i)=>(
+        <line key={`d1${i}`} x1={i*18-H} y1={0} x2={i*18} y2={H} stroke={a} strokeWidth="1" opacity="0.45"/>
+      ))}
+      {Array.from({length:Math.ceil((W+H)/18)},(_,i)=>(
+        <line key={`d2${i}`} x1={W-i*18+H} y1={0} x2={W-i*18} y2={H} stroke={a} strokeWidth="1" opacity="0.45"/>
+      ))}
+      {Array.from({length:Math.ceil(W/18)},(_,x)=>Array.from({length:Math.ceil(H/18)},(_,y)=>(
+        <circle key={`${x}-${y}`} cx={x*18+(y%2===0?0:9)} cy={y*18} r="1.5" fill={a} opacity="0.7"/>
+      ))).flat()}
+    </>,
+
+    // b13 — Lotus Pattern: 8-petal lotus medallion (Bengal jamdani)
+    b13: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/32)},(_,x)=>Array.from({length:Math.ceil(H/32)},(_,y)=>{
+        const cx=x*32+(y%2===0?16:32), cy=y*32+16
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          {[0,45,90,135,180,225,270,315].map(ang=>(
+            <path key={ang}
+              d={`M0,0 C${(Math.cos((ang-20)*Math.PI/180)*5).toFixed(1)},${(Math.sin((ang-20)*Math.PI/180)*5).toFixed(1)} ${(Math.cos((ang-10)*Math.PI/180)*11).toFixed(1)},${(Math.sin((ang-10)*Math.PI/180)*11).toFixed(1)} ${(Math.cos(ang*Math.PI/180)*13).toFixed(1)},${(Math.sin(ang*Math.PI/180)*13).toFixed(1)} C${(Math.cos((ang+10)*Math.PI/180)*11).toFixed(1)},${(Math.sin((ang+10)*Math.PI/180)*11).toFixed(1)} ${(Math.cos((ang+20)*Math.PI/180)*5).toFixed(1)},${(Math.sin((ang+20)*Math.PI/180)*5).toFixed(1)} 0,0Z`}
+              fill={a} opacity="0.55"/>
+          ))}
+          {[22,67,112,157,202,247,292,337].map(ang=>(
+            <path key={ang}
+              d={`M0,0 C${(Math.cos((ang-15)*Math.PI/180)*3).toFixed(1)},${(Math.sin((ang-15)*Math.PI/180)*3).toFixed(1)} ${(Math.cos(ang*Math.PI/180)*7).toFixed(1)},${(Math.sin(ang*Math.PI/180)*7).toFixed(1)} ${(Math.cos(ang*Math.PI/180)*8).toFixed(1)},${(Math.sin(ang*Math.PI/180)*8).toFixed(1)} C${(Math.cos((ang+15)*Math.PI/180)*3).toFixed(1)},${(Math.sin((ang+15)*Math.PI/180)*3).toFixed(1)} 0,0 0,0Z`}
+              fill={a} opacity="0.8"/>
+          ))}
+          <circle r="3" fill={a} opacity="0.9"/>
+          <circle r="1.5" fill={c} opacity="1"/>
+          <circle r="0.6" fill={aLight} opacity="1"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // b14 — Warli Art: tribal stick figures
+    b14: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/32)},(_,x)=>Array.from({length:Math.ceil(H/32)},(_,y)=>{
+        const cx=x*32+(y%2===0?16:32), cy=y*32+16
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          <circle cy="-9" r="2.8" fill={a} opacity="0.75"/>
+          <polygon points="0,-6 -4,2 4,2" fill={a} opacity="0.65"/>
+          <line x1="-4" y1="-2" x2="-9" y2="-5" stroke={a} strokeWidth="1.2" opacity="0.7" strokeLinecap="round"/>
+          <line x1="4" y1="-2" x2="9" y2="-5" stroke={a} strokeWidth="1.2" opacity="0.7" strokeLinecap="round"/>
+          <line x1="-2" y1="2" x2="-4" y2="9" stroke={a} strokeWidth="1.2" opacity="0.7" strokeLinecap="round"/>
+          <line x1="2" y1="2" x2="4" y2="9" stroke={a} strokeWidth="1.2" opacity="0.7" strokeLinecap="round"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // b15 — Kashmiri Floral: 5-petal chinar flower (sozni)
+    b15: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/28)},(_,x)=>Array.from({length:Math.ceil(H/28)},(_,y)=>{
+        const cx=x*28+(y%2===0?14:28), cy=y*28+14
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          {[0,72,144,216,288].map(ang=>(
+            <path key={ang}
+              d={`M0,0 C${(Math.cos((ang-25-90)*Math.PI/180)*4).toFixed(1)},${(Math.sin((ang-25-90)*Math.PI/180)*4).toFixed(1)} ${(Math.cos((ang-90)*Math.PI/180)*10).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*10).toFixed(1)} ${(Math.cos((ang-90)*Math.PI/180)*11).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*11).toFixed(1)} C${(Math.cos((ang+25-90)*Math.PI/180)*4).toFixed(1)},${(Math.sin((ang+25-90)*Math.PI/180)*4).toFixed(1)} 0,0 0,0Z`}
+              fill={a} opacity="0.7"/>
+          ))}
+          {[36,108,180,252,324].map(ang=>(
+            <line key={ang} x1="0" y1="0" x2={(Math.cos((ang-90)*Math.PI/180)*9).toFixed(1)} y2={(Math.sin((ang-90)*Math.PI/180)*9).toFixed(1)} stroke={a} strokeWidth="0.6" opacity="0.3"/>
+          ))}
+          <circle r="2.5" fill={a} opacity="0.9"/>
+          <circle r="1.2" fill={c} opacity="1"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // b16 — Pinstripe: fine warp pin stripes (linen/office)
+    b16: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/8)},(_,i)=>(
+        <g key={i}>
+          <rect x={i*8} y={0} width={i%4===0?2:0.8} height={H} fill={a} opacity={i%4===0?0.55:0.2}/>
+          {i%4===0 && <rect x={i*8+0.5} y={0} width={0.5} height={H} fill={aLight} opacity="0.35"/>}
+        </g>
+      ))}
+    </>,
+
+    // b17 — Meenakari: enamel-jewel rosette (Jaipur)
+    b17: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/28)},(_,x)=>Array.from({length:Math.ceil(H/28)},(_,y)=>{
+        const cx=x*28+(y%2===0?14:28), cy=y*28+14
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          <circle r="11" fill="none" stroke={a} strokeWidth="1.5" opacity="0.7"/>
+          {[0,60,120,180,240,300].map(ang=>(
+            <g key={ang} transform={`rotate(${ang})`}>
+              <ellipse cy="-7" rx="2.2" ry="3.5" fill={a} opacity="0.72"/>
+              <ellipse cy="-7" rx="1.2" ry="2" fill={c} opacity="0.9"/>
+              <circle cy="-9.5" r="1" fill={aLight} opacity="0.9"/>
+            </g>
+          ))}
+          <circle r="3.5" fill={a} opacity="0.85"/>
+          <circle r="2" fill={c} opacity="1"/>
+          <circle r="0.8" fill={aLight} opacity="1"/>
+        </g>
+      })).flat()}
+    </>,
+  }
+
+  const border_patterns = {
+    // br1 — Single Kasavu: Kerala single gold band
+    br1: <>
+      <rect width={W} height={H} fill={c} />
+      <rect y={H*0.22} width={W} height={H*0.56} fill={a} opacity="0.85"/>
+      <rect y={H*0.22} width={W} height={H*0.06} fill={aLight} opacity="0.55"/>
+      <rect y={H*0.72} width={W} height={H*0.06} fill={aLight} opacity="0.45"/>
+    </>,
+
+    // br2 — Double Kasavu: two Kerala gold bands
+    br2: <>
+      <rect width={W} height={H} fill={c} />
+      <rect y={0} width={W} height={H*0.28} fill={a} opacity="0.85"/>
+      <rect y={H*0.72} width={W} height={H*0.28} fill={a} opacity="0.85"/>
+      <rect y={0} width={W} height={H*0.05} fill={aLight} opacity="0.55"/>
+      <rect y={H*0.23} width={W} height={H*0.05} fill={aLight} opacity="0.45"/>
+      <rect y={H*0.72} width={W} height={H*0.05} fill={aLight} opacity="0.55"/>
+      <rect y={H*0.95} width={W} height={H*0.05} fill={aLight} opacity="0.45"/>
+    </>,
+
+    // br3 — Temple Border: repeating gopuram arch silhouettes on gold
+    br3: <>
+      <rect width={W} height={H} fill={a} />
+      {Array.from({length:Math.ceil(W/3)},(_,i)=>(
+        <line key={`v${i}`} x1={i*3} y1={0} x2={i*3} y2={H} stroke={cVDark} strokeWidth="0.35" opacity="0.1"/>
+      ))}
+      {Array.from({length:Math.ceil(W/16)},(_,i)=>{
+        const cx=i*16+8, top=H*0.05, base=H*0.95, ht=H*0.9
+        return <g key={i} transform={`translate(${cx},0)`}>
+          <path d={`M-5,${base} L-5,${top+ht*0.35} C-5,${top} 5,${top} 5,${top+ht*0.35} L5,${base}Z`} fill={c} opacity="0.78"/>
+          <path d={`M-3,${base} L-3,${top+ht*0.42} C-3,${top+H*0.08} 3,${top+H*0.08} 3,${top+ht*0.42} L3,${base}`} fill="none" stroke={c} strokeWidth="0.5" opacity="0.4"/>
+          <polygon points={`0,${top-H*0.04} 2.5,${top+H*0.1} -2.5,${top+H*0.1}`} fill={c} opacity="0.9"/>
+          <circle cy={top-H*0.08} r="1.5" fill={c} opacity="0.9"/>
+        </g>
+      })}
+      <rect y={0} width={W} height="2.5" fill={aLight} opacity="0.7"/>
+      <rect y={H-2.5} width={W} height="2.5" fill={aLight} opacity="0.7"/>
+    </>,
+
+    // br4 — Mango Border: proper paisley mango motifs in a row
+    br4: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/22)},(_,i)=>{
+        const cx=i*22+11, s=H*0.42
+        return <g key={i} transform={`translate(${cx},${H/2})`}>
+          <path d={mangoPath(s)} fill={a} opacity="0.78"/>
+          <path d={mangoPath(s*0.62)} fill={c} opacity="0.8"/>
+          <path d={mangoPath(s*0.35)} fill={a} opacity="0.85"/>
+          <circle r="1.8" fill={aLight} opacity="0.9"/>
+          <path d={`M0,${-s} C1,${-s-H*0.12} 2.5,${-s-H*0.1} 2,${-s}`} fill="none" stroke={a} strokeWidth="0.9" opacity="0.8"/>
+        </g>
+      })}
+      <line x1={0} y1={H*0.06} x2={W} y2={H*0.06} stroke={a} strokeWidth="0.8" opacity="0.4"/>
+      <line x1={0} y1={H*0.94} x2={W} y2={H*0.94} stroke={a} strokeWidth="0.8" opacity="0.4"/>
+    </>,
+
+    // br5 — Peacock Border: walking peacock silhouette row
+    br5: <>
+      <rect width={W} height={H} fill={c} />
+      <line x1={0} y1={H*0.1} x2={W} y2={H*0.1} stroke={a} strokeWidth="0.7" opacity="0.4"/>
+      <line x1={0} y1={H*0.9} x2={W} y2={H*0.9} stroke={a} strokeWidth="0.7" opacity="0.4"/>
+      {Array.from({length:Math.ceil(W/30)},(_,i)=>{
+        const cx=i*30+15, cy=H/2
+        return <g key={i} transform={`translate(${cx},${cy})`}>
+          {[-2,-1,0,1,2].map(j=>(
+            <path key={j} d={`M-2,0 C${j*3-1},${-H*0.28} ${j*4},${-H*0.38} ${j*3},${-H*0.42}`} fill="none" stroke={a} strokeWidth="1.1" opacity="0.6"/>
+          ))}
+          {[-2,-1,0,1,2].map(j=>(
+            <circle key={j} cx={j*3} cy={-H*0.42} r="1.2" fill={a} opacity="0.8"/>
+          ))}
+          <ellipse cx="-1" cy="2" rx="4" ry="3" fill={a} opacity="0.8"/>
+          <ellipse cx="-1" cy="2" rx="2.5" ry="3" fill={c} opacity="0.7"/>
+          <path d="M1.5,-3 C2.5,-6 1,-9 0,-8" stroke={a} strokeWidth="1.4" fill="none" opacity="0.85" strokeLinecap="round"/>
+          <circle cx="0" cy="-9" r="2" fill={a} opacity="0.85"/>
+          <circle cx="0.5" cy="-9.5" r="0.7" fill={c} opacity="1"/>
+          <path d="M0,-11 C0,-14 -1,-15 0.5,-14" fill="none" stroke={a} strokeWidth="0.8" opacity="0.8"/>
+          <circle cx="0.5" cy="-14" r="0.8" fill={a} opacity="0.9"/>
+          <line x1="-3" y1="5" x2="-4" y2={H*0.38} stroke={a} strokeWidth="0.8" opacity="0.65" strokeLinecap="round"/>
+          <line x1="0" y1="5" x2="0" y2={H*0.38} stroke={a} strokeWidth="0.8" opacity="0.65" strokeLinecap="round"/>
+        </g>
+      })}
+    </>,
+
+    // br6 — Broad Zari: solid woven gold band
+    br6: <>
+      <rect width={W} height={H} fill={a} />
+      {Array.from({length:Math.ceil(W/2.5)},(_,i)=>(
+        <line key={`v${i}`} x1={i*2.5} y1={0} x2={i*2.5} y2={H} stroke={cVDark} strokeWidth="0.5" opacity="0.09"/>
+      ))}
+      {Array.from({length:Math.ceil(H/2.5)},(_,i)=>(
+        <line key={`h${i}`} x1={0} y1={i*2.5} x2={W} y2={i*2.5} stroke="rgba(255,255,255,0.12)" strokeWidth="0.4" opacity="0.18"/>
+      ))}
+      <rect y={H*0.28} width={W} height={H*0.44} fill="rgba(255,255,255,0.14)"/>
+      <rect y={0} width={W} height="3" fill={aLight} opacity="0.85"/>
+      <rect y="1" width={W} height="1" fill="rgba(255,255,255,0.6)"/>
+      <rect y={H-3} width={W} height="3" fill={aLight} opacity="0.85"/>
+      <rect y={H-2} width={W} height="1" fill="rgba(255,255,255,0.55)"/>
+    </>,
+
+    // br7 — Thin Gold Line: single fine gold line (office/linen)
+    br7: <>
+      <rect width={W} height={H} fill={c} />
+      <rect y={H*0.35} width={W} height={H*0.3} fill={a} opacity="0.82"/>
+      <rect y={H*0.35} width={W} height={H*0.07} fill={aLight} opacity="0.45"/>
+    </>,
+
+    // br8 — Floral Chain: S-vine with 5-petal flowers
+    br8: <>
+      <rect width={W} height={H} fill={c} />
+      <path d={`M0,${H/2} ` + Array.from({length:Math.ceil(W/20)+1},(_,i)=>`C${i*20+5},${H*0.15} ${i*20+15},${H*0.85} ${(i+1)*20},${H/2}`).join(' ')}
+        fill="none" stroke={a} strokeWidth="1.2" opacity="0.6"/>
+      {Array.from({length:Math.ceil(W/20)},(_,i)=>(
+        <g key={i} transform={`translate(${i*20+10},${i%2===0?H*0.18:H*0.82})`}>
+          {[0,72,144,216,288].map(ang=>(
+            <ellipse key={ang}
+              cx={(Math.cos((ang-90)*Math.PI/180)*3.5).toFixed(1)}
+              cy={(Math.sin((ang-90)*Math.PI/180)*3.5).toFixed(1)}
+              rx="1.5" ry="2.5" fill={a} opacity="0.7"
+              transform={`rotate(${ang},${(Math.cos((ang-90)*Math.PI/180)*3.5).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*3.5).toFixed(1)})`}
+            />
+          ))}
+          <circle r="1.5" fill={a} opacity="0.9"/>
+          <circle r="0.7" fill={c} opacity="1"/>
+        </g>
+      ))}
+      <line x1={0} y1={H*0.05} x2={W} y2={H*0.05} stroke={a} strokeWidth="0.6" opacity="0.35"/>
+      <line x1={0} y1={H*0.95} x2={W} y2={H*0.95} stroke={a} strokeWidth="0.6" opacity="0.35"/>
+    </>,
+
+    // br9 — Geo Steps: stepped staircase geometric band
+    br9: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/16)},(_,i)=>(
+        <g key={i} transform={`translate(${i*16},0)`}>
+          <rect x={0} y={0} width={14} height={H*0.3} fill={a} opacity="0.7"/>
+          <rect x={2} y={H*0.3} width={10} height={H*0.4} fill={a} opacity="0.55"/>
+          <rect x={4} y={H*0.7} width={6} height={H*0.3} fill={a} opacity="0.4"/>
+        </g>
+      ))}
+    </>,
+
+    // br10 — Wave Border: undulating wave
+    br10: <>
+      <rect width={W} height={H} fill={c} />
+      <path d={`M0,${H*0.5} ` + Array.from({length:Math.ceil(W/20)+1},(_,i)=>`Q${i*20+10},${i%2===0?H*0.1:H*0.9} ${(i+1)*20},${H*0.5}`).join(' ')}
+        fill={a} opacity="0.5"/>
+      <path d={`M0,${H*0.5} ` + Array.from({length:Math.ceil(W/20)+1},(_,i)=>`Q${i*20+10},${i%2===0?H*0.1:H*0.9} ${(i+1)*20},${H*0.5}`).join(' ')}
+        fill="none" stroke={a} strokeWidth="1.5" opacity="0.7"/>
+    </>,
+
+    // br11 — Diamond Chain: linked diamond chain
+    br11: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/18)},(_,i)=>{
+        const cx=i*18+9, hs=H*0.42
+        return <g key={i} transform={`translate(${cx},${H/2})`}>
+          <polygon points={`0,${-hs} ${hs},0 0,${hs} ${-hs},0`} fill="none" stroke={a} strokeWidth="1.3" opacity="0.75"/>
+          <polygon points={`0,${-hs*0.55} ${hs*0.55},0 0,${hs*0.55} ${-hs*0.55},0`} fill={a} opacity="0.35"/>
+          <circle r="2" fill={a} opacity="0.85"/>
+          <circle r="0.9" fill={c} opacity="1"/>
+        </g>
+      })}
+      <line x1={0} y1={H/2} x2={W} y2={H/2} stroke={a} strokeWidth="0.6" opacity="0.25"/>
+    </>,
+
+    // br12 — Lotus Row: side-profile lotus buds
+    br12: <>
+      <rect width={W} height={H} fill={c} />
+      <line x1={0} y1={H*0.5} x2={W} y2={H*0.5} stroke={a} strokeWidth="0.7" opacity="0.3"/>
+      {Array.from({length:Math.ceil(W/20)},(_,i)=>{
+        const cx=i*20+10
+        return <g key={i} transform={`translate(${cx},${H/2})`}>
+          <line x1={0} y1={0} x2={0} y2={H*0.38} stroke={a} strokeWidth="0.9" opacity="0.5"/>
+          <ellipse cx="-3.5" cy={-H*0.15} rx="2.5" ry={H*0.28} fill={a} opacity="0.55" transform="rotate(-15,-3.5,0)"/>
+          <ellipse cx="3.5" cy={-H*0.15} rx="2.5" ry={H*0.28} fill={a} opacity="0.55" transform="rotate(15,3.5,0)"/>
+          <ellipse cy={-H*0.2} rx="2.8" ry={H*0.33} fill={a} opacity="0.72"/>
+          <circle cy={-H*0.32} r="2" fill={a} opacity="0.85"/>
+          <circle cy={-H*0.32} r="1" fill={c} opacity="1"/>
+        </g>
+      })}
+    </>,
+  }
+
+  const pallu_patterns = {
+    // p1 — Rich Zari Pallu: gold brocade with star butti scatter
+    p1: <>
+      <rect width={W} height={H} fill={a} />
+      {Array.from({length:Math.ceil(W/5)},(_,i)=>(
+        <line key={`v${i}`} x1={i*5} y1={0} x2={i*5} y2={H} stroke={cVDark} strokeWidth="0.5" opacity="0.12"/>
+      ))}
+      {Array.from({length:Math.ceil(H/5)},(_,i)=>(
+        <line key={`h${i}`} x1={0} y1={i*5} x2={W} y2={i*5} stroke="rgba(255,255,255,0.1)" strokeWidth="0.4" opacity="0.15"/>
+      ))}
+      {Array.from({length:Math.ceil(W/22)},(_,x)=>Array.from({length:Math.ceil(H/22)},(_,y)=>{
+        const cx=x*22+(y%2===0?11:22), cy=y*22+11
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          {[0,45,90,135].map(ang=>(
+            <line key={ang} x1={(Math.cos(ang*Math.PI/180)*6).toFixed(1)} y1={(Math.sin(ang*Math.PI/180)*6).toFixed(1)} x2={(Math.cos((ang+180)*Math.PI/180)*6).toFixed(1)} y2={(Math.sin((ang+180)*Math.PI/180)*6).toFixed(1)} stroke={c} strokeWidth="1" opacity="0.3"/>
+          ))}
+          <circle r="2" fill={c} opacity="0.4"/>
+          <circle r="1" fill={c} opacity="0.7"/>
+        </g>
+      })).flat()}
+      <rect y={0} width={W} height="3" fill={aLight} opacity="0.7"/>
+      <rect y={H-3} width={W} height="3" fill={aLight} opacity="0.7"/>
+    </>,
+
+    // p2 — Contrast Pallu: body-colour top, gold bottom with mango transition
+    p2: <>
+      <rect width={W} height={H} fill={c} />
+      <rect y={H*0.55} width={W} height={H*0.45} fill={a} opacity="0.92"/>
+      {Array.from({length:Math.ceil(W/18)},(_,i)=>{
+        const s=H*0.07
+        return <g key={i} transform={`translate(${i*18+9},${H*0.55})`}>
+          <path d={mangoPath(s)} fill={a} opacity="0.85"/>
+          <path d={mangoPath(s*0.55)} fill={c} opacity="0.8"/>
+        </g>
+      })}
+      {Array.from({length:Math.ceil(W/4)},(_,i)=>(
+        <line key={i} x1={i*4} y1={H*0.55} x2={i*4} y2={H} stroke={cVDark} strokeWidth="0.4" opacity="0.1"/>
+      ))}
+    </>,
+
+    // p3 — Peacock Pallu: large peacock feather eye (Paithani)
+    p3: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/34)},(_,x)=>Array.from({length:Math.ceil(H/36)},(_,y)=>{
+        const cx=x*34+(y%2===0?17:34), cy=y*36+18
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          {[0,20,40,60,80,100,120,140,160,180,200,220,240,260,280,300,320,340].map(ang=>(
+            <line key={ang}
+              x1={(Math.cos((ang-90)*Math.PI/180)*4).toFixed(1)}
+              y1={(Math.sin((ang-90)*Math.PI/180)*4).toFixed(1)}
+              x2={(Math.cos((ang-90)*Math.PI/180)*14).toFixed(1)}
+              y2={(Math.sin((ang-90)*Math.PI/180)*14).toFixed(1)}
+              stroke={a} strokeWidth="0.7" opacity="0.4"/>
+          ))}
+          <circle r="14" fill="none" stroke={a} strokeWidth="1.2" opacity="0.5"/>
+          <circle r="9" fill="none" stroke={a} strokeWidth="0.8" opacity="0.4"/>
+          <circle r="5" fill={a} opacity="0.45"/>
+          <circle r="3" fill={a} opacity="0.65"/>
+          <circle r="1.8" fill={c} opacity="1"/>
+          <circle r="0.7" fill={aLight} opacity="1"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // p4 — Floral Pallu: diagonal vine with 5-petal flowers
+    p4: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:3},(_,j)=>(
+        <path key={j}
+          d={`M${j*W/3-20},0 C${j*W/3+W/6},${H/4} ${j*W/3-W/8},${H/2} ${j*W/3+W/5},${H*0.75} C${j*W/3+W/3},${H} ${j*W/3+W/5},${H} ${j*W/3+W/3},${H}`}
+          fill="none" stroke={a} strokeWidth="1.3" opacity="0.45"/>
+      ))}
+      {Array.from({length:Math.ceil(W/26)},(_,x)=>Array.from({length:Math.ceil(H/26)},(_,y)=>{
+        const cx=x*26+(y%2===0?13:26), cy=y*26+13
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          {[0,72,144,216,288].map(ang=>(
+            <ellipse key={ang}
+              cx={(Math.cos((ang-90)*Math.PI/180)*5).toFixed(1)}
+              cy={(Math.sin((ang-90)*Math.PI/180)*5).toFixed(1)}
+              rx="2" ry="3.5" fill={a} opacity="0.65"
+              transform={`rotate(${ang},${(Math.cos((ang-90)*Math.PI/180)*5).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*5).toFixed(1)})`}
+            />
+          ))}
+          <circle r="2" fill={a} opacity="0.9"/>
+          <circle r="1" fill={c} opacity="1"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // p5 — Minimal Pallu: plain woven grain (office/linen)
+    p5: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(H/4)},(_,i)=>(
+        <line key={i} x1={0} y1={i*4+2} x2={W} y2={i*4+2} stroke={cVDark} strokeWidth="0.35" opacity="0.07"/>
+      ))}
+      {Array.from({length:Math.ceil(W/4)},(_,i)=>(
+        <line key={`v${i}`} x1={i*4+2} y1={0} x2={i*4+2} y2={H} stroke={cVDark} strokeWidth="0.25" opacity="0.05"/>
+      ))}
+    </>,
+
+    // p6 — Temple Arch Pallu: column of gopuram spires
+    p6: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/28)},(_,x)=>Array.from({length:Math.ceil(H/36)},(_,y)=>{
+        const cx=x*28+14, cy=y*36
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          <path d={`M-10,36 L-10,8 C-10,-6 10,-6 10,8 L10,36`} fill="none" stroke={a} strokeWidth="1.5" opacity="0.65"/>
+          <path d={`M-6,36 L-6,11 C-6,2 6,2 6,11 L6,36`} fill="none" stroke={a} strokeWidth="0.8" opacity="0.35"/>
+          <rect x="-8" y="-2" width="16" height="4" fill={a} opacity="0.55" rx="1"/>
+          <rect x="-6" y="-8" width="12" height="4" fill={a} opacity="0.55" rx="1"/>
+          <rect x="-4" y="-14" width="8" height="4" fill={a} opacity="0.55" rx="1"/>
+          <rect x="-2" y="-19" width="4" height="4" fill={a} opacity="0.55" rx="1"/>
+          <circle cy="-22" r="2.5" fill={a} opacity="0.85"/>
+          <circle cy="-22" r="1.2" fill={c} opacity="1"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // p7 — Mughal Garden: Banarasi jaal trellis with rosettes
+    p7: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil((W+H)/20)},(_,i)=>(
+        <line key={`d1${i}`} x1={i*20-H} y1={0} x2={i*20} y2={H} stroke={a} strokeWidth="0.7" opacity="0.22"/>
+      ))}
+      {Array.from({length:Math.ceil((W+H)/20)},(_,i)=>(
+        <line key={`d2${i}`} x1={W-i*20+H} y1={0} x2={W-i*20} y2={H} stroke={a} strokeWidth="0.7" opacity="0.22"/>
+      ))}
+      {Array.from({length:Math.ceil(W/20)},(_,x)=>Array.from({length:Math.ceil(H/20)},(_,y)=>{
+        const cx=x*20+(y%2===0?0:10), cy=y*20
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          {[0,60,120,180,240,300].map(ang=>(
+            <ellipse key={ang}
+              cx={(Math.cos((ang-90)*Math.PI/180)*3.5).toFixed(1)}
+              cy={(Math.sin((ang-90)*Math.PI/180)*3.5).toFixed(1)}
+              rx="1.3" ry="2.2" fill={a} opacity="0.55"
+              transform={`rotate(${ang},${(Math.cos((ang-90)*Math.PI/180)*3.5).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*3.5).toFixed(1)})`}
+            />
+          ))}
+          <circle r="1.8" fill={a} opacity="0.7"/>
+          <circle r="0.8" fill={c} opacity="1"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // p8 — Butta Scatter: dense mango butta in two alternating orientations
+    p8: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/24)},(_,x)=>Array.from({length:Math.ceil(H/20)},(_,y)=>{
+        const cx=x*24+(y%2===0?12:24), cy=y*20+10, s=7, flip=y%3===0?-1:1
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy}) scale(${flip},1)`}>
+          <path d={mangoPath(s)} fill={a} opacity="0.75"/>
+          <path d={mangoPath(s*0.58)} fill={c} opacity="0.8"/>
+          <path d={mangoPath(s*0.32)} fill={a} opacity="0.85"/>
+          <path d={`M0,${-s} C0.8,${-s-2.5} 2,${-s-2} 1.5,${-s}`} fill="none" stroke={a} strokeWidth="0.8" opacity="0.7"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // p9 — Stripe Pallu: wide alternating body/zari stripes
+    p9: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/20)},(_,i)=>(
+        <g key={i}>
+          <rect x={i*20} y={0} width={i%3===0?12:6} height={H} fill={a} opacity={i%3===0?0.65:0.35}/>
+          {i%3===0 && <rect x={i*20+1} y={0} width={1.5} height={H} fill={aLight} opacity="0.4"/>}
+        </g>
+      ))}
+    </>,
+
+    // p10 — Embroidered Vines: S-vine with rotating leaves (designer)
+    p10: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:2},(_,j)=>(
+        <path key={j}
+          d={`M${j*W/2},0 C${j*W/2+W/4},${H/5} ${j*W/2-W/6},${H*0.4} ${j*W/2+W/6},${H*0.6} C${j*W/2+W/4},${H*0.8} ${j*W/2},${H} ${j*W/2+W/4},${H}`}
+          fill="none" stroke={a} strokeWidth="1.4" opacity="0.5"/>
+      ))}
+      {Array.from({length:Math.ceil(H/22)},(_,i)=>{
+        const cx=W/4+Math.sin(i*1.3)*W/5, cy=i*22+11
+        return <g key={i} transform={`translate(${cx},${cy}) rotate(${i*35})`}>
+          <ellipse rx="5" ry="9" fill={a} opacity="0.5"/>
+          <line x1="0" y1="-9" x2="0" y2="9" stroke={a} strokeWidth="0.7" opacity="0.5"/>
+        </g>
+      })}
+    </>,
+
+    // p11 — Kashmiri Pallu: 5-lobe chinar leaf clusters
+    p11: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/30)},(_,x)=>Array.from({length:Math.ceil(H/30)},(_,y)=>{
+        const cx=x*30+(y%2===0?15:30), cy=y*30+15
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          {[0,72,144,216,288].map(ang=>(
+            <path key={ang}
+              d={`M0,0 C${(Math.cos((ang-30-90)*Math.PI/180)*4).toFixed(1)},${(Math.sin((ang-30-90)*Math.PI/180)*4).toFixed(1)} ${(Math.cos((ang-90)*Math.PI/180)*11).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*11).toFixed(1)} ${(Math.cos((ang-90)*Math.PI/180)*12).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*12).toFixed(1)} C${(Math.cos((ang+30-90)*Math.PI/180)*4).toFixed(1)},${(Math.sin((ang+30-90)*Math.PI/180)*4).toFixed(1)} 0,0 0,0Z`}
+              fill={a} opacity="0.55"/>
+          ))}
+          <circle r="2.5" fill={a} opacity="0.85"/>
+          <circle r="1.2" fill={c} opacity="1"/>
+        </g>
+      })).flat()}
+    </>,
+
+    // p12 — Geometric Pallu: interlocking hexagonal trellis
+    p12: <>
+      <rect width={W} height={H} fill={c} />
+      {Array.from({length:Math.ceil(W/22)},(_,x)=>Array.from({length:Math.ceil(H/20)},(_,y)=>{
+        const cx=x*22+(y%2===0?0:11), cy=y*20, r=9
+        const pts=[0,60,120,180,240,300].map(ang=>`${(Math.cos((ang-90)*Math.PI/180)*r).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*r).toFixed(1)}`).join(' ')
+        return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
+          <polygon points={pts} fill="none" stroke={a} strokeWidth="1" opacity="0.55"/>
+          <circle r="2" fill={a} opacity="0.45"/>
+          <circle r="0.9" fill={aLight} opacity="0.8"/>
+        </g>
+      })).flat()}
+    </>,
+  }
+
+  const part = patternId?.startsWith('br') ? border_patterns : patternId?.startsWith('p') ? pallu_patterns : patterns
+  const isBorder = patternId?.startsWith('br')
+  const isPallu  = patternId?.startsWith('p')
 
   // Unique IDs per instance to avoid defs collision when multiple SVGs render
   const uid = (patternId||'x') + '_' + width + '_' + height
@@ -405,23 +744,25 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           <stop offset="100%" stopColor={aLight}  stopOpacity="0.9"/>
         </linearGradient>
 
-        {/* ── Weave texture: ultra-fine crosshatch via feTurbulence ── */}
+        {/* ── Weave texture: silk fabric grain via feTurbulence ── */}
         <filter id={`weave_${uid}`} x="0%" y="0%" width="100%" height="100%">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.65 0.65"
-            numOctaves="4"
-            seed="2"
-            result="noise"
-          />
+          <feTurbulence type="fractalNoise" baseFrequency="0.75 0.45" numOctaves="5" seed="8" result="noise"/>
           <feColorMatrix type="saturate" values="0" in="noise" result="grey" />
-          <feBlend in="SourceGraphic" in2="grey" mode="soft-light" result="blended" />
+          <feComponentTransfer in="grey" result="lightened">
+            <feFuncA type="linear" slope="0.3" intercept="0"/>
+          </feComponentTransfer>
+          <feBlend in="SourceGraphic" in2="lightened" mode="soft-light" result="blended" />
           <feComposite in="blended" in2="SourceGraphic" operator="in" />
         </filter>
 
         {/* ── Thread texture: fine horizontal weft lines ── */}
         <pattern id={`weft_${uid}`} x="0" y="0" width={width} height="3" patternUnits="userSpaceOnUse">
           <line x1="0" y1="1.5" x2={width} y2="1.5" stroke={cDark} strokeWidth="0.4" opacity="0.18" />
+        </pattern>
+
+        {/* ── Warp thread lines: vertical grain ── */}
+        <pattern id={`warp_${uid}`} x="0" y="0" width="3" height={height} patternUnits="userSpaceOnUse">
+          <line x1="1.5" y1="0" x2="1.5" y2={height} stroke={cDark} strokeWidth="0.3" opacity="0.08" />
         </pattern>
 
         {/* ── Fold shadow: soft dark band simulating cloth drape ── */}
@@ -452,24 +793,24 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
         </linearGradient>
       </defs>
 
-      {/* ── Base pattern (unchanged) ── */}
+      {/* ── Base pattern ── */}
       <g filter={`url(#weave_${uid})`}>
         {part[patternId] || <rect width={width} height={height} fill={c} />}
       </g>
 
-      {/* ── Silk sheen overlay (replaces flat fill look) ── */}
+      {/* ── Warp thread lines (vertical grain) ── */}
       <rect
         width={width} height={height}
-        fill={`url(#silk_${uid})`}
-        opacity={isBorder ? 0.35 : isPallu ? 0.45 : 0.4}
-        style={{mixBlendMode:'overlay'}}
+        fill={`url(#warp_${uid})`}
         pointerEvents="none"
       />
 
-      {/* ── Weft thread lines (barely visible fabric grain) ── */}
+      {/* ── Silk sheen overlay — key for photorealism ── */}
       <rect
         width={width} height={height}
-        fill={`url(#weft_${uid})`}
+        fill={`url(#silk_${uid})`}
+        opacity={isBorder ? 0.45 : isPallu ? 0.5 : 0.42}
+        style={{mixBlendMode:'overlay'}}
         pointerEvents="none"
       />
 
@@ -501,99 +842,151 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
 
 // ─── SAREE CANVAS ─────────────────────────────────────────────────────────────
 function SareeCanvas({ design, scale = 1 }) {
-  const w = Math.round(200 * scale)
-  const palluH = Math.round(160 * scale)
-  const borderH = Math.round(18 * scale)
-  const bodyH = Math.round(260 * scale)
-  const blouseH = Math.round(55 * scale)
-  const totalH = palluH + borderH*2 + bodyH + blouseH
+  const w        = Math.round(220 * scale)
+  const palluH   = Math.round(175 * scale)
+  const borderH  = Math.round(32 * scale)   // thick realistic border
+  const bodyH    = Math.round(270 * scale)
+  const blouseH  = Math.round(65 * scale)
+  const scallop  = Math.round(10 * scale)   // scalloped edge height
+  const zW       = Math.round(18 * scale)   // zari strip width on body sides
+  const ac       = design.accentColor || '#C9A843'
+  const acDark   = '#8B6914'
+
+  // Generate scalloped SVG path for pallu top edge
+  const scallopCount = Math.ceil(w / (scallop * 2))
+  const scallopW     = w / scallopCount
+  const scallopPath  = Array.from({length: scallopCount}, (_,i) => {
+    const x1 = i * scallopW
+    const x2 = (i + 0.5) * scallopW
+    const x3 = (i + 1) * scallopW
+    return `Q${x2},${scallop} ${x3},0`
+  }).join(' ')
 
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      borderRadius: 4, overflow: 'hidden',
-      boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-      width: w
+      borderRadius: 3, overflow: 'hidden',
+      boxShadow: '0 12px 50px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.4)',
+      width: w, background: '#0E0C09'
     }}>
-      {/* Label */}
-      <div style={{
-        width: '100%', padding: '4px 0', textAlign: 'center',
-        background: 'rgba(255,255,255,0.06)', fontSize: 8, letterSpacing: 2,
-        textTransform: 'uppercase', color: T.textLight, fontWeight: 600
-      }}>Pallu</div>
 
-      {/* Pallu */}
-      <div style={{width: w, height: palluH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.palluPattern} color={design.primaryColor} accentColor={design.accentColor} width={w} height={palluH} />
-        {/* Silk light sweep */}
-        <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'linear-gradient(120deg,transparent 30%,rgba(255,255,255,0.11) 48%,transparent 66%)',pointerEvents:'none'}} />
-        {/* Top edge shadow */}
-        <div style={{position:'absolute',top:0,left:0,right:0,height:Math.round(12*scale),background:'linear-gradient(180deg,rgba(0,0,0,0.22),transparent)',pointerEvents:'none'}} />
-        {/* Zari top strip */}
-        <div style={{position:'absolute',top:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${design.accentColor}44,${design.accentColor}cc,${design.accentColor}44)`,pointerEvents:'none'}} />
+      {/* ── PALLU LABEL ── */}
+      <div style={{width:'100%',padding:'3px 0',textAlign:'center',background:'rgba(0,0,0,0.55)',
+        fontSize:Math.round(7*scale),letterSpacing:2.5,textTransform:'uppercase',
+        color:ac,fontWeight:600,fontFamily:'Jost,sans-serif'}}>Pallu</div>
+
+      {/* ── PALLU ── */}
+      <div style={{width:w, position:'relative', overflow:'hidden'}}>
+        {/* Scalloped top edge */}
+        <svg width={w} height={scallop} style={{display:'block',position:'relative',zIndex:2}} xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="scallop_grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor={acDark} stopOpacity="1"/>
+              <stop offset="30%"  stopColor={ac}     stopOpacity="1"/>
+              <stop offset="70%"  stopColor={ac}     stopOpacity="1"/>
+              <stop offset="100%" stopColor={acDark} stopOpacity="1"/>
+            </linearGradient>
+          </defs>
+          {/* Scallop background fill */}
+          <path d={`M0,0 ${scallopPath} L${w},0 Z`} fill="url(#scallop_grad)" />
+          {/* Fine highlight on scallop */}
+          <path d={`M0,0 ${scallopPath}`} fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="0.8"/>
+          {/* Shadow under scallop */}
+          <path d={`M0,0 ${scallopPath} L${w},0 Z`} fill="rgba(0,0,0,0.18)" transform={`translate(0,${scallop*0.4})`}/>
+        </svg>
+
+        {/* Pallu body */}
+        <div style={{width:w, height:palluH, overflow:'hidden', position:'relative', marginTop:-1}}>
+          <PatternRenderer patternId={design.palluPattern} color={design.primaryColor} accentColor={ac} width={w} height={palluH} isPallu />
+          {/* Wide silk diagonal sheen — key for realism */}
+          <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,rgba(255,255,255,0.13) 0%,transparent 38%,rgba(0,0,0,0.06) 60%,rgba(255,255,255,0.04) 100%)',pointerEvents:'none'}} />
+          {/* Left-edge shadow fold */}
+          <div style={{position:'absolute',top:0,left:0,bottom:0,width:Math.round(10*scale),background:'linear-gradient(90deg,rgba(0,0,0,0.22),transparent)',pointerEvents:'none'}} />
+          {/* Right-edge shadow fold */}
+          <div style={{position:'absolute',top:0,right:0,bottom:0,width:Math.round(10*scale),background:'linear-gradient(270deg,rgba(0,0,0,0.22),transparent)',pointerEvents:'none'}} />
+          {/* Bottom fade into border */}
+          <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(18*scale),background:'linear-gradient(0deg,rgba(0,0,0,0.25),transparent)',pointerEvents:'none'}} />
+        </div>
       </div>
 
-      {/* Top border */}
-      <div style={{width: w, height: borderH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.borderPattern} color={design.secondaryColor} accentColor={design.accentColor} width={w} height={borderH} />
-        {/* Zari sheen on border */}
-        <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:`linear-gradient(180deg,rgba(255,255,255,0.12),transparent 40%,transparent 60%,rgba(0,0,0,0.1))`,pointerEvents:'none'}} />
+      {/* ── TOP BORDER (thick zari) ── */}
+      <div style={{width:w, height:borderH, overflow:'hidden', position:'relative'}}>
+        <PatternRenderer patternId={design.borderPattern} color={design.secondaryColor} accentColor={ac} width={w} height={borderH} isBorder />
+        {/* Zari metallic sheen top */}
+        <div style={{position:'absolute',top:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.8),${ac},${acDark})`,pointerEvents:'none'}} />
+        {/* Zari metallic sheen bottom */}
+        <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.7),${ac},${acDark})`,pointerEvents:'none'}} />
+        {/* Inner glow */}
+        <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(255,255,255,0.14) 0%,transparent 30%,transparent 70%,rgba(0,0,0,0.12) 100%)',pointerEvents:'none'}} />
       </div>
 
-      {/* Label */}
-      <div style={{
-        width: '100%', padding: '3px 0', textAlign: 'center',
-        background: 'rgba(255,255,255,0.04)', fontSize: 7, letterSpacing: 2,
-        textTransform: 'uppercase', color: T.textLight, fontWeight: 600
-      }}>Body</div>
+      {/* ── BODY LABEL ── */}
+      <div style={{width:'100%',padding:'3px 0',textAlign:'center',background:'rgba(0,0,0,0.35)',
+        fontSize:Math.round(7*scale),letterSpacing:2.5,textTransform:'uppercase',
+        color:ac,fontWeight:600,fontFamily:'Jost,sans-serif'}}>Body</div>
 
-      {/* Body with zari borders */}
-      <div style={{width: w, height: bodyH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.bodyPattern} color={design.primaryColor} accentColor={design.accentColor} width={w} height={bodyH} />
-        {/* Left zari strip — metallic 3-stop gradient */}
-        <div style={{position:'absolute',top:0,left:0,bottom:0,width:Math.round(14*scale),background:`linear-gradient(90deg,${design.accentColor}cc,${design.accentColor}ff,${design.accentColor}88,${design.accentColor}33)`,boxShadow:`inset -2px 0 4px rgba(0,0,0,0.2)`,pointerEvents:'none'}} />
-        {/* Left zari highlight line */}
-        <div style={{position:'absolute',top:0,left:Math.round(4*scale),bottom:0,width:Math.round(2*scale),background:`linear-gradient(180deg,transparent,rgba(255,255,255,0.45),transparent)`,pointerEvents:'none'}} />
-        {/* Right zari strip */}
-        <div style={{position:'absolute',top:0,right:0,bottom:0,width:Math.round(14*scale),background:`linear-gradient(270deg,${design.accentColor}cc,${design.accentColor}ff,${design.accentColor}88,${design.accentColor}33)`,boxShadow:`inset 2px 0 4px rgba(0,0,0,0.2)`,pointerEvents:'none'}} />
-        {/* Right zari highlight line */}
-        <div style={{position:'absolute',top:0,right:Math.round(4*scale),bottom:0,width:Math.round(2*scale),background:`linear-gradient(180deg,transparent,rgba(255,255,255,0.45),transparent)`,pointerEvents:'none'}} />
-        {/* Diagonal silk sheen across body */}
-        <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'linear-gradient(160deg,rgba(255,255,255,0.06) 0%,transparent 40%,rgba(0,0,0,0.06) 70%,transparent 100%)',pointerEvents:'none'}} />
-        {/* Subtle vertical fold lines */}
-        <div style={{position:'absolute',top:0,left:'28%',bottom:0,width:Math.round(scale),background:'linear-gradient(180deg,transparent,rgba(0,0,0,0.08),transparent)',pointerEvents:'none'}} />
-        <div style={{position:'absolute',top:0,left:'62%',bottom:0,width:Math.round(scale),background:'linear-gradient(180deg,transparent,rgba(0,0,0,0.07),transparent)',pointerEvents:'none'}} />
+      {/* ── BODY ── */}
+      <div style={{width:w, height:bodyH, overflow:'hidden', position:'relative'}}>
+        <PatternRenderer patternId={design.bodyPattern} color={design.primaryColor} accentColor={ac} width={w} height={bodyH} />
+
+        {/* ── Left zari border strip ── */}
+        <div style={{position:'absolute',top:0,left:0,bottom:0,width:zW,
+          background:`linear-gradient(90deg,${acDark} 0%,${ac} 40%,${ac} 60%,${acDark} 100%)`,
+          pointerEvents:'none'}}>
+          {/* crosshatch detail on zari */}
+          <svg width={zW} height={bodyH} style={{position:'absolute',top:0,left:0}} xmlns="http://www.w3.org/2000/svg">
+            {Array.from({length:Math.ceil(bodyH/4)},(_,i)=>(
+              <line key={i} x1={0} y1={i*4} x2={zW} y2={i*4} stroke="rgba(0,0,0,0.15)" strokeWidth="0.5"/>
+            ))}
+            <rect x={Math.round(zW*0.3)} y={0} width={Math.round(zW*0.15)} height={bodyH} fill="rgba(255,255,255,0.35)"/>
+          </svg>
+        </div>
+
+        {/* ── Right zari border strip ── */}
+        <div style={{position:'absolute',top:0,right:0,bottom:0,width:zW,
+          background:`linear-gradient(270deg,${acDark} 0%,${ac} 40%,${ac} 60%,${acDark} 100%)`,
+          pointerEvents:'none'}}>
+          <svg width={zW} height={bodyH} style={{position:'absolute',top:0,left:0}} xmlns="http://www.w3.org/2000/svg">
+            {Array.from({length:Math.ceil(bodyH/4)},(_,i)=>(
+              <line key={i} x1={0} y1={i*4} x2={zW} y2={i*4} stroke="rgba(0,0,0,0.15)" strokeWidth="0.5"/>
+            ))}
+            <rect x={Math.round(zW*0.55)} y={0} width={Math.round(zW*0.15)} height={bodyH} fill="rgba(255,255,255,0.35)"/>
+          </svg>
+        </div>
+
+        {/* Diagonal silk sheen */}
+        <div style={{position:'absolute',inset:0,background:'linear-gradient(150deg,rgba(255,255,255,0.09) 0%,transparent 35%,rgba(0,0,0,0.05) 65%,transparent 100%)',pointerEvents:'none'}} />
+        {/* Subtle cloth fold lines */}
+        <div style={{position:'absolute',top:0,left:'30%',bottom:0,width:Math.round(scale),background:'linear-gradient(180deg,transparent,rgba(0,0,0,0.07),transparent)',pointerEvents:'none'}} />
+        <div style={{position:'absolute',top:0,left:'65%',bottom:0,width:Math.round(scale),background:'linear-gradient(180deg,transparent,rgba(0,0,0,0.06),transparent)',pointerEvents:'none'}} />
       </div>
 
-      {/* Bottom border */}
-      <div style={{width: w, height: borderH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.borderPattern} color={design.secondaryColor} accentColor={design.accentColor} width={w} height={borderH} />
-        <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:`linear-gradient(180deg,rgba(255,255,255,0.12),transparent 40%,transparent 60%,rgba(0,0,0,0.1))`,pointerEvents:'none'}} />
+      {/* ── BOTTOM BORDER ── */}
+      <div style={{width:w, height:borderH, overflow:'hidden', position:'relative'}}>
+        <PatternRenderer patternId={design.borderPattern} color={design.secondaryColor} accentColor={ac} width={w} height={borderH} isBorder />
+        <div style={{position:'absolute',top:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.8),${ac},${acDark})`,pointerEvents:'none'}} />
+        <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.7),${ac},${acDark})`,pointerEvents:'none'}} />
+        <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(255,255,255,0.14) 0%,transparent 30%,transparent 70%,rgba(0,0,0,0.12) 100%)',pointerEvents:'none'}} />
       </div>
 
-      {/* Blouse */}
-      <div style={{width: w, height: blouseH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.bodyPattern} color={design.secondaryColor} accentColor={design.accentColor} width={w} height={blouseH} />
+      {/* ── BLOUSE ── */}
+      <div style={{width:w, height:blouseH, overflow:'hidden', position:'relative'}}>
+        <PatternRenderer patternId={design.bodyPattern} color={design.secondaryColor} accentColor={ac} width={w} height={blouseH} />
+        {/* Blouse is slightly dimmed — separate panel feel */}
+        <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.1)',pointerEvents:'none'}} />
         {/* Silk sheen */}
-        <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'linear-gradient(160deg,rgba(255,255,255,0.1) 0%,transparent 50%,rgba(0,0,0,0.07) 100%)',pointerEvents:'none'}} />
-        {/* Hem zari band with metallic gradient */}
-        <div style={{
-          position:'absolute',bottom:0,left:0,right:0,height:Math.round(14*scale),
-          background:`linear-gradient(180deg,${design.accentColor}55,${design.accentColor}ee)`,
-          pointerEvents:'none'
-        }} />
-        {/* Hem highlight */}
-        <div style={{
-          position:'absolute',bottom:Math.round(10*scale),left:0,right:0,height:Math.round(2*scale),
-          background:`linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent)`,
-          pointerEvents:'none'
-        }} />
+        <div style={{position:'absolute',inset:0,background:'linear-gradient(150deg,rgba(255,255,255,0.12) 0%,transparent 50%,rgba(0,0,0,0.06) 100%)',pointerEvents:'none'}} />
+        {/* Bottom zari hem band */}
+        <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(16*scale),
+          background:`linear-gradient(180deg,${acDark}88,${ac}ee,${acDark})`,pointerEvents:'none'}}>
+          <div style={{height:Math.round(2*scale),background:`linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)`}} />
+        </div>
       </div>
-      <div style={{
-        width: '100%', padding: '4px 0', textAlign: 'center',
-        background: 'rgba(255,255,255,0.06)', fontSize: 8, letterSpacing: 2,
-        textTransform: 'uppercase', color: T.textLight, fontWeight: 600
-      }}>Blouse</div>
+
+      {/* ── BLOUSE LABEL ── */}
+      <div style={{width:'100%',padding:'3px 0',textAlign:'center',background:'rgba(0,0,0,0.55)',
+        fontSize:Math.round(7*scale),letterSpacing:2.5,textTransform:'uppercase',
+        color:ac,fontWeight:600,fontFamily:'Jost,sans-serif'}}>Blouse</div>
     </div>
   )
 }
@@ -813,73 +1206,68 @@ export function generateSareeDataURL(design) {
 }
 
 // ─── SVG-TO-PNG EXPORT ────────────────────────────────────────────────────────
-// Renders the full saree design into an offscreen SVG, serialises it,
-// and draws it onto a Canvas element so it can be saved as PNG.
-// All patterns are procedural SVG so they serialise perfectly.
+// Mirrors SareeCanvas exactly — same dimensions, scalloped edge, zari strips.
 
 export function exportSareeAsPNG(design, filename = 'saree-design') {
-  const scale   = 2          // 2x for retina quality
-  const W       = 200 * scale
-  const palluH  = 160 * scale
-  const borderH =  18 * scale
-  const bodyH   = 260 * scale
-  const blouseH =  55 * scale
-  const labelH  =  18 * scale
-  const H       = palluH + borderH * 2 + bodyH + blouseH + labelH * 3
+  const scale   = 3          // 3× for high quality
+  const W       = 220 * scale
+  const palluH  = 175 * scale
+  const borderH =  32 * scale
+  const bodyH   = 270 * scale
+  const blouseH =  65 * scale
+  const labelH  =  16 * scale
+  const scallop =  10 * scale
+  const zW      =  18 * scale
+  const H       = scallop + palluH + borderH*2 + bodyH + blouseH + labelH*3
 
   const { primaryColor: pc, secondaryColor: sc, accentColor: ac,
           bodyPattern, borderPattern, palluPattern } = design
 
-  // ── colour helpers for export (mirrors PatternRenderer logic) ──────────────
+  // ── colour helpers ──────────────────────────────────────────────────────────
   const hexA = (hex, amt) => {
-    const n = parseInt((hex||'#888').replace('#',''),16)
+    const n = parseInt((hex||'#888888').replace('#',''),16)
     const r = Math.min(255,Math.max(0,(n>>16)+amt))
     const g = Math.min(255,Math.max(0,((n>>8)&0xff)+amt))
     const b = Math.min(255,Math.max(0,(n&0xff)+amt))
     return '#'+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1)
   }
+  const acDark = '#8B6914'
 
-  // Helper: inline SVG for each section — matches live PatternRenderer quality
+  // ── build pattern SVG string for a section ─────────────────────────────────
   const buildSectionSVG = (patternId, color, accent, w, h) => {
     const c = color, a = accent
     const cL = hexA(c,28), cD = hexA(c,-22), cVD = hexA(c,-40)
     const aL = hexA(a,55), aD = hexA(a,-30)
-    const uid = patternId + w + h
+    const uid = patternId + '_' + w + '_' + h
 
-    // ── shared defs: silk sheen + zari metallic + weave noise + folds ────────
     const defs = `<defs>
       <filter id="wv${uid}" x="0%" y="0%" width="100%" height="100%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.65 0.65" numOctaves="4" seed="2" result="noise"/>
+        <feTurbulence type="fractalNoise" baseFrequency="0.75 0.45" numOctaves="5" seed="8" result="noise"/>
         <feColorMatrix type="saturate" values="0" in="noise" result="grey"/>
-        <feBlend in="SourceGraphic" in2="grey" mode="soft-light" result="out"/>
+        <feComponentTransfer in="grey" result="lt"><feFuncA type="linear" slope="0.3" intercept="0"/></feComponentTransfer>
+        <feBlend in="SourceGraphic" in2="lt" mode="soft-light" result="out"/>
         <feComposite in="out" in2="SourceGraphic" operator="in"/>
       </filter>
       <linearGradient id="sk${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%"   stop-color="${cL}" stop-opacity="1"/>
-        <stop offset="20%"  stop-color="${c}"   stop-opacity="1"/>
-        <stop offset="42%"  stop-color="${cD}"  stop-opacity="1"/>
-        <stop offset="58%"  stop-color="${cL}"  stop-opacity="1"/>
-        <stop offset="78%"  stop-color="${c}"   stop-opacity="1"/>
-        <stop offset="100%" stop-color="${cD}"  stop-opacity="1"/>
+        <stop offset="0%"   stop-color="${cL}" stop-opacity="0.9"/>
+        <stop offset="30%"  stop-color="${c}"  stop-opacity="1"/>
+        <stop offset="55%"  stop-color="${cD}" stop-opacity="1"/>
+        <stop offset="75%"  stop-color="${c}"  stop-opacity="1"/>
+        <stop offset="100%" stop-color="${cL}" stop-opacity="0.85"/>
       </linearGradient>
       <linearGradient id="zr${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
         <stop offset="0%"   stop-color="${aL}" stop-opacity="1"/>
-        <stop offset="25%"  stop-color="${a}"   stop-opacity="1"/>
-        <stop offset="50%"  stop-color="${aD}"  stop-opacity="1"/>
-        <stop offset="75%"  stop-color="${a}"   stop-opacity="1"/>
-        <stop offset="100%" stop-color="${aL}"  stop-opacity="0.9"/>
+        <stop offset="25%"  stop-color="${a}"  stop-opacity="1"/>
+        <stop offset="50%"  stop-color="${aD}" stop-opacity="1"/>
+        <stop offset="75%"  stop-color="${a}"  stop-opacity="1"/>
+        <stop offset="100%" stop-color="${aL}" stop-opacity="0.9"/>
       </linearGradient>
-      <pattern id="wt${uid}" x="0" y="0" width="${w}" height="3" patternUnits="userSpaceOnUse">
-        <line x1="0" y1="1.5" x2="${w}" y2="1.5" stroke="${cD}" stroke-width="0.4" opacity="0.18"/>
-      </pattern>
       <linearGradient id="fd${uid}" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%"   stop-color="#000" stop-opacity="0.18"/>
-        <stop offset="12%"  stop-color="#000" stop-opacity="0"/>
-        <stop offset="30%"  stop-color="#000" stop-opacity="0.07"/>
-        <stop offset="38%"  stop-color="#000" stop-opacity="0"/>
-        <stop offset="58%"  stop-color="#000" stop-opacity="0.05"/>
-        <stop offset="65%"  stop-color="#000" stop-opacity="0"/>
-        <stop offset="83%"  stop-color="#000" stop-opacity="0.09"/>
+        <stop offset="15%"  stop-color="#000" stop-opacity="0"/>
+        <stop offset="45%"  stop-color="#000" stop-opacity="0.06"/>
+        <stop offset="60%"  stop-color="#000" stop-opacity="0"/>
+        <stop offset="82%"  stop-color="#000" stop-opacity="0.1"/>
         <stop offset="100%" stop-color="#000" stop-opacity="0.2"/>
       </linearGradient>
       <linearGradient id="vg${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -888,46 +1276,35 @@ export function exportSareeAsPNG(design, filename = 'saree-design') {
         <stop offset="88%"  stop-color="#000" stop-opacity="0"/>
         <stop offset="100%" stop-color="#000" stop-opacity="0.18"/>
       </linearGradient>
-      <linearGradient id="sh${uid}" x1="0%" y1="0%" x2="100%" y2="50%">
-        <stop offset="0%"   stop-color="#fff" stop-opacity="0"/>
-        <stop offset="36%"  stop-color="#fff" stop-opacity="0"/>
-        <stop offset="48%"  stop-color="#fff" stop-opacity="0.09"/>
-        <stop offset="60%"  stop-color="#fff" stop-opacity="0"/>
-        <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
-      </linearGradient>
     </defs>`
 
-    // overlays applied after every pattern
     const overlays = `
-      <rect width="${w}" height="${h}" fill="url(#sk${uid})" opacity="0.55" style="mix-blend-mode:overlay"/>
-      <rect width="${w}" height="${h}" fill="url(#wt${uid})"/>
+      <rect width="${w}" height="${h}" fill="url(#sk${uid})" opacity="0.45" style="mix-blend-mode:overlay"/>
       <rect width="${w}" height="${h}" fill="url(#fd${uid})"/>
-      <rect width="${w}" height="${h}" fill="url(#vg${uid})"/>
-      <rect width="${w}" height="${h}" fill="url(#sh${uid})"/>`
+      <rect width="${w}" height="${h}" fill="url(#vg${uid})"/>`
 
     const patterns = {
-      // ── BODY ──────────────────────────────────────────────────────────────
-      b1: `<rect width="${w}" height="${h}" fill="url(#sk${uid})"/>${Array.from({length:Math.ceil(w/3)},(_,i)=>`<line x1="${i*3}" y1="0" x2="${i*3}" y2="${h}" stroke="${cD}" stroke-width="0.4" opacity="0.12"/>`).join('')}${Array.from({length:Math.ceil(h/3)},(_,i)=>`<line x1="0" y1="${i*3}" x2="${w}" y2="${i*3}" stroke="${cL}" stroke-width="0.4" opacity="0.08"/>`).join('')}`,
+      b1: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/3)},(_,i)=>`<line x1="${i*3}" y1="0" x2="${i*3}" y2="${h}" stroke="${cD}" stroke-width="0.4" opacity="0.09"/>`).join('')}${Array.from({length:Math.ceil(h/3)},(_,i)=>`<line x1="0" y1="${i*3}" x2="${w}" y2="${i*3}" stroke="${cL}" stroke-width="0.4" opacity="0.07"/>`).join('')}`,
 
-      b2: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/2)},(_,i)=>`<line x1="${i*2}" y1="0" x2="${i*2}" y2="${h}" stroke="${cD}" stroke-width="0.5" opacity="0.1"/>`).join('')}${Array.from({length:Math.ceil(w/20)},(_,i)=>`<rect x="${i*20}" y="0" width="8" height="${h}" fill="url(#zr${uid})" opacity="0.7"/><rect x="${i*20+1}" y="0" width="1" height="${h}" fill="${aL}" opacity="0.45"/><rect x="${i*20+6}" y="0" width="1" height="${h}" fill="${aL}" opacity="0.45"/>`).join('')}`,
+      b2: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/20)},(_,i)=>`<rect x="${i*20}" y="0" width="8" height="${h}" fill="url(#zr${uid})" opacity="0.7"/><rect x="${i*20+1}" y="0" width="1" height="${h}" fill="${aL}" opacity="0.45"/>`).join('')}`,
 
-      b3: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(h/18)},(_,i)=>`<rect x="0" y="${i*18}" width="${w}" height="7" fill="${a}" opacity="${i%3===0?0.28:0.14}"/>`).join('')}${Array.from({length:Math.ceil(w/18)},(_,i)=>`<rect x="${i*18}" y="0" width="7" height="${h}" fill="${a}" opacity="${i%3===0?0.28:0.14}"/>`).join('')}${Array.from({length:Math.ceil(h/18)},(_,i)=>Array.from({length:Math.ceil(w/18)},(_,j)=>`<rect x="${j*18}" y="${i*18}" width="7" height="7" fill="${a}" opacity="${i%3===0&&j%3===0?0.42:0.2}"/>`).join('')).join('')}`,
+      b3: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(h/18)},(_,i)=>Array.from({length:Math.ceil(w/18)},(_,j)=>`<rect x="${j*18}" y="${i*18}" width="9" height="9" fill="${a}" opacity="${(i+j)%2===0?0.3:0.15}"/>`).join('')).join('')}`,
 
-      b4: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/3)},(_,i)=>`<line x1="${i*3}" y1="0" x2="${i*3}" y2="${h}" stroke="${cD}" stroke-width="0.35" opacity="0.13"/>`).join('')}${Array.from({length:Math.ceil(w/28)},(_,x)=>Array.from({length:Math.ceil(h/28)},(_,y)=>{const cx=x*28+14+(y%2===0?0:14),cy=y*28+14;return`<g transform="translate(${cx},${cy})"><ellipse rx="6" ry="9" fill="rgba(0,0,0,0.28)" transform="translate(0.5,0.9)"/><ellipse rx="6" ry="9" fill="${a}" opacity="0.82"/><ellipse rx="4" ry="6.5" fill="${aL}" opacity="0.3"/><ellipse rx="2.8" ry="4.5" fill="${c}" opacity="0.9"/><ellipse rx="1.4" ry="2.2" fill="${a}" opacity="0.95"/><ellipse rx="1.2" ry="1.8" cx="-0.5" cy="-2" fill="rgba(255,255,255,0.4)"/><path d="M0,-9 C1.5,-12 3.5,-11 2.5,-9" fill="none" stroke="${a}" stroke-width="1.1" opacity="0.85"/><circle cx="2.5" cy="-9" r="1.1" fill="${a}" opacity="0.9"/><circle cx="-4.5" cy="-1" r="1" fill="${a}" opacity="0.5"/><circle cx="4.5" cy="-1" r="1" fill="${a}" opacity="0.5"/></g>`}).join('')).join('')}`,
+      b4: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(h/3)},(_,i)=>`<line x1="0" y1="${i*3}" x2="${w}" y2="${i*3}" stroke="${cVD}" stroke-width="0.35" opacity="0.07"/>`).join('')}${Array.from({length:Math.ceil(w/20)},(_,x)=>Array.from({length:Math.ceil(h/22)},(_,y)=>{const cx=x*20+(y%2===0?10:20),cy=y*22+11;return`<g transform="translate(${cx},${cy})"><path d="M0,-9 C4,-7 6,-3 6,0 C6,4 4,7 2,8 C0,9 -2,9 -2,8 C-4,7 -6,4 -6,0 C-6,-3 -4,-7 0,-9Z" fill="rgba(0,0,0,0.3)" transform="translate(0.5,0.7)"/><path d="M0,-9 C4,-7 6,-3 6,0 C6,4 4,7 2,8 C0,9 -2,9 -2,8 C-4,7 -6,4 -6,0 C-6,-3 -4,-7 0,-9Z" fill="${a}" opacity="0.88"/><path d="M0,-6 C2.5,-4.5 4,-2 4,0 C4,2.5 2.5,5 1,6 C0,6.5 -1,6.5 -1,6 C-2.5,5 -4,2.5 -4,0 C-4,-2 -2.5,-4.5 0,-6Z" fill="${c}" opacity="0.7"/><path d="M0,-3.5 C1.5,-2.5 2,0 1.5,2 C0,3 -1.5,2 -2,0 C-2,-2.5 -1.5,-2.5 0,-3.5Z" fill="${a}" opacity="0.85"/><path d="M0,-9 C1.5,-12 3.5,-11 2.5,-9" fill="none" stroke="${a}" stroke-width="1.2" opacity="0.9"/><circle cx="2.5" cy="-9" r="1.2" fill="${a}" opacity="0.95"/><circle cy="7.5" r="1.5" fill="${a}" opacity="0.7"/></g>`}).join('')).join('')}`,
 
-      b5: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/22)},(_,x)=>Array.from({length:Math.ceil(h/22)},(_,y)=>{const cx=x*22+11+(y%2===0?0:11),cy=y*22+11;return`<g transform="translate(${cx},${cy})"><polygon points="0,-10 10,0 0,10 -10,0" fill="${a}" opacity="0.18"/><polygon points="0,-7 7,0 0,7 -7,0" fill="${a}" opacity="0.35"/><polygon points="0,-5 5,0 0,5 -5,0" fill="${a}" opacity="0.55"/><polygon points="0,-3 3,0 0,3 -3,0" fill="${a}" opacity="0.8"/><circle r="1.2" fill="${aL}" opacity="0.9"/></g>`}).join('')).join('')}`,
+      b5: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/22)},(_,x)=>Array.from({length:Math.ceil(h/22)},(_,y)=>{const cx=x*22+11+(y%2===0?0:11),cy=y*22+11;return`<g transform="translate(${cx},${cy})"><polygon points="0,-9 9,0 0,9 -9,0" fill="${a}" opacity="0.18"/><polygon points="0,-6 6,0 0,6 -6,0" fill="${a}" opacity="0.42"/><polygon points="0,-3.5 3.5,0 0,3.5 -3.5,0" fill="${a}" opacity="0.72"/><circle r="1.2" fill="${aL}" opacity="0.9"/></g>`}).join('')).join('')}`,
 
-      b6: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/3)},(_,i)=>`<line x1="${i*3}" y1="0" x2="${i*3}" y2="${h}" stroke="${cD}" stroke-width="0.3" opacity="0.12"/>`).join('')}${Array.from({length:Math.ceil(w/28)},(_,x)=>Array.from({length:Math.ceil(h/34)},(_,y)=>`<g transform="translate(${x*28+14},${y*34+17})"><polygon points="0,-14 5,-9 5,3 7,7 0,11 -7,7 -5,3 -5,-9" fill="${a}" opacity="0.75"/><polygon points="0,-13 3,-10 3,-5 0,-3 -3,-5 -3,-10" fill="${c}" opacity="0.85"/><rect x="-7" y="7" width="14" height="3" fill="${a}" opacity="0.6" rx="0.5"/><circle cy="-15" r="2" fill="${aL}" opacity="1"/><line x1="0" y1="-17" x2="0" y2="-20" stroke="${a}" stroke-width="1" opacity="0.8"/></g>`).join('')).join('')}`,
+      b6: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(h/3)},(_,i)=>`<line x1="0" y1="${i*3}" x2="${w}" y2="${i*3}" stroke="${cVD}" stroke-width="0.3" opacity="0.06"/>`).join('')}${Array.from({length:Math.ceil(w/22)},(_,x)=>Array.from({length:Math.ceil(h/24)},(_,y)=>{const cx=x*22+(y%2===0?11:22),cy=y*24+12;return`<g transform="translate(${cx},${cy})"><path d="M0,-11 C3,-9 5,-6 5,0 C5,5 3,8 0,10 L-3,8 C-5,5 -5,-6 0,-11Z" fill="rgba(0,0,0,0.32)" transform="translate(0.6,0.8)"/><path d="M0,-11 C3,-9 5,-6 5,0 C5,5 3,8 0,10 L-3,8 C-5,5 -5,-6 0,-11Z" fill="${a}" opacity="0.9"/><path d="M-5,0 C-8,-2 -10,-1 -9,1 C-8,3 -5,2 -5,0Z" fill="${a}" opacity="0.75"/><path d="M5,0 C8,-2 10,-1 9,1 C8,3 5,2 5,0Z" fill="${a}" opacity="0.75"/><path d="M0,-7 C2,-5 3,-2 3,1 C3,4 1.5,6 0,7 C-1.5,6 -3,4 -3,1 C-3,-2 -2,-5 0,-7Z" fill="${c}" opacity="0.72"/><circle r="2.2" fill="${a}" opacity="0.95"/><circle r="1" fill="${c}" opacity="1"/><path d="M0,-11 C1,-14 3,-13 2,-11" fill="none" stroke="${a}" stroke-width="1.3" opacity="0.95"/><circle cx="2" cy="-11" r="1.3" fill="${a}" opacity="1"/></g>`}).join('')).join('')}`,
 
-      b7: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/32)},(_,x)=>Array.from({length:Math.ceil(h/32)},(_,y)=>{const cx=x*32+16+(y%2===0?0:16),cy=y*32+16;const quills=[0,30,60,90,120,150,180,210,240,270,300,330].map(ang=>`<line x1="${(Math.cos(ang*Math.PI/180)*5).toFixed(1)}" y1="${(Math.sin(ang*Math.PI/180)*5).toFixed(1)}" x2="${(Math.cos(ang*Math.PI/180)*13).toFixed(1)}" y2="${(Math.sin(ang*Math.PI/180)*13).toFixed(1)}" stroke="${a}" stroke-width="0.9" opacity="0.45"/>`).join('');return`<g transform="translate(${cx},${cy})">${quills}<ellipse rx="5" ry="6" fill="${a}" opacity="0.2"/><ellipse rx="3.5" ry="4" fill="${a}" opacity="0.45"/><ellipse rx="2" ry="2.5" fill="${a}" opacity="0.7"/><ellipse rx="1" ry="1.2" fill="${c}" opacity="1"/><circle r="0.5" fill="${aL}" opacity="1"/></g>`}).join('')).join('')}`,
+      b7: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/32)},(_,x)=>Array.from({length:Math.ceil(h/32)},(_,y)=>{const cx=x*32+16+(y%2===0?0:16),cy=y*32+16;const q=[0,30,60,90,120,150,180,210,240,270,300,330].map(ang=>`<line x1="${(Math.cos(ang*Math.PI/180)*5).toFixed(1)}" y1="${(Math.sin(ang*Math.PI/180)*5).toFixed(1)}" x2="${(Math.cos(ang*Math.PI/180)*13).toFixed(1)}" y2="${(Math.sin(ang*Math.PI/180)*13).toFixed(1)}" stroke="${a}" stroke-width="0.9" opacity="0.45"/>`).join('');return`<g transform="translate(${cx},${cy})">${q}<ellipse rx="3.5" ry="4" fill="${a}" opacity="0.45"/><ellipse rx="2" ry="2.5" fill="${a}" opacity="0.7"/><ellipse rx="1" ry="1.2" fill="${c}" opacity="1"/></g>`}).join('')).join('')}`,
 
-      b8: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/15)},(_,x)=>Array.from({length:Math.ceil(h/15)},(_,y)=>{const cx=x*15+7.5+(y%2===0?0:7.5),cy=y*15+7.5;return`<circle cx="${cx}" cy="${cy}" r="4" fill="${a}" opacity="0.2"/><circle cx="${cx}" cy="${cy}" r="3" fill="${a}" opacity="0.5"/><circle cx="${cx}" cy="${cy}" r="2" fill="${a}" opacity="0.9"/><circle cx="${cx}" cy="${cy}" r="1" fill="${c}" opacity="0.7"/>`}).join('')).join('')}`,
+      b8: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/15)},(_,x)=>Array.from({length:Math.ceil(h/15)},(_,y)=>{const cx=x*15+7.5+(y%2===0?0:7.5),cy=y*15+7.5;return`<circle cx="${cx}" cy="${cy}" r="3" fill="${a}" opacity="0.5"/><circle cx="${cx}" cy="${cy}" r="2" fill="${a}" opacity="0.9"/><circle cx="${cx}" cy="${cy}" r="1" fill="${c}" opacity="0.7"/>`}).join('')).join('')}`,
 
-      b9: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/13)},(_,x)=>Array.from({length:Math.ceil(h/13)},(_,y)=>{const cx=x*13+6.5+(y%2===0?0:6.5),cy=y*13+6.5;return`<circle cx="${cx}" cy="${cy}" r="5.5" fill="none" stroke="${a}" stroke-width="1.5" opacity="0.2"/><circle cx="${cx}" cy="${cy}" r="4" fill="none" stroke="${a}" stroke-width="1.2" opacity="0.32"/><circle cx="${cx}" cy="${cy}" r="2.5" fill="${a}" opacity="0.4"/><circle cx="${cx}" cy="${cy}" r="1.2" fill="${a}" opacity="0.85"/><circle cx="${cx}" cy="${cy}" r="0.5" fill="${c}" opacity="1"/>`}).join('')).join('')}`,
+      b9: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/13)},(_,x)=>Array.from({length:Math.ceil(h/13)},(_,y)=>{const cx=x*13+6.5+(y%2===0?0:6.5),cy=y*13+6.5;return`<circle cx="${cx}" cy="${cy}" r="5.5" fill="none" stroke="${a}" stroke-width="1.5" opacity="0.2"/><circle cx="${cx}" cy="${cy}" r="2.5" fill="${a}" opacity="0.4"/><circle cx="${cx}" cy="${cy}" r="1.2" fill="${a}" opacity="0.85"/>`}).join('')).join('')}`,
 
       b10: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil((w+h)/7)},(_,i)=>`<line x1="${i*7-h}" y1="0" x2="${i*7}" y2="${h}" stroke="${a}" stroke-width="${i%4===0?2:i%2===0?1:0.6}" opacity="${i%4===0?0.65:i%2===0?0.35:0.18}"/>`).join('')}`,
 
-      b11: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/28)},(_,x)=>Array.from({length:Math.ceil(h/34)},(_,y)=>`<g transform="translate(${x*28+14},${y*34+17})"><path d="M-11,14 L-11,-4 C-11,-16 11,-16 11,-4 L11,14" fill="none" stroke="${a}" stroke-width="1.8" opacity="0.65"/><path d="M-7,14 L-7,-2 C-7,-10 7,-10 7,-2 L7,14" fill="none" stroke="${a}" stroke-width="1" opacity="0.45"/><circle cy="-17" r="2.5" fill="${a}" opacity="0.75"/><circle cy="-17" r="1.2" fill="${c}" opacity="1"/><line x1="-11" y1="14" x2="11" y2="14" stroke="${a}" stroke-width="1.4" opacity="0.65"/></g>`).join('')).join('')}`,
+      b11: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/28)},(_,x)=>Array.from({length:Math.ceil(h/34)},(_,y)=>`<g transform="translate(${x*28+14},${y*34+17})"><path d="M-11,14 L-11,-4 C-11,-16 11,-16 11,-4 L11,14" fill="none" stroke="${a}" stroke-width="1.8" opacity="0.65"/><path d="M-7,14 L-7,-2 C-7,-10 7,-10 7,-2 L7,14" fill="none" stroke="${a}" stroke-width="1" opacity="0.45"/><circle cy="-17" r="2.5" fill="${a}" opacity="0.75"/></g>`).join('')).join('')}`,
 
       b12: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/26)},(_,x)=>Array.from({length:Math.ceil(h/26)},(_,y)=>`<g transform="translate(${x*26+13},${y*26+13})"><polygon points="0,-11 2.8,-2.8 11,0 2.8,2.8 0,11 -2.8,2.8 -11,0 -2.8,-2.8" fill="none" stroke="${a}" stroke-width="1.2" opacity="0.7"/><polygon points="0,-7 1.8,-1.8 7,0 1.8,1.8 0,7 -1.8,1.8 -7,0 -1.8,-1.8" fill="${a}" opacity="0.25"/><circle r="2.5" fill="${a}" opacity="0.7"/><circle r="1.2" fill="${c}" opacity="1"/></g>`).join('')).join('')}`,
 
@@ -995,91 +1372,81 @@ export function exportSareeAsPNG(design, filename = 'saree-design') {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">${defs}<g filter="url(#wv${uid})">${shape}</g>${overlays}</svg>`
   }
 
-  // ── silk + fold sheen overlay strings for section assembly ─────────────────
-  const mkSilk = (w, h, id) => {
-    const foldGrad = `fd_sec_${id}`
-    const sheenGrad = `sh_sec_${id}`
-    return `<defs>
-      <linearGradient id="${foldGrad}" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%"   stop-color="#000" stop-opacity="0.18"/>
-        <stop offset="12%"  stop-color="#000" stop-opacity="0"/>
-        <stop offset="30%"  stop-color="#000" stop-opacity="0.07"/>
-        <stop offset="38%"  stop-color="#000" stop-opacity="0"/>
-        <stop offset="58%"  stop-color="#000" stop-opacity="0.05"/>
-        <stop offset="65%"  stop-color="#000" stop-opacity="0"/>
-        <stop offset="83%"  stop-color="#000" stop-opacity="0.09"/>
-        <stop offset="100%" stop-color="#000" stop-opacity="0.2"/>
-      </linearGradient>
-      <linearGradient id="${sheenGrad}" x1="0%" y1="0%" x2="100%" y2="50%">
-        <stop offset="0%"   stop-color="#fff" stop-opacity="0"/>
-        <stop offset="36%"  stop-color="#fff" stop-opacity="0"/>
-        <stop offset="48%"  stop-color="#fff" stop-opacity="0.13"/>
-        <stop offset="60%"  stop-color="#fff" stop-opacity="0"/>
-        <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <rect width="${w}" height="${h}" fill="url(#${foldGrad})"/>
-    <rect width="${w}" height="${h}" fill="url(#${sheenGrad})"/>`
-  }
-
-  // Build full SVG string
+  // ── Assemble full SVG — mirrors SareeCanvas layout exactly ──────────────────
+  const aL = hexA(ac, 55)
   let y = 0
   const sections = []
-  const zW = Math.round(16 * scale)    // zari strip width
-  const zHW = Math.round(2.5 * scale)  // zari highlight width
+
+  // Scalloped pallu edge
+  const scallopCount = Math.ceil(W / (scallop * 2))
+  const scallopW = W / scallopCount
+  const scallopPath = Array.from({length: scallopCount}, (_,i) => {
+    const x1 = i * scallopW, x2 = (i+0.5)*scallopW, x3 = (i+1)*scallopW
+    return `Q${x2},${scallop} ${x3},0`
+  }).join(' ')
+  sections.push(`<defs>
+    <linearGradient id="scG" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="${acDark}" stop-opacity="1"/>
+      <stop offset="30%"  stop-color="${ac}"     stop-opacity="1"/>
+      <stop offset="70%"  stop-color="${ac}"     stop-opacity="1"/>
+      <stop offset="100%" stop-color="${acDark}" stop-opacity="1"/>
+    </linearGradient>
+  </defs>`)
+  sections.push(`<path d="M0,0 ${scallopPath} L${W},0 Z" fill="url(#scG)" y="${y}"/>`)
+  sections.push(`<path d="M0,${y} ${scallopPath.split(' ').map((s,i)=>{ const parts=s.split(','); return s }).join(' ')}" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>`)
+  y += scallop
 
   // Label: Pallu
-  sections.push(`<rect x="0" y="${y}" width="${W}" height="${labelH}" fill="rgba(0,0,0,0.45)"/>`)
-  sections.push(`<text x="${W/2}" y="${y + labelH*0.72}" text-anchor="middle" font-size="${labelH*0.55}" fill="#C9A843" letter-spacing="3" font-family="sans-serif" font-weight="600">PALLU</text>`)
+  sections.push(`<rect x="0" y="${y}" width="${W}" height="${labelH}" fill="rgba(0,0,0,0.55)"/>`)
+  sections.push(`<text x="${W/2}" y="${y+labelH*0.72}" text-anchor="middle" font-size="${labelH*0.6}" fill="${ac}" letter-spacing="3" font-family="sans-serif" font-weight="600">PALLU</text>`)
   y += labelH
 
-  // Pallu — with silk overlays
-  sections.push(`<svg x="0" y="${y}" width="${W}" height="${palluH}">${buildSectionSVG(palluPattern, pc, ac, W, palluH)}${mkSilk(W,palluH,'pallu')}</svg>`)
+  // Pallu
+  sections.push(`<svg x="0" y="${y}" width="${W}" height="${palluH}">${buildSectionSVG(palluPattern, pc, ac, W, palluH)}<rect width="${W}" height="${palluH}" fill="rgba(0,0,0,0)" style="background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent)"/></svg>`)
   y += palluH
 
-  // Top border
-  sections.push(`<svg x="0" y="${y}" width="${W}" height="${borderH}">${buildSectionSVG(borderPattern, sc, ac, W, borderH)}<rect width="${W}" height="${borderH}" fill="rgba(255,255,255,0.07)"/></svg>`)
+  // Top border — thick zari with edge lines
+  sections.push(`<svg x="0" y="${y}" width="${W}" height="${borderH}">${buildSectionSVG(borderPattern, sc, ac, W, borderH)}<rect y="0" width="${W}" height="${Math.round(3*scale)}" fill="${aL}" opacity="0.7"/><rect y="${borderH-Math.round(3*scale)}" width="${W}" height="${Math.round(3*scale)}" fill="${aL}" opacity="0.7"/><rect width="${W}" height="${borderH}" fill="rgba(255,255,255,0.07)"/></svg>`)
   y += borderH
 
   // Label: Body
-  sections.push(`<rect x="0" y="${y}" width="${W}" height="${labelH}" fill="rgba(0,0,0,0.28)"/>`)
-  sections.push(`<text x="${W/2}" y="${y + labelH*0.72}" text-anchor="middle" font-size="${labelH*0.55}" fill="#C9A843" letter-spacing="3" font-family="sans-serif" font-weight="600">BODY</text>`)
+  sections.push(`<rect x="0" y="${y}" width="${W}" height="${labelH}" fill="rgba(0,0,0,0.35)"/>`)
+  sections.push(`<text x="${W/2}" y="${y+labelH*0.72}" text-anchor="middle" font-size="${labelH*0.6}" fill="${ac}" letter-spacing="3" font-family="sans-serif" font-weight="600">BODY</text>`)
   y += labelH
 
-  // Body — with silk overlays + premium zari strips
+  // Body + thick zari strips with crosshatch
+  const zHL = Math.round(zW * 0.32)  // highlight position
   sections.push(`<svg x="0" y="${y}" width="${W}" height="${bodyH}">`)
   sections.push(buildSectionSVG(bodyPattern, pc, ac, W, bodyH))
-  sections.push(mkSilk(W, bodyH, 'body'))
-  // Left zari strip
-  sections.push(`<defs><linearGradient id="lz${scale}" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="${ac}" stop-opacity="0.85"/><stop offset="55%" stop-color="${ac}" stop-opacity="0.6"/><stop offset="100%" stop-color="${ac}" stop-opacity="0"/></linearGradient><linearGradient id="rz${scale}" x1="100%" y1="0%" x2="0%" y2="0%"><stop offset="0%" stop-color="${ac}" stop-opacity="0.85"/><stop offset="55%" stop-color="${ac}" stop-opacity="0.6"/><stop offset="100%" stop-color="${ac}" stop-opacity="0"/></linearGradient></defs>`)
-  sections.push(`<rect x="0" y="0" width="${zW}" height="${bodyH}" fill="url(#lz${scale})"/>`)
-  sections.push(`<rect x="${zHW}" y="0" width="${zHW}" height="${bodyH}" fill="rgba(255,255,255,0.5)"/>`)
-  sections.push(`<rect x="${W-zW}" y="0" width="${zW}" height="${bodyH}" fill="url(#rz${scale})"/>`)
-  sections.push(`<rect x="${W-zHW*2}" y="0" width="${zHW}" height="${bodyH}" fill="rgba(255,255,255,0.5)"/>`)
+  // diagonal sheen
+  sections.push(`<rect width="${W}" height="${bodyH}" fill="rgba(255,255,255,0)" style="background:linear-gradient(150deg,rgba(255,255,255,0.07) 0%,transparent 40%)"/>`)
+  // left zari strip
+  sections.push(`<defs><linearGradient id="lzG" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="${acDark}" stop-opacity="1"/><stop offset="40%" stop-color="${ac}" stop-opacity="1"/><stop offset="60%" stop-color="${ac}" stop-opacity="1"/><stop offset="100%" stop-color="${acDark}" stop-opacity="1"/></linearGradient><linearGradient id="rzG" x1="100%" y1="0%" x2="0%" y2="0%"><stop offset="0%" stop-color="${acDark}" stop-opacity="1"/><stop offset="40%" stop-color="${ac}" stop-opacity="1"/><stop offset="60%" stop-color="${ac}" stop-opacity="1"/><stop offset="100%" stop-color="${acDark}" stop-opacity="1"/></linearGradient></defs>`)
+  sections.push(`<rect x="0" y="0" width="${zW}" height="${bodyH}" fill="url(#lzG)"/>`)
+  // crosshatch on left strip
+  sections.push(Array.from({length:Math.ceil(bodyH/4)},(_,i)=>`<line x1="0" y1="${i*4}" x2="${zW}" y2="${i*4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
+  sections.push(`<rect x="${zHL}" y="0" width="${Math.round(zW*0.15)}" height="${bodyH}" fill="rgba(255,255,255,0.35)"/>`)
+  // right zari strip
+  sections.push(`<rect x="${W-zW}" y="0" width="${zW}" height="${bodyH}" fill="url(#rzG)"/>`)
+  sections.push(Array.from({length:Math.ceil(bodyH/4)},(_,i)=>`<line x1="${W-zW}" y1="${i*4}" x2="${W}" y2="${i*4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
+  sections.push(`<rect x="${W-zHL-Math.round(zW*0.15)}" y="0" width="${Math.round(zW*0.15)}" height="${bodyH}" fill="rgba(255,255,255,0.35)"/>`)
   sections.push(`</svg>`)
   y += bodyH
 
   // Bottom border
-  sections.push(`<svg x="0" y="${y}" width="${W}" height="${borderH}">${buildSectionSVG(borderPattern, sc, ac, W, borderH)}<rect width="${W}" height="${borderH}" fill="rgba(255,255,255,0.07)"/></svg>`)
+  sections.push(`<svg x="0" y="${y}" width="${W}" height="${borderH}">${buildSectionSVG(borderPattern, sc, ac, W, borderH)}<rect y="0" width="${W}" height="${Math.round(3*scale)}" fill="${aL}" opacity="0.7"/><rect y="${borderH-Math.round(3*scale)}" width="${W}" height="${Math.round(3*scale)}" fill="${aL}" opacity="0.7"/><rect width="${W}" height="${borderH}" fill="rgba(255,255,255,0.07)"/></svg>`)
   y += borderH
 
-  // Blouse — with silk overlays + hem band
-  sections.push(`<svg x="0" y="${y}" width="${W}" height="${blouseH}">`)
-  sections.push(buildSectionSVG(bodyPattern, sc, ac, W, blouseH))
-  sections.push(mkSilk(W, blouseH, 'blouse'))
-  sections.push(`<rect x="0" y="0" width="${W}" height="${blouseH}" fill="rgba(0,0,0,0.12)"/>`)
-  sections.push(`<rect x="0" y="${blouseH - Math.round(16*scale)}" width="${W}" height="${Math.round(16*scale)}" fill="${ac}" opacity="0.75"/>`)
-  sections.push(`<rect x="0" y="${blouseH - Math.round(18*scale)}" width="${W}" height="${Math.round(2*scale)}" fill="rgba(255,255,255,0.55)"/>`)
-  sections.push(`</svg>`)
+  // Blouse
+  sections.push(`<svg x="0" y="${y}" width="${W}" height="${blouseH}">${buildSectionSVG(bodyPattern, sc, ac, W, blouseH)}<rect width="${W}" height="${blouseH}" fill="rgba(0,0,0,0.1)"/><rect y="${blouseH-Math.round(16*scale)}" width="${W}" height="${Math.round(16*scale)}" fill="${ac}" opacity="0.85"/><rect y="${blouseH-Math.round(16*scale)}" width="${W}" height="${Math.round(2*scale)}" fill="rgba(255,255,255,0.5)"/></svg>`)
   y += blouseH
 
   // Label: Blouse
-  sections.push(`<rect x="0" y="${y}" width="${W}" height="${labelH}" fill="rgba(0,0,0,0.45)"/>`)
-  sections.push(`<text x="${W/2}" y="${y + labelH*0.72}" text-anchor="middle" font-size="${labelH*0.55}" fill="#C9A843" letter-spacing="3" font-family="sans-serif" font-weight="600">BLOUSE</text>`)
+  sections.push(`<rect x="0" y="${y}" width="${W}" height="${labelH}" fill="rgba(0,0,0,0.55)"/>`)
+  sections.push(`<text x="${W/2}" y="${y+labelH*0.72}" text-anchor="middle" font-size="${labelH*0.6}" fill="${ac}" letter-spacing="3" font-family="sans-serif" font-weight="600">BLOUSE</text>`)
 
-  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${sections.join('')}</svg>`
+  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="background:#0E0C09">${sections.join('')}</svg>`
 
-  // Draw SVG onto canvas via Image
   const blob = new Blob([svgString], { type:'image/svg+xml;charset=utf-8' })
   const url  = URL.createObjectURL(blob)
   const img  = new Image()
