@@ -314,7 +314,8 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [result,      setResult]      = useState(null)
   const [error,       setError]       = useState(null)
-  const [imgEl,       setImgEl]       = useState(null)   // actual HTMLImageElement for color sampling
+  // Store image element in a ref so it's always current when analyzeImage fires
+  const imgElRef  = useRef(null)
   const fileRef   = useRef()
   const cameraRef = useRef()
 
@@ -326,16 +327,19 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
     reader.onload = (e) => {
       const dataUrl = e.target.result
       setPreview(dataUrl)
-      setBase64Data(dataUrl.split(',')[1])
-      // Load image element for color sampling
+      // Load image element for color sampling — store in ref (not state) so it's
+      // synchronously available when the analyzeImage effect fires
       const img = new Image()
-      img.onload = () => setImgEl(img)
+      img.onload = () => {
+        imgElRef.current = img
+        setBase64Data(dataUrl.split(',')[1])  // triggers the effect AFTER img is ready
+      }
       img.src = dataUrl
     }
     reader.readAsDataURL(file)
   }
 
-  // Auto-analyze when base64Data is set
+  // Auto-analyze when base64Data is set (imgElRef is already populated by then)
   useEffect(() => {
     if (base64Data && !isAnalyzing && !result) {
       analyzeImage()
@@ -346,75 +350,94 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
   const sampleImageColors = (img) => {
     try {
       const canvas = document.createElement('canvas')
-      const size = 80
+      const size = 120  // larger sample = more accurate
       canvas.width = size; canvas.height = size
       const ctx = canvas.getContext('2d')
       ctx.drawImage(img, 0, 0, size, size)
       const data = ctx.getImageData(0, 0, size, size).data
 
-      // Sample top-third (pallu area), middle (body), bottom strip (border)
-      const regions = [
-        { label:'pallu',  startRow:0,          endRow:Math.round(size*0.33) },
-        { label:'body',   startRow:Math.round(size*0.33), endRow:Math.round(size*0.66) },
-        { label:'border', startRow:Math.round(size*0.66), endRow:size },
-      ]
-
-      const avgColor = (startRow, endRow) => {
+      const avgColor = (startRow, endRow, startCol = 0, endCol = size) => {
         let r=0,g=0,b=0,count=0
         for (let row=startRow; row<endRow; row++) {
-          for (let col=0; col<size; col++) {
+          for (let col=startCol; col<endCol; col++) {
             const i = (row*size+col)*4
-            // Skip near-white and near-black pixels (they're likely UI artifacts)
             const brightness = (data[i]+data[i+1]+data[i+2])/3
-            if (brightness > 20 && brightness < 240) {
+            // Skip near-white (>230), near-black (<15), and transparent pixels
+            if (brightness > 15 && brightness < 230 && data[i+3] > 128) {
               r+=data[i]; g+=data[i+1]; b+=data[i+2]; count++
             }
           }
         }
-        if (!count) return '#8B0000'
+        if (count < 10) return null  // not enough valid pixels
         const toHex = v => Math.round(v/count).toString(16).padStart(2,'0')
         return '#'+toHex(r)+toHex(g)+toHex(b)
       }
 
-      const bodyColor   = avgColor(regions[1].startRow, regions[1].endRow)
-      const palluColor  = avgColor(regions[0].startRow, regions[0].endRow)
-      const borderColor = avgColor(regions[2].startRow, regions[2].endRow)
+      // Sample 3 horizontal bands: top=pallu, mid=body, bottom=border
+      const palluColor  = avgColor(0,                    Math.round(size*0.33))
+      const bodyColor   = avgColor(Math.round(size*0.33), Math.round(size*0.66))
+      const borderColor = avgColor(Math.round(size*0.66), size)
 
-      // Map sampled color to nearest pattern based on hue
+      // Use body color as primary (largest area), fall back gracefully
+      const primary   = bodyColor   || palluColor  || '#3B6EA5'
+      const secondary = palluColor  || bodyColor   || '#C9A843'
+      const accent    = borderColor || '#C9A843'
+
+      // Convert hex to HSL for pattern matching
       const hexToHsl = (hex) => {
-        const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255
-        const max=Math.max(r,g,b), min=Math.min(r,g,b), l=(max+min)/2
+        if (!hex) return { h:0, s:0, l:0.5 }
+        const r=parseInt(hex.slice(1,3),16)/255
+        const g=parseInt(hex.slice(3,5),16)/255
+        const b=parseInt(hex.slice(5,7),16)/255
+        const max=Math.max(r,g,b), min=Math.min(r,g,b)
+        const l=(max+min)/2
         if (max===min) return {h:0,s:0,l}
-        const d=max-min, s=l>0.5?d/(2-max-min):d/(max+min)
+        const d=max-min
+        const s=l>0.5?d/(2-max-min):d/(max+min)
         const h = max===r ? ((g-b)/d+(g<b?6:0))/6 : max===g ? ((b-r)/d+2)/6 : ((r-g)/d+4)/6
         return {h:h*360,s,l}
       }
 
-      const hsl = hexToHsl(bodyColor)
-      const hslPallu = hexToHsl(palluColor)
-      const hslBorder = hexToHsl(borderColor)
-      const h = hsl.h, s = hsl.s, lum = hsl.l
-      const variance = Math.abs(hsl.h - hslPallu.h) + Math.abs(hsl.h - hslBorder.h)
-      const colorHash = Math.round((h * 7 + s * 100 + lum * 100 + variance) % 17)
+      const hsl = hexToHsl(primary)
+      const { h, s, l: lum } = hsl
+      // Use a hash from actual color values for consistent pattern selection
+      const colorHash = Math.round((h * 13 + s * 200 + lum * 100)) % 17
 
-      // Pick body pattern by saturation + luminance
-      const bodySetWarm = ['b4','b6','b8','b13']
-      const bodySetCool = ['b7','b11','b15','b17']
-      const bodySetSoft = ['b1','b2','b3','b9','b10','b12','b16']
-      const baseBodySet = s < 0.12 || lum > 0.76 ? bodySetSoft : (h < 70 || h > 320 ? bodySetWarm : bodySetCool)
-      const bodyPattern = baseBodySet[colorHash % baseBodySet.length]
+      // Map hue + saturation to realistic pattern choices
+      const isWarm   = h < 60 || h > 300   // red, magenta, warm
+      const isCool   = h >= 180 && h <= 280 // blue, teal, purple
+      const isDesaturated = s < 0.15
 
-      const borderSet = s < 0.12 ? ['br1','br2','br7'] : (h < 90 ? ['br3','br4','br6'] : ['br5','br8','br11','br12'])
-      const borderPattern = borderSet[(colorHash + 3) % borderSet.length]
+      const bodySet = isDesaturated
+        ? ['b1','b16','b2','b3','b10']
+        : isWarm
+          ? ['b4','b6','b8','b13','b17','b7']
+          : isCool
+            ? ['b11','b7','b15','b5','b12']
+            : ['b9','b14','b3','b4','b13']
 
-      const palluSet = s < 0.12 ? ['p5','p9'] : (h < 90 ? ['p6','p8','p1'] : ['p3','p4','p7','p11'])
-      const palluPattern = palluSet[(colorHash + 5) % palluSet.length]
+      const borderSet = isDesaturated
+        ? ['br1','br7','br2']
+        : isWarm
+          ? ['br3','br4','br6','br11']
+          : ['br5','br8','br12','br2']
+
+      const palluSet = isDesaturated
+        ? ['p5','p9','p2']
+        : isWarm
+          ? ['p1','p6','p8','p3']
+          : ['p3','p4','p7','p11']
 
       return {
-        colors: { primary: bodyColor, secondary: palluColor, accent: borderColor },
+        colors: { primary, secondary, accent },
         designConfig: {
-          primaryColor: bodyColor, secondaryColor: palluColor, accentColor: borderColor,
-          bodyPattern, borderPattern, palluPattern
+          primaryColor:   primary,
+          secondaryColor: secondary,
+          accentColor:    accent,
+          bodyPattern:    bodySet[colorHash % bodySet.length],
+          borderPattern:  borderSet[(colorHash + 5) % borderSet.length],
+          palluPattern:   palluSet[(colorHash + 9) % palluSet.length],
+          blousePattern:  bodySet[(colorHash + 3) % bodySet.length],
         }
       }
     } catch (e) {
@@ -432,10 +455,10 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
       try {
         const sysPrompt = 'You are a saree design expert. Analyse the image carefully. ' +
           'Return ONLY valid JSON (no markdown, no backticks): ' +
-          '{"isSaree":true,"detectedStyle":"Kanchipuram Silk","colors":{"primary":"#8B0000","secondary":"#C9A843","accent":"#FFD700"},' +
-          '"designConfig":{"primaryColor":"#8B0000","secondaryColor":"#C9A843","accentColor":"#FFD700","bodyPattern":"b6","borderPattern":"br3","palluPattern":"p3"},' +
-          '"similarStyles":["Kanchipuram Silk"],"description":"Describe what you see."} ' +
-          'Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12. Use ACTUAL colours from the image. ' +
+          '{"isSaree":true,"detectedStyle":"Pochampally Ikat","colors":{"primary":"#1B4F8A","secondary":"#5BA3C9","accent":"#C9A843"},' +
+          '"designConfig":{"primaryColor":"#1B4F8A","secondaryColor":"#5BA3C9","accentColor":"#C9A843","bodyPattern":"b5","borderPattern":"br11","palluPattern":"p3","blousePattern":"b5"},' +
+          '"similarStyles":["Pochampally Ikat","Handloom Cotton"],"description":"Describe what you see in detail."} ' +
+          'Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12. Use ACTUAL colours from the image — extract the real dominant hue, not defaults. ' +
           'If no saree: {"isSaree":false,"message":"No saree detected"}'
         const res = await fetch(
           GEMINI_API_URL + '/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_KEY,
@@ -449,7 +472,7 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
                   { text: sysPrompt }
                 ]
               }],
-              generationConfig: { maxOutputTokens: 1000, temperature: 0.2 }
+              generationConfig: { maxOutputTokens: 1000, temperature: 0.15 }
             })
           }
         )
@@ -458,6 +481,10 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
           const raw    = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
           const clean  = raw.replace(/```json|```/g, '').trim()
           const parsed = JSON.parse(clean)
+          // Ensure blousePattern is set
+          if (parsed.designConfig && !parsed.designConfig.blousePattern) {
+            parsed.designConfig.blousePattern = parsed.designConfig.bodyPattern || 'b4'
+          }
           setResult(parsed)
           setIsAnalyzing(false)
           return
@@ -468,23 +495,24 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
       }
     }
 
-    // Fallback: sample actual colors from the image pixels
-    await new Promise(r => setTimeout(r, 800))
-    const sampled = imgEl ? sampleImageColors(imgEl) : null
-    const fallback = sampled || {
-      colors: { primary:'#8B0000', secondary:'#F5F5DC', accent:'#C9A843' },
-      designConfig: { primaryColor:'#8B0000', secondaryColor:'#F5F5DC', accentColor:'#C9A843', bodyPattern:'b6', borderPattern:'br3', palluPattern:'p6' }
+    // Fallback: sample actual colors from the image pixels using the ref (always populated)
+    await new Promise(r => setTimeout(r, 600))
+    const sampled = imgElRef.current ? sampleImageColors(imgElRef.current) : null
+    console.log('[ImageUpload] pixel sample result:', sampled)
+
+    if (sampled) {
+      setResult({
+        isSaree: true,
+        detectedStyle: 'Traditional Saree',
+        description: 'Colors extracted from your image. Dominant tones mapped to the closest patterns.',
+        colors: sampled.colors,
+        similarStyles: ['Traditional Silk', 'Handloom'],
+        designConfig: sampled.designConfig,
+      })
+    } else {
+      // True last-resort fallback — should rarely happen
+      setError('Could not extract colors from this image. Please try a clearer photo.')
     }
-    setResult({
-      isSaree: true,
-      detectedStyle: 'Traditional Saree',
-      description: sampled
-        ? 'Colours extracted directly from your image. The dominant tones have been mapped to the closest patterns in our library.'
-        : 'Design mapped from your image using pattern recognition.',
-      colors: fallback.colors,
-      similarStyles: ['Kanchipuram Silk', 'Traditional Silk'],
-      designConfig: fallback.designConfig
-    })
     setIsAnalyzing(false)
   }
 
@@ -924,11 +952,15 @@ function CustomerHome({ user, onNavigate, templates: propTemplates, palettes: pr
 // ─── DESIGNER CANVAS ──────────────────────────────────────────────────────────
 function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: propPatterns, palettes: propPalettes }) {
   const isMobile = window.innerWidth < 768
-  const [design, setDesign] = useState(initialDesign || {
+  const [design, setDesign] = useState(() => ({
     primaryColor: '#8B0000', secondaryColor: '#F5F5DC',
     accentColor: '#C9A843', bodyPattern: 'b4',
-    borderPattern: 'br1', palluPattern: 'p2'
-  })
+    borderPattern: 'br1', palluPattern: 'p2',
+    blousePattern: 'b4',
+    ...(initialDesign || {}),
+    // ensure blousePattern always has a value
+    blousePattern: initialDesign?.blousePattern || initialDesign?.bodyPattern || 'b4',
+  }))
   const [designName, setDesignName] = useState('My Saree Design')
   const [activeSection, setActiveSection] = useState('body')
   const [mobileTab, setMobileTab] = useState('controls')
@@ -945,15 +977,27 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
   const palettes = propPalettes && propPalettes.length > 0 ? propPalettes : SEED_PALETTES
 
   const sectionPatterns = {
-    body: patterns.filter(p => p.saree_part === 'body'),
+    body:   patterns.filter(p => p.saree_part === 'body'),
     border: patterns.filter(p => p.saree_part === 'border'),
-    pallu: patterns.filter(p => p.saree_part === 'pallu'),
+    pallu:  patterns.filter(p => p.saree_part === 'pallu'),
+    // Blouse uses body patterns (same fabric, different cut)
+    blouse: patterns.filter(p => p.saree_part === 'body'),
   }
   const patternMap = patterns.reduce((acc, p) => { acc[p.id] = p; return acc }, {})
 
-  const currentPatternKey = { body: 'bodyPattern', border: 'borderPattern', pallu: 'palluPattern' }
+  const currentPatternKey = {
+    body:   'bodyPattern',
+    border: 'borderPattern',
+    pallu:  'palluPattern',
+    blouse: 'blousePattern',
+  }
 
-  const applyPalette = (pal) => setDesign(d => ({...d, primaryColor:pal.primary_color, secondaryColor:pal.secondary_color, accentColor:pal.accent_color}))
+  const applyPalette = (pal) => setDesign(d => ({
+    ...d,
+    primaryColor:   pal.primary_color,
+    secondaryColor: pal.secondary_color,
+    accentColor:    pal.accent_color,
+  }))
 
   const generateAI = async () => {
     if (!aiPrompt.trim()) return
@@ -1394,15 +1438,15 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
       {/* Section selector */}
       <div>
         <p className="label-xs" style={{marginBottom:10}}>Edit Section</p>
-        <div style={{display:'flex',gap:6}}>
-          {['body','border','pallu'].map(s => (
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:5}}>
+          {['body','border','pallu','blouse'].map(s => (
             <button key={s} onClick={()=>setActiveSection(s)} style={{
-              flex:1,padding:'8px 4px',border:`1px solid ${activeSection===s?T.gold:T.border}`,
+              padding:'7px 2px',border:`1px solid ${activeSection===s?T.gold:T.border}`,
               background:activeSection===s?T.surfaceHov:T.surfaceAlt,
               color:activeSection===s?T.goldDark:T.textMid,
-              borderRadius:2,cursor:'pointer',fontSize:11,
-              fontWeight:activeSection===s?500:300,
-              textTransform:'capitalize',letterSpacing:0.5,
+              borderRadius:2,cursor:'pointer',fontSize:10,
+              fontWeight:activeSection===s?600:300,
+              textTransform:'capitalize',letterSpacing:0.3,
               transition:'all 0.2s'
             }}>{s}</button>
           ))}
@@ -1411,38 +1455,81 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
 
       {/* Pattern grid */}
       <div>
-        <p className="label-xs" style={{marginBottom:10}}>Patterns - {activeSection}</p>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6}}>
-          {sectionPatterns[activeSection].map(p => (
-            <div key={p.id}
-              style={{
-                borderRadius:3,overflow:'hidden',cursor:'pointer',
-                border:`2px solid ${design[currentPatternKey[activeSection]]===p.id?T.gold:T.border}`,
-                transition:'all 0.2s',
-                boxShadow: design[currentPatternKey[activeSection]]===p.id?`0 0 0 1px ${T.goldLight}`:'none',
-                position:'relative',
-              }}
-              onClick={()=>setDesign(d=>({...d,[currentPatternKey[activeSection]]:p.id}))}>
-              <PatternRenderer patternId={p.id} customPattern={p} color={design.primaryColor} accentColor={design.accentColor} width={80} height={60} />
-              <div style={{padding:'4px',background:T.surface,fontSize:8,textAlign:'center',color:T.textLight,letterSpacing:0.5,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{p.name}</div>
-              {/* FIX #1: Edit button for uploaded patterns */}
-              {(p.style_type === 'uploaded' || p.image_data_url || p.imageDataUrl) && (
-                <button
-                  onClick={e=>{e.stopPropagation();setInlineEditorPattern(p)}}
-                  title="Edit pattern settings"
-                  style={{
-                    position:'absolute',top:2,right:2,
-                    background:'rgba(14,12,9,0.75)',
-                    border:`1px solid ${T.gold}88`,
-                    borderRadius:2,color:T.gold,
-                    fontSize:8,padding:'2px 5px',cursor:'pointer',
-                    fontWeight:600,letterSpacing:0.5,lineHeight:1,
-                  }}>
-                  Edit ✦
-                </button>
-              )}
+        <p className="label-xs" style={{marginBottom:6}}>
+          Patterns — {activeSection}
+          {activeSection === 'blouse' && (
+            <span style={{fontSize:8,color:T.textLight,fontWeight:400,textTransform:'none',letterSpacing:0,marginLeft:6}}>
+              (uses body patterns)
+            </span>
+          )}
+        </p>
+
+        {/* Blouse color override — shown only when blouse tab is active */}
+        {activeSection === 'blouse' && (
+          <div style={{marginBottom:10,padding:'10px 12px',background:T.surfaceAlt,
+            borderRadius:3,border:`1px solid ${T.border}`}}>
+            <p style={{fontSize:9,color:T.textLight,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>
+              Blouse Colour
+            </p>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <input type="color" value={design.blouseColor || design.secondaryColor}
+                onChange={e=>setDesign(d=>({...d,blouseColor:e.target.value}))}
+                style={{width:32,height:32,borderRadius:2,border:`1px solid ${T.border}`,
+                  cursor:'pointer',padding:2,background:'white'}} />
+              <span style={{fontSize:11,color:T.textMid,flex:1}}>Independent blouse colour</span>
+              <button onClick={()=>setDesign(d=>{const {blouseColor,...rest}=d;return rest})}
+                style={{fontSize:9,color:T.textLight,background:'transparent',border:'none',
+                  cursor:'pointer',padding:'2px 6px',borderRadius:2,
+                  borderColor:T.border}}>
+                reset
+              </button>
             </div>
-          ))}
+          </div>
+        )}
+
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6}}>
+          {sectionPatterns[activeSection].map(p => {
+            const isSelected = design[currentPatternKey[activeSection]] === p.id
+            // Blouse preview uses blouseColor if set, else secondaryColor
+            const previewColor = activeSection === 'blouse'
+              ? (design.blouseColor || design.secondaryColor)
+              : design.primaryColor
+            return (
+              <div key={p.id}
+                style={{
+                  borderRadius:3,overflow:'hidden',cursor:'pointer',
+                  border:`2px solid ${isSelected?T.gold:T.border}`,
+                  transition:'all 0.2s',
+                  boxShadow: isSelected?`0 0 0 1px ${T.goldLight}`:'none',
+                  position:'relative',
+                }}
+                onClick={()=>setDesign(d=>({...d,[currentPatternKey[activeSection]]:p.id}))}>
+                <PatternRenderer
+                  patternId={p.id} customPattern={p}
+                  color={previewColor}
+                  accentColor={design.accentColor}
+                  width={80} height={60} />
+                <div style={{padding:'4px',background:T.surface,fontSize:8,textAlign:'center',
+                  color:T.textLight,letterSpacing:0.5,overflow:'hidden',
+                  whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{p.name}</div>
+                {(p.style_type === 'uploaded' || p.image_data_url || p.imageDataUrl) && (
+                  <button
+                    onClick={e=>{e.stopPropagation();setInlineEditorPattern(p)}}
+                    title="Edit pattern settings"
+                    style={{
+                      position:'absolute',top:2,right:2,
+                      background:'rgba(14,12,9,0.75)',
+                      border:`1px solid ${T.gold}88`,
+                      borderRadius:2,color:T.gold,
+                      fontSize:8,padding:'2px 5px',cursor:'pointer',
+                      fontWeight:600,letterSpacing:0.5,lineHeight:1,
+                    }}>
+                    Edit ✦
+                  </button>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -1498,6 +1585,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
         bodyPattern:    t.body_pattern_id,
         borderPattern:  t.border_pattern_id,
         palluPattern:   t.pallu_pattern_id,
+        blousePattern:  t.body_pattern_id,  // default blouse = same as body
       })
       notify('Applied "' + t.name + '"', 'success')
     }
@@ -1555,6 +1643,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
               { label:'BODY',   value: PATTERN_NAMES[design.bodyPattern]   || design.bodyPattern   },
               { label:'BORDER', value: PATTERN_NAMES[design.borderPattern] || design.borderPattern },
               { label:'PALLU',  value: PATTERN_NAMES[design.palluPattern]  || design.palluPattern  },
+              { label:'BLOUSE', value: PATTERN_NAMES[design.blousePattern] || design.blousePattern || '—' },
             ].map(row => (
               <div key={row.label}>
                 <div style={{fontSize:8,letterSpacing:1.5,textTransform:'uppercase',

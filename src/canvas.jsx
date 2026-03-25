@@ -881,14 +881,17 @@ function SareeCanvas({ design, scale = 1, patternMap = {} }) {
   const zW      = Math.round(16 * scale)    // zari strip width
 
   // Blouse panel dimensions (separate, to the right)
-  const blouseW = Math.round(90 * scale)
-  const blouseH = Math.round(110 * scale)
-  const gap     = Math.round(10 * scale)
+  const blouseW = Math.round(100 * scale)
+  const blouseH = Math.round(120 * scale)
+  const gap     = Math.round(14 * scale)
 
-  const ac    = design.accentColor || '#C9A843'
+  const ac     = design.accentColor || '#C9A843'
   const acDark = '#8B6914'
 
-  const sareeH = palluH + borderH + bodyH + borderH  // total saree height
+  // Blouse-specific values — independent pattern + color if set
+  const blousePatternId = design.blousePattern || design.bodyPattern
+  const blouseColor     = design.blouseColor   || design.secondaryColor
+  const blouseCustom    = patternMap?.[blousePatternId]
 
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: gap }}>
@@ -968,50 +971,97 @@ function SareeCanvas({ design, scale = 1, patternMap = {} }) {
 
       {/* ── BLOUSE PANEL (separate, to the right) ── */}
       <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap: Math.round(4*scale) }}>
+
         {/* Blouse label */}
         <div style={{
           fontSize: Math.round(7*scale), letterSpacing: 2, textTransform:'uppercase',
           color: ac, fontWeight: 600, fontFamily:'Jost,sans-serif',
         }}>Blouse</div>
 
-        {/* Blouse rectangle */}
+        {/* Blouse rectangle — uses blousePatternId + blouseColor */}
         <div style={{
-          width: blouseW, height: blouseH, overflow:'hidden', position:'relative',
+          width: blouseW, height: blouseH, overflow:'visible', position:'relative',
           borderRadius: Math.round(3*scale),
-          border: `${Math.round(1.5*scale)}px solid ${ac}88`,
-          boxShadow: `0 4px 18px rgba(0,0,0,0.5)`,
         }}>
-          <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.secondaryColor} accentColor={ac} width={blouseW} height={blouseH} svgInstanceKey="blouse" />
-          {/* Dimmed overlay */}
-          <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.08)',pointerEvents:'none'}} />
-          {/* Silk sheen */}
-          <div style={{position:'absolute',inset:0,background:'linear-gradient(150deg,rgba(255,255,255,0.14) 0%,transparent 50%,rgba(0,0,0,0.06) 100%)',pointerEvents:'none'}} />
-          {/* Collar V shape */}
-          <svg width={blouseW} height={Math.round(28*scale)} style={{position:'absolute',top:0,left:0}} xmlns="http://www.w3.org/2000/svg">
-            <path d={`M0,0 L${Math.round(blouseW*0.35)},${Math.round(22*scale)} L${Math.round(blouseW*0.5)},${Math.round(18*scale)} L${Math.round(blouseW*0.65)},${Math.round(22*scale)} L${blouseW},0`}
-              fill="rgba(0,0,0,0.18)" stroke={ac} strokeWidth={Math.round(1*scale)} opacity="0.55"/>
-          </svg>
-          {/* Bottom zari hem */}
-          <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(12*scale),
-            background:`linear-gradient(180deg,${acDark}88,${ac}cc,${acDark})`,pointerEvents:'none'}}>
-            <div style={{height:Math.round(2*scale),background:`linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent)`}} />
+          {/* Main blouse body */}
+          <div style={{
+            width: blouseW, height: blouseH, overflow:'hidden', position:'relative',
+            borderRadius: Math.round(3*scale),
+            border: `${Math.round(1.5*scale)}px solid ${ac}88`,
+            boxShadow: `0 4px 18px rgba(0,0,0,0.5)`,
+          }}>
+            <PatternRenderer
+              patternId={blousePatternId}
+              customPattern={blouseCustom}
+              color={blouseColor}
+              accentColor={ac}
+              width={blouseW} height={blouseH}
+              svgInstanceKey="blouse"
+            />
+            {/* Dimmed overlay */}
+            <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.06)',pointerEvents:'none'}} />
+            {/* Silk sheen */}
+            <div style={{position:'absolute',inset:0,background:'linear-gradient(150deg,rgba(255,255,255,0.14) 0%,transparent 50%,rgba(0,0,0,0.06) 100%)',pointerEvents:'none'}} />
+            {/* Collar V shape */}
+            <svg width={blouseW} height={Math.round(30*scale)} style={{position:'absolute',top:0,left:0}} xmlns="http://www.w3.org/2000/svg">
+              <path d={`M0,0 L${Math.round(blouseW*0.35)},${Math.round(24*scale)} L${Math.round(blouseW*0.5)},${Math.round(19*scale)} L${Math.round(blouseW*0.65)},${Math.round(24*scale)} L${blouseW},0`}
+                fill="rgba(0,0,0,0.20)" stroke={ac} strokeWidth={Math.round(1*scale)} opacity="0.6"/>
+            </svg>
+            {/* Bottom zari hem */}
+            <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(14*scale),
+              background:`linear-gradient(180deg,${acDark}88,${ac}cc,${acDark})`,pointerEvents:'none'}}>
+              <div style={{height:Math.round(2*scale),background:`linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent)`}} />
+            </div>
           </div>
-          {/* Left sleeve hint */}
-          <div style={{position:'absolute',top:Math.round(8*scale),left:-Math.round(12*scale),width:Math.round(14*scale),height:Math.round(32*scale),
-            overflow:'hidden',borderRadius:Math.round(3*scale),border:`1px solid ${ac}55`,background:'rgba(0,0,0,0.3)'}}>
-            <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.secondaryColor} accentColor={ac} width={Math.round(14*scale)} height={Math.round(32*scale)} svgInstanceKey="blouseL" />
+
+          {/* Left sleeve — sticks out to the left */}
+          <div style={{
+            position:'absolute', top:Math.round(10*scale), left:-Math.round(14*scale),
+            width:Math.round(16*scale), height:Math.round(38*scale),
+            overflow:'hidden', borderRadius:Math.round(4*scale),
+            border:`1px solid ${ac}66`, boxShadow:`0 2px 8px rgba(0,0,0,0.4)`,
+          }}>
+            <PatternRenderer
+              patternId={blousePatternId} customPattern={blouseCustom}
+              color={blouseColor} accentColor={ac}
+              width={Math.round(16*scale)} height={Math.round(38*scale)}
+              svgInstanceKey="blouseL"
+            />
           </div>
-          {/* Right sleeve hint */}
-          <div style={{position:'absolute',top:Math.round(8*scale),right:-Math.round(12*scale),width:Math.round(14*scale),height:Math.round(32*scale),
-            overflow:'hidden',borderRadius:Math.round(3*scale),border:`1px solid ${ac}55`,background:'rgba(0,0,0,0.3)'}}>
-            <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.secondaryColor} accentColor={ac} width={Math.round(14*scale)} height={Math.round(32*scale)} svgInstanceKey="blouseR" />
+
+          {/* Right sleeve — sticks out to the right */}
+          <div style={{
+            position:'absolute', top:Math.round(10*scale), right:-Math.round(14*scale),
+            width:Math.round(16*scale), height:Math.round(38*scale),
+            overflow:'hidden', borderRadius:Math.round(4*scale),
+            border:`1px solid ${ac}66`, boxShadow:`0 2px 8px rgba(0,0,0,0.4)`,
+          }}>
+            <PatternRenderer
+              patternId={blousePatternId} customPattern={blouseCustom}
+              color={blouseColor} accentColor={ac}
+              width={Math.round(16*scale)} height={Math.round(38*scale)}
+              svgInstanceKey="blouseR"
+            />
           </div>
         </div>
 
-        {/* Color swatches */}
-        <div style={{display:'flex',gap:Math.round(4*scale),marginTop:Math.round(4*scale)}}>
-          {[design.primaryColor, design.secondaryColor, design.accentColor].map((c,i)=>(
-            <div key={i} style={{width:Math.round(12*scale),height:Math.round(12*scale),borderRadius:'50%',background:c,border:`1px solid ${ac}44`}} />
+        {/* Pattern name tag */}
+        <div style={{
+          fontSize: Math.round(7*scale), color: ac, letterSpacing: 1,
+          opacity: 0.75, fontFamily:'Jost,sans-serif', marginTop: Math.round(2*scale),
+        }}>
+          {blousePatternId?.toUpperCase()}
+        </div>
+
+        {/* Color swatches — show blouseColor separately if customised */}
+        <div style={{display:'flex',gap:Math.round(4*scale),marginTop:Math.round(2*scale)}}>
+          {[design.primaryColor, blouseColor, design.accentColor].map((col, i) => (
+            <div key={i} title={['Body','Blouse','Accent'][i]} style={{
+              width:Math.round(12*scale), height:Math.round(12*scale),
+              borderRadius:'50%', background:col,
+              border:`${i===1 ? '2px' : '1px'} solid ${i===1 ? ac : ac+'44'}`,
+              boxShadow: i===1 ? `0 0 0 1px ${ac}55` : 'none',
+            }} />
           ))}
         </div>
       </div>
