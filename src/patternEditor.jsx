@@ -169,17 +169,22 @@ export function ControlPanel({ state, onChange, hideSection = false }) {
 }
 
 // ─── PATTERN OVERLAY ─────────────────────────────────────────────────────────
+// Overlays a custom uploaded image tile on top of SareeCanvas in the editor.
+// Dimensions must match the new vertical SareeCanvas layout (scale=0.9).
 function PatternOverlay({ pattern, scale }) {
-  const w       = Math.round(220 * scale)
-  const palluH  = Math.round(175 * scale)
-  const borderH = Math.round(32 * scale)
-  const bodyH   = Math.round(270 * scale)
-  const blouseH = Math.round(65 * scale)
+  const sw      = Math.round(200 * scale)   // saree width
+  const palluH  = Math.round(130 * scale)
+  const borderH = Math.round(28 * scale)
+  const bodyH   = Math.round(340 * scale)
+  const labelH  = Math.round(16 * scale)    // label bars
 
-  // FIX #2: correct top offset per section
-  const top = pattern.section === 'pallu'  ? 0
-    : pattern.section === 'border' ? palluH
-    : palluH + borderH
+  // Total height of the saree column only (no blouse panel — that's beside it)
+  const totalH  = labelH + palluH + borderH + labelH + bodyH + borderH
+
+  // Correct Y offset per section (accounting for label bars)
+  const top = pattern.section === 'pallu'  ? labelH
+    : pattern.section === 'border' ? labelH + palluH
+    : labelH + palluH + borderH + labelH   // body
 
   const h = pattern.section === 'pallu'  ? palluH
     : pattern.section === 'border' ? borderH * 2
@@ -192,7 +197,7 @@ function PatternOverlay({ pattern, scale }) {
   const transform = `translate(${pattern.x || 0} ${pattern.y || 0}) rotate(${pattern.rotation || 0})`
 
   return (
-    <svg width={w} height={palluH + borderH + bodyH + borderH + blouseH}
+    <svg width={sw} height={totalH}
       style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none' }}>
       <defs>
         <pattern id={pid} patternUnits="userSpaceOnUse" width={pw} height={ph} patternTransform={transform}>
@@ -207,13 +212,13 @@ function PatternOverlay({ pattern, scale }) {
           )}
         </pattern>
       </defs>
-      <rect x="0" y={top} width={w} height={h} fill={`url(#${pid})`} opacity={pattern.opacity || 0.86} />
+      <rect x="0" y={top} width={sw} height={h} fill={`url(#${pid})`} opacity={pattern.opacity || 0.86} />
     </svg>
   )
 }
 
 // ─── UPDATED SAREE CANVAS ────────────────────────────────────────────────────
-export function UpdatedSareeCanvas({ design, patternState, onDrag }) {
+export function UpdatedSareeCanvas({ design, patternState, patternMap = {}, onDrag }) {
   const scale   = 0.9
   const start   = useRef(null)
 
@@ -230,14 +235,14 @@ export function UpdatedSareeCanvas({ design, patternState, onDrag }) {
   return (
     <div onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
       style={{ position: 'relative', display: 'inline-block', cursor: 'grab' }}>
-      <SareeCanvas design={design} scale={scale} />
+      <SareeCanvas design={design} scale={scale} patternMap={patternMap} />
       {patternState?.imageDataUrl && <PatternOverlay pattern={patternState} scale={scale} />}
     </div>
   )
 }
 
-// ─── PATTERN EDITOR MODAL (admin) ────────────────────────────────────────────
-export function PatternEditor({ open, design, pattern, onClose, onSave }) {
+// ─── PATTERN EDITOR MODAL (admin) — works for ALL patterns ───────────────────
+export function PatternEditor({ open, design, pattern, patternMap = {}, onClose, onSave }) {
   const [state, setState] = useState(buildPatternState())
 
   useMemo(() => {
@@ -250,16 +255,30 @@ export function PatternEditor({ open, design, pattern, onClose, onSave }) {
     section: state.section || pattern?.saree_part || 'body',
   }), [state, pattern])
 
+  // Build a patternMap that always includes the current pattern so the preview renders it
+  const effectivePatternMap = useMemo(() => {
+    if (!pattern) return patternMap
+    return { ...patternMap, [pattern.id]: { ...pattern, editor: merged } }
+  }, [patternMap, pattern, merged])
+
   if (!open || !pattern) return null
+
+  const isUploaded = !!(pattern?.imageDataUrl || pattern?.image_data_url)
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 500,
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div className="card" style={{ width: 'min(980px,96vw)', maxHeight: '94vh', overflow: 'auto', padding: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <h3 style={{ fontFamily: 'Cormorant Garamond', fontSize: 22, color: T.text }}>
-            Edit Pattern — {pattern.name}
-          </h3>
+          <div>
+            <h3 style={{ fontFamily: 'Cormorant Garamond', fontSize: 22, color: T.text }}>
+              Pattern Editor — <em style={{ color: T.gold }}>{pattern.name}</em>
+            </h3>
+            <p style={{ fontSize: 10, color: T.textLight, marginTop: 3 }}>
+              {pattern.id} · {pattern.saree_part} · {pattern.style_type}
+              {!isUploaded && <span style={{ marginLeft: 8, color: T.goldDark }}>SVG pattern — sliders affect overlay behaviour for uploaded variants</span>}
+            </p>
+          </div>
           <button className="btn-ghost" onClick={onClose}>✕ Close</button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14 }}>
@@ -269,16 +288,38 @@ export function PatternEditor({ open, design, pattern, onClose, onSave }) {
               onClick={() => setState({ ...buildPatternState(), section: merged.section })}>
               Reset to Defaults
             </button>
+            {/* Show current editor values */}
+            <div style={{ marginTop: 12, padding: '10px 12px', background: T.surfaceAlt,
+              borderRadius: 3, border: `1px solid ${T.border}` }}>
+              <p style={{ fontSize: 9, color: T.textLight, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>Current Values</p>
+              {[
+                ['opacity',  merged.opacity?.toFixed(2)],
+                ['density',  merged.density?.toFixed(2)],
+                ['zoom',     merged.zoom?.toFixed(2)],
+                ['spacing',  merged.spacing?.toFixed(2)],
+                ['rotation', merged.rotation + '°'],
+                ['repeat',   merged.repeatStyle],
+              ].map(([k,v]) => (
+                <div key={k} style={{ display:'flex', justifyContent:'space-between', fontSize:10, padding:'2px 0', color:T.textMid }}>
+                  <span style={{ color: T.textLight }}>{k}</span>
+                  <code style={{ color: T.gold }}>{v}</code>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',
-            minHeight: 520, background: T.surfaceAlt, border: `1px solid ${T.border}` }}>
-            <UpdatedSareeCanvas design={design} patternState={merged}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+            minHeight: 520, background: T.surfaceAlt, border: `1px solid ${T.border}`, gap: 10, padding: 16 }}>
+            <p style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: T.textLight }}>
+              Live Preview — {merged.section} section
+            </p>
+            <UpdatedSareeCanvas design={design} patternState={isUploaded ? merged : null}
+              patternMap={effectivePatternMap}
               onDrag={(dx, dy) => setState(s => ({ ...s, x: (s.x||0)+dx, y: (s.y||0)+dy }))} />
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
           <button className="btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={() => onSave(merged)}>Save Pattern Settings</button>
+          <button className="btn-primary" onClick={() => onSave(merged)}>✦ Save Pattern Settings</button>
         </div>
       </div>
     </div>
@@ -401,6 +442,7 @@ export function InlinePatternEditor({ open, pattern, design, onClose, onSave }) 
               Live Preview — drag to reposition
             </p>
             <UpdatedSareeCanvas design={design} patternState={merged}
+              patternMap={pattern ? { [pattern.id]: { ...pattern, editor: merged } } : {}}
               onDrag={(dx, dy) => setState(s => ({ ...s, x: (s.x||0)+dx, y: (s.y||0)+dy }))} />
             <p style={{ fontSize: 10, color: T.textLight, fontStyle: 'italic', textAlign: 'center' }}>
               Pattern on <strong style={{ color: T.gold }}>{state.section}</strong> section

@@ -829,12 +829,16 @@ function DesignerDashboard({ user, token, notify, onLibraryChanged, onBack, onSi
                     <div style={{fontSize:12,color:T.text,fontWeight:500}}>{p.name}</div>
                     <div style={{fontSize:10,color:T.textLight,marginBottom:8}}>{p.id} · {p.saree_part} · {p.style_type}</div>
                     <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                      {/* Visual Editor — opens PatternEditor for ALL patterns */}
                       <button className="btn-ghost" style={{fontSize:10,padding:'5px 8px'}} onClick={()=>{
-                        if (p.imageDataUrl || p.image_data_url) setEditorPattern({ ...p, imageDataUrl: p.imageDataUrl || p.image_data_url })
-                        else setEditingPattern({...p, tags:Array.isArray(p.tags)?p.tags.join(', '):(p.tags||'')})
-                      }}>Edit</button>
-                      <button className="btn-outline" style={{fontSize:10,padding:'5px 8px'}} onClick={()=>downloadPatternPng(p)}>Download</button>
-                      <button className="btn-ghost" style={{fontSize:10,padding:'5px 8px',color:T.error,borderColor:T.error+'55'}} onClick={()=>deletePattern(p.id)}>Delete</button>
+                        setEditorPattern({ ...p, imageDataUrl: p.imageDataUrl || p.image_data_url || '' })
+                      }}>✦ Editor</button>
+                      {/* Metadata edit — name, part, tags */}
+                      <button className="btn-ghost" style={{fontSize:10,padding:'5px 8px'}} onClick={()=>{
+                        setEditingPattern({...p, tags:Array.isArray(p.tags)?p.tags.join(', '):(p.tags||'')})
+                      }}>Meta</button>
+                      <button className="btn-outline" style={{fontSize:10,padding:'5px 8px'}} onClick={()=>downloadPatternPng(p)}>↓</button>
+                      <button className="btn-ghost" style={{fontSize:10,padding:'5px 8px',color:T.error,borderColor:T.error+'55'}} onClick={()=>deletePattern(p.id)}>✕</button>
                     </div>
                   </div>
                 </div>
@@ -921,13 +925,19 @@ function DesignerDashboard({ user, token, notify, onLibraryChanged, onBack, onSi
         )}
         <PatternEditor
           open={!!editorPattern}
-          design={{ primaryColor:'#8B0000', secondaryColor:'#F5F5DC', accentColor:'#C9A843', bodyPattern:'b1', borderPattern:'br1', palluPattern:'p5' }}
+          design={{
+            primaryColor: '#8B0000', secondaryColor: '#F5F5DC', accentColor: '#C9A843',
+            bodyPattern:   editorPattern?.saree_part === 'body'   ? editorPattern?.id : 'b4',
+            borderPattern: editorPattern?.saree_part === 'border' ? editorPattern?.id : 'br3',
+            palluPattern:  editorPattern?.saree_part === 'pallu'  ? editorPattern?.id : 'p4',
+          }}
+          patternMap={editorPattern ? { [editorPattern.id]: editorPattern } : {}}
           pattern={editorPattern}
           onClose={() => setEditorPattern(null)}
           onSave={(editor) => {
             setPatternRows(rows => rows.map(r => r.id === editorPattern.id ? { ...r, editor } : r))
             setEditorPattern(null)
-            notify('Pattern editor settings saved', 'success')
+            notify('Pattern editor settings saved ✦', 'success')
           }}
         />
       </div>

@@ -871,152 +871,150 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
 }
 
 // ─── SAREE CANVAS ─────────────────────────────────────────────────────────────
+// Layout: vertical saree (portrait) with separate blouse panel beside it
 function SareeCanvas({ design, scale = 1, patternMap = {} }) {
-  const w        = Math.round(220 * scale)
-  const palluH   = Math.round(175 * scale)
-  const borderH  = Math.round(32 * scale)   // thick realistic border
-  const bodyH    = Math.round(270 * scale)
-  const blouseH  = Math.round(65 * scale)
-  const scallop  = Math.round(10 * scale)   // scalloped edge height
-  const zW       = Math.round(18 * scale)   // zari strip width on body sides
-  const ac       = design.accentColor || '#C9A843'
-  const acDark   = '#8B6914'
+  // Saree main body dimensions (vertical/portrait)
+  const sw      = Math.round(200 * scale)   // saree width
+  const palluH  = Math.round(130 * scale)   // pallu at top
+  const borderH = Math.round(28 * scale)    // border band
+  const bodyH   = Math.round(340 * scale)   // main body (tall)
+  const zW      = Math.round(16 * scale)    // zari strip width
 
-  // Generate scalloped SVG path for pallu top edge
-  const scallopCount = Math.ceil(w / (scallop * 2))
-  const scallopW     = w / scallopCount
-  const scallopPath  = Array.from({length: scallopCount}, (_,i) => {
-    const x1 = i * scallopW
-    const x2 = (i + 0.5) * scallopW
-    const x3 = (i + 1) * scallopW
-    return `Q${x2},${scallop} ${x3},0`
-  }).join(' ')
+  // Blouse panel dimensions (separate, to the right)
+  const blouseW = Math.round(90 * scale)
+  const blouseH = Math.round(110 * scale)
+  const gap     = Math.round(10 * scale)
+
+  const ac    = design.accentColor || '#C9A843'
+  const acDark = '#8B6914'
+
+  const sareeH = palluH + borderH + bodyH + borderH  // total saree height
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      borderRadius: 3, overflow: 'hidden',
-      boxShadow: '0 12px 50px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.4)',
-      width: w, background: '#0E0C09'
-    }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: gap }}>
 
-      {/* ── PALLU LABEL ── */}
-      <div style={{width:'100%',padding:'3px 0',textAlign:'center',background:'rgba(0,0,0,0.55)',
-        fontSize:Math.round(7*scale),letterSpacing:2.5,textTransform:'uppercase',
-        color:ac,fontWeight:600,fontFamily:'Jost,sans-serif'}}>Pallu</div>
+      {/* ── MAIN SAREE (vertical) ── */}
+      <div style={{
+        display: 'flex', flexDirection: 'column',
+        borderRadius: 3, overflow: 'hidden',
+        boxShadow: '0 12px 50px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.4)',
+        width: sw, background: '#0E0C09', flexShrink: 0,
+      }}>
 
-      {/* ── PALLU ── */}
-      <div style={{width:w, position:'relative', overflow:'hidden'}}>
-        {/* Scalloped top edge */}
-        <svg width={w} height={scallop} style={{display:'block',position:'relative',zIndex:2}} xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="scallop_grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%"   stopColor={acDark} stopOpacity="1"/>
-              <stop offset="30%"  stopColor={ac}     stopOpacity="1"/>
-              <stop offset="70%"  stopColor={ac}     stopOpacity="1"/>
-              <stop offset="100%" stopColor={acDark} stopOpacity="1"/>
-            </linearGradient>
-          </defs>
-          {/* Scallop background fill */}
-          <path d={`M0,0 ${scallopPath} L${w},0 Z`} fill="url(#scallop_grad)" />
-          {/* Fine highlight on scallop */}
-          <path d={`M0,0 ${scallopPath}`} fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="0.8"/>
-          {/* Shadow under scallop */}
-          <path d={`M0,0 ${scallopPath} L${w},0 Z`} fill="rgba(0,0,0,0.18)" transform={`translate(0,${scallop*0.4})`}/>
-        </svg>
+        {/* ── PALLU LABEL ── */}
+        <div style={{padding:'3px 0',textAlign:'center',background:'rgba(0,0,0,0.6)',
+          fontSize:Math.round(7*scale),letterSpacing:2.5,textTransform:'uppercase',
+          color:ac,fontWeight:600,fontFamily:'Jost,sans-serif'}}>Pallu</div>
 
-        {/* Pallu body */}
-        <div style={{width:w, height:palluH, overflow:'hidden', position:'relative', marginTop:-1}}>
-          <PatternRenderer patternId={design.palluPattern} customPattern={patternMap?.[design.palluPattern]} color={design.primaryColor} accentColor={ac} width={w} height={palluH} svgInstanceKey="pallu" />
-          {/* Wide silk diagonal sheen — key for realism */}
-          <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,rgba(255,255,255,0.13) 0%,transparent 38%,rgba(0,0,0,0.06) 60%,rgba(255,255,255,0.04) 100%)',pointerEvents:'none'}} />
-          {/* Left-edge shadow fold */}
+        {/* ── PALLU ── */}
+        <div style={{width:sw, height:palluH, overflow:'hidden', position:'relative'}}>
+          <PatternRenderer patternId={design.palluPattern} customPattern={patternMap?.[design.palluPattern]} color={design.primaryColor} accentColor={ac} width={sw} height={palluH} svgInstanceKey="pallu" />
+          <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,rgba(255,255,255,0.13) 0%,transparent 40%,rgba(0,0,0,0.06) 65%,rgba(255,255,255,0.04) 100%)',pointerEvents:'none'}} />
           <div style={{position:'absolute',top:0,left:0,bottom:0,width:Math.round(10*scale),background:'linear-gradient(90deg,rgba(0,0,0,0.22),transparent)',pointerEvents:'none'}} />
-          {/* Right-edge shadow fold */}
           <div style={{position:'absolute',top:0,right:0,bottom:0,width:Math.round(10*scale),background:'linear-gradient(270deg,rgba(0,0,0,0.22),transparent)',pointerEvents:'none'}} />
-          {/* Bottom fade into border */}
-          <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(18*scale),background:'linear-gradient(0deg,rgba(0,0,0,0.25),transparent)',pointerEvents:'none'}} />
+          <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(14*scale),background:'linear-gradient(0deg,rgba(0,0,0,0.28),transparent)',pointerEvents:'none'}} />
+        </div>
+
+        {/* ── TOP BORDER ── */}
+        <div style={{width:sw, height:borderH, overflow:'hidden', position:'relative'}}>
+          <PatternRenderer patternId={design.borderPattern} customPattern={patternMap?.[design.borderPattern]} color={design.secondaryColor} accentColor={ac} width={sw} height={borderH} svgInstanceKey="borderT" />
+          <div style={{position:'absolute',top:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.8),${ac},${acDark})`,pointerEvents:'none'}} />
+          <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.7),${ac},${acDark})`,pointerEvents:'none'}} />
+          <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(255,255,255,0.14) 0%,transparent 30%,transparent 70%,rgba(0,0,0,0.12) 100%)',pointerEvents:'none'}} />
+        </div>
+
+        {/* ── BODY LABEL ── */}
+        <div style={{padding:'3px 0',textAlign:'center',background:'rgba(0,0,0,0.35)',
+          fontSize:Math.round(7*scale),letterSpacing:2.5,textTransform:'uppercase',
+          color:ac,fontWeight:600,fontFamily:'Jost,sans-serif'}}>Body</div>
+
+        {/* ── BODY ── */}
+        <div style={{width:sw, height:bodyH, overflow:'hidden', position:'relative'}}>
+          <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.primaryColor} accentColor={ac} width={sw} height={bodyH} svgInstanceKey="body" />
+
+          {/* Left zari strip */}
+          <div style={{position:'absolute',top:0,left:0,bottom:0,width:zW,
+            background:`linear-gradient(90deg,${acDark} 0%,${ac} 40%,${ac} 60%,${acDark} 100%)`,
+            pointerEvents:'none'}}>
+            <svg width={zW} height={bodyH} style={{position:'absolute',top:0,left:0}} xmlns="http://www.w3.org/2000/svg">
+              {Array.from({length:Math.ceil(bodyH/4)},(_,i)=>(<line key={i} x1={0} y1={i*4} x2={zW} y2={i*4} stroke="rgba(0,0,0,0.15)" strokeWidth="0.5"/>))}
+              <rect x={Math.round(zW*0.3)} y={0} width={Math.round(zW*0.15)} height={bodyH} fill="rgba(255,255,255,0.35)"/>
+            </svg>
+          </div>
+
+          {/* Right zari strip */}
+          <div style={{position:'absolute',top:0,right:0,bottom:0,width:zW,
+            background:`linear-gradient(270deg,${acDark} 0%,${ac} 40%,${ac} 60%,${acDark} 100%)`,
+            pointerEvents:'none'}}>
+            <svg width={zW} height={bodyH} style={{position:'absolute',top:0,left:0}} xmlns="http://www.w3.org/2000/svg">
+              {Array.from({length:Math.ceil(bodyH/4)},(_,i)=>(<line key={i} x1={0} y1={i*4} x2={zW} y2={i*4} stroke="rgba(0,0,0,0.15)" strokeWidth="0.5"/>))}
+              <rect x={Math.round(zW*0.55)} y={0} width={Math.round(zW*0.15)} height={bodyH} fill="rgba(255,255,255,0.35)"/>
+            </svg>
+          </div>
+
+          <div style={{position:'absolute',inset:0,background:'linear-gradient(150deg,rgba(255,255,255,0.09) 0%,transparent 35%,rgba(0,0,0,0.05) 65%,transparent 100%)',pointerEvents:'none'}} />
+          <div style={{position:'absolute',top:0,left:'30%',bottom:0,width:Math.round(scale),background:'linear-gradient(180deg,transparent,rgba(0,0,0,0.07),transparent)',pointerEvents:'none'}} />
+          <div style={{position:'absolute',top:0,left:'65%',bottom:0,width:Math.round(scale),background:'linear-gradient(180deg,transparent,rgba(0,0,0,0.06),transparent)',pointerEvents:'none'}} />
+        </div>
+
+        {/* ── BOTTOM BORDER ── */}
+        <div style={{width:sw, height:borderH, overflow:'hidden', position:'relative'}}>
+          <PatternRenderer patternId={design.borderPattern} customPattern={patternMap?.[design.borderPattern]} color={design.secondaryColor} accentColor={ac} width={sw} height={borderH} svgInstanceKey="borderB" />
+          <div style={{position:'absolute',top:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.8),${ac},${acDark})`,pointerEvents:'none'}} />
+          <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.7),${ac},${acDark})`,pointerEvents:'none'}} />
+          <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(255,255,255,0.14) 0%,transparent 30%,transparent 70%,rgba(0,0,0,0.12) 100%)',pointerEvents:'none'}} />
         </div>
       </div>
 
-      {/* ── TOP BORDER (thick zari) ── */}
-      <div style={{width:w, height:borderH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.borderPattern} customPattern={patternMap?.[design.borderPattern]} color={design.secondaryColor} accentColor={ac} width={w} height={borderH} svgInstanceKey="borderT" />
-        {/* Zari metallic sheen top */}
-        <div style={{position:'absolute',top:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.8),${ac},${acDark})`,pointerEvents:'none'}} />
-        {/* Zari metallic sheen bottom */}
-        <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.7),${ac},${acDark})`,pointerEvents:'none'}} />
-        {/* Inner glow */}
-        <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(255,255,255,0.14) 0%,transparent 30%,transparent 70%,rgba(0,0,0,0.12) 100%)',pointerEvents:'none'}} />
-      </div>
+      {/* ── BLOUSE PANEL (separate, to the right) ── */}
+      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap: Math.round(4*scale) }}>
+        {/* Blouse label */}
+        <div style={{
+          fontSize: Math.round(7*scale), letterSpacing: 2, textTransform:'uppercase',
+          color: ac, fontWeight: 600, fontFamily:'Jost,sans-serif',
+        }}>Blouse</div>
 
-      {/* ── BODY LABEL ── */}
-      <div style={{width:'100%',padding:'3px 0',textAlign:'center',background:'rgba(0,0,0,0.35)',
-        fontSize:Math.round(7*scale),letterSpacing:2.5,textTransform:'uppercase',
-        color:ac,fontWeight:600,fontFamily:'Jost,sans-serif'}}>Body</div>
-
-      {/* ── BODY ── */}
-      <div style={{width:w, height:bodyH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.primaryColor} accentColor={ac} width={w} height={bodyH} svgInstanceKey="body" />
-
-        {/* ── Left zari border strip ── */}
-        <div style={{position:'absolute',top:0,left:0,bottom:0,width:zW,
-          background:`linear-gradient(90deg,${acDark} 0%,${ac} 40%,${ac} 60%,${acDark} 100%)`,
-          pointerEvents:'none'}}>
-          {/* crosshatch detail on zari */}
-          <svg width={zW} height={bodyH} style={{position:'absolute',top:0,left:0}} xmlns="http://www.w3.org/2000/svg">
-            {Array.from({length:Math.ceil(bodyH/4)},(_,i)=>(
-              <line key={i} x1={0} y1={i*4} x2={zW} y2={i*4} stroke="rgba(0,0,0,0.15)" strokeWidth="0.5"/>
-            ))}
-            <rect x={Math.round(zW*0.3)} y={0} width={Math.round(zW*0.15)} height={bodyH} fill="rgba(255,255,255,0.35)"/>
+        {/* Blouse rectangle */}
+        <div style={{
+          width: blouseW, height: blouseH, overflow:'hidden', position:'relative',
+          borderRadius: Math.round(3*scale),
+          border: `${Math.round(1.5*scale)}px solid ${ac}88`,
+          boxShadow: `0 4px 18px rgba(0,0,0,0.5)`,
+        }}>
+          <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.secondaryColor} accentColor={ac} width={blouseW} height={blouseH} svgInstanceKey="blouse" />
+          {/* Dimmed overlay */}
+          <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.08)',pointerEvents:'none'}} />
+          {/* Silk sheen */}
+          <div style={{position:'absolute',inset:0,background:'linear-gradient(150deg,rgba(255,255,255,0.14) 0%,transparent 50%,rgba(0,0,0,0.06) 100%)',pointerEvents:'none'}} />
+          {/* Collar V shape */}
+          <svg width={blouseW} height={Math.round(28*scale)} style={{position:'absolute',top:0,left:0}} xmlns="http://www.w3.org/2000/svg">
+            <path d={`M0,0 L${Math.round(blouseW*0.35)},${Math.round(22*scale)} L${Math.round(blouseW*0.5)},${Math.round(18*scale)} L${Math.round(blouseW*0.65)},${Math.round(22*scale)} L${blouseW},0`}
+              fill="rgba(0,0,0,0.18)" stroke={ac} strokeWidth={Math.round(1*scale)} opacity="0.55"/>
           </svg>
+          {/* Bottom zari hem */}
+          <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(12*scale),
+            background:`linear-gradient(180deg,${acDark}88,${ac}cc,${acDark})`,pointerEvents:'none'}}>
+            <div style={{height:Math.round(2*scale),background:`linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent)`}} />
+          </div>
+          {/* Left sleeve hint */}
+          <div style={{position:'absolute',top:Math.round(8*scale),left:-Math.round(12*scale),width:Math.round(14*scale),height:Math.round(32*scale),
+            overflow:'hidden',borderRadius:Math.round(3*scale),border:`1px solid ${ac}55`,background:'rgba(0,0,0,0.3)'}}>
+            <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.secondaryColor} accentColor={ac} width={Math.round(14*scale)} height={Math.round(32*scale)} svgInstanceKey="blouseL" />
+          </div>
+          {/* Right sleeve hint */}
+          <div style={{position:'absolute',top:Math.round(8*scale),right:-Math.round(12*scale),width:Math.round(14*scale),height:Math.round(32*scale),
+            overflow:'hidden',borderRadius:Math.round(3*scale),border:`1px solid ${ac}55`,background:'rgba(0,0,0,0.3)'}}>
+            <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.secondaryColor} accentColor={ac} width={Math.round(14*scale)} height={Math.round(32*scale)} svgInstanceKey="blouseR" />
+          </div>
         </div>
 
-        {/* ── Right zari border strip ── */}
-        <div style={{position:'absolute',top:0,right:0,bottom:0,width:zW,
-          background:`linear-gradient(270deg,${acDark} 0%,${ac} 40%,${ac} 60%,${acDark} 100%)`,
-          pointerEvents:'none'}}>
-          <svg width={zW} height={bodyH} style={{position:'absolute',top:0,left:0}} xmlns="http://www.w3.org/2000/svg">
-            {Array.from({length:Math.ceil(bodyH/4)},(_,i)=>(
-              <line key={i} x1={0} y1={i*4} x2={zW} y2={i*4} stroke="rgba(0,0,0,0.15)" strokeWidth="0.5"/>
-            ))}
-            <rect x={Math.round(zW*0.55)} y={0} width={Math.round(zW*0.15)} height={bodyH} fill="rgba(255,255,255,0.35)"/>
-          </svg>
-        </div>
-
-        {/* Diagonal silk sheen */}
-        <div style={{position:'absolute',inset:0,background:'linear-gradient(150deg,rgba(255,255,255,0.09) 0%,transparent 35%,rgba(0,0,0,0.05) 65%,transparent 100%)',pointerEvents:'none'}} />
-        {/* Subtle cloth fold lines */}
-        <div style={{position:'absolute',top:0,left:'30%',bottom:0,width:Math.round(scale),background:'linear-gradient(180deg,transparent,rgba(0,0,0,0.07),transparent)',pointerEvents:'none'}} />
-        <div style={{position:'absolute',top:0,left:'65%',bottom:0,width:Math.round(scale),background:'linear-gradient(180deg,transparent,rgba(0,0,0,0.06),transparent)',pointerEvents:'none'}} />
-      </div>
-
-      {/* ── BOTTOM BORDER ── */}
-      <div style={{width:w, height:borderH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.borderPattern} customPattern={patternMap?.[design.borderPattern]} color={design.secondaryColor} accentColor={ac} width={w} height={borderH} svgInstanceKey="borderB" />
-        <div style={{position:'absolute',top:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.8),${ac},${acDark})`,pointerEvents:'none'}} />
-        <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.7),${ac},${acDark})`,pointerEvents:'none'}} />
-        <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(255,255,255,0.14) 0%,transparent 30%,transparent 70%,rgba(0,0,0,0.12) 100%)',pointerEvents:'none'}} />
-      </div>
-
-      {/* ── BLOUSE ── */}
-      <div style={{width:w, height:blouseH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.secondaryColor} accentColor={ac} width={w} height={blouseH} svgInstanceKey="blouse" />
-        {/* Blouse is slightly dimmed — separate panel feel */}
-        <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.1)',pointerEvents:'none'}} />
-        {/* Silk sheen */}
-        <div style={{position:'absolute',inset:0,background:'linear-gradient(150deg,rgba(255,255,255,0.12) 0%,transparent 50%,rgba(0,0,0,0.06) 100%)',pointerEvents:'none'}} />
-        {/* Bottom zari hem band */}
-        <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(16*scale),
-          background:`linear-gradient(180deg,${acDark}88,${ac}ee,${acDark})`,pointerEvents:'none'}}>
-          <div style={{height:Math.round(2*scale),background:`linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)`}} />
+        {/* Color swatches */}
+        <div style={{display:'flex',gap:Math.round(4*scale),marginTop:Math.round(4*scale)}}>
+          {[design.primaryColor, design.secondaryColor, design.accentColor].map((c,i)=>(
+            <div key={i} style={{width:Math.round(12*scale),height:Math.round(12*scale),borderRadius:'50%',background:c,border:`1px solid ${ac}44`}} />
+          ))}
         </div>
       </div>
-
-      {/* ── BLOUSE LABEL ── */}
-      <div style={{width:'100%',padding:'3px 0',textAlign:'center',background:'rgba(0,0,0,0.55)',
-        fontSize:Math.round(7*scale),letterSpacing:2.5,textTransform:'uppercase',
-        color:ac,fontWeight:600,fontFamily:'Jost,sans-serif'}}>Blouse</div>
     </div>
   )
 }
@@ -1236,60 +1234,37 @@ export function generateSareeDataURL(design) {
 }
 
 // ─── SVG-TO-PNG EXPORT ────────────────────────────────────────────────────────
-// Mirrors SareeCanvas exactly — same dimensions, scalloped edge, zari strips.
+// Mirrors new SareeCanvas: vertical saree + separate blouse panel beside it.
 
 export function exportSareeAsPNG(design, filename = 'saree-design', patternMap = {}) {
-  const scale   = 3          // 3× for high quality
-  const W       = 220 * scale
-  const palluH  = 175 * scale
-  const borderH =  32 * scale
-  const bodyH   = 270 * scale
-  const blouseH =  65 * scale
-  const scallop =  10 * scale
-  const zW      =  18 * scale
-  const H       = scallop + palluH + borderH*2 + bodyH + blouseH
+  const scale   = 3
+  const SW      = 200 * scale
+  const palluH  = 130 * scale
+  const borderH =  28 * scale
+  const bodyH   = 340 * scale
+  const zW      =  16 * scale
+  const labelH  =  16 * scale
+  const sareeH  = labelH + palluH + borderH + labelH + bodyH + borderH
+
+  const blouseW = 90 * scale
+  const blouseH = 110 * scale
+  const gap     = 12 * scale
+  const W       = SW + gap + blouseW
+  const H       = sareeH
 
   const { primaryColor: pc, secondaryColor: sc, accentColor: ac,
           bodyPattern, borderPattern, palluPattern } = design
 
   const acDark = '#8B6914'
-
   const gid = `exp_${W}_${H}`
-  const palluOx = Math.round(10 * scale)
-  const palluBot = Math.round(18 * scale)
-
-  const scallopCount = Math.ceil(W / (scallop * 2))
-  const scallopW = W / scallopCount
-  const scallopPath = Array.from({ length: scallopCount }, (_, i) => {
-    const x2 = (i + 0.5) * scallopW
-    const x3 = (i + 1) * scallopW
-    return `Q${x2},${scallop} ${x3},0`
-  }).join(' ')
+  const t3  = Math.round(3 * scale)
 
   const overlayDefs = `<defs>
-    <linearGradient id="scG_${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="${acDark}" stop-opacity="1"/>
-      <stop offset="30%" stop-color="${ac}" stop-opacity="1"/>
-      <stop offset="70%" stop-color="${ac}" stop-opacity="1"/>
-      <stop offset="100%" stop-color="${acDark}" stop-opacity="1"/>
-    </linearGradient>
     <linearGradient id="palSheen_${gid}" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#fff" stop-opacity="0.13"/>
       <stop offset="38%" stop-color="#fff" stop-opacity="0"/>
       <stop offset="60%" stop-color="#000" stop-opacity="0.06"/>
       <stop offset="100%" stop-color="#fff" stop-opacity="0.04"/>
-    </linearGradient>
-    <linearGradient id="palShadowL_${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#000" stop-opacity="0.22"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-    </linearGradient>
-    <linearGradient id="palShadowR_${gid}" x1="100%" y1="0%" x2="0%" y2="0%">
-      <stop offset="0%" stop-color="#000" stop-opacity="0.22"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-    </linearGradient>
-    <linearGradient id="palBot_${gid}" x1="0%" y1="100%" x2="0%" y2="0%">
-      <stop offset="0%" stop-color="#000" stop-opacity="0.25"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="bodySheen_${gid}" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#fff" stop-opacity="0.09"/>
@@ -1308,14 +1283,6 @@ export function exportSareeAsPNG(design, filename = 'saree-design', patternMap =
       <stop offset="40%" stop-color="${ac}" stop-opacity="1"/>
       <stop offset="60%" stop-color="${ac}" stop-opacity="1"/>
       <stop offset="100%" stop-color="${acDark}" stop-opacity="1"/>
-    </linearGradient>
-    <linearGradient id="foldL_${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#000" stop-opacity="0.07"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-    </linearGradient>
-    <linearGradient id="foldR_${gid}" x1="100%" y1="0%" x2="0%" y2="0%">
-      <stop offset="0%" stop-color="#000" stop-opacity="0.06"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="blSheen_${gid}" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#fff" stop-opacity="0.12"/>
@@ -1341,62 +1308,87 @@ export function exportSareeAsPNG(design, filename = 'saree-design', patternMap =
   let y = 0
   const sections = [overlayDefs]
 
-  sections.push(`<path d="M0,0 ${scallopPath} L${W},0 Z" fill="url(#scG_${gid})"/>`)
-  sections.push(`<path d="M0,0 ${scallopPath}" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>`)
-  sections.push(`<path d="M0,0 ${scallopPath} L${W},0 Z" fill="rgba(0,0,0,0.18)" transform="translate(0,${scallop * 0.4})"/>`)
-  y += scallop
+  // ── Background ──
+  sections.push(`<rect width="${W}" height="${H}" fill="#0E0C09"/>`)
 
+  // ── PALLU label ──
+  sections.push(`<rect x="0" y="${y}" width="${SW}" height="${labelH}" fill="rgba(0,0,0,0.6)"/>`)
+  sections.push(`<text x="${SW/2}" y="${y + labelH*0.72}" text-anchor="middle" font-size="${labelH*0.62}" fill="${ac}" letter-spacing="2" font-family="serif" font-weight="600">PALLU</text>`)
+  y += labelH
+
+  // ── Pallu ──
   sections.push(`<g transform="translate(0,${y})">`)
-  sections.push(staticPatternSvgString(palluPattern, patternMap?.[palluPattern], pc, ac, W, palluH, 'pallu'))
-  sections.push(`<rect width="${W}" height="${palluH}" fill="url(#palSheen_${gid})" opacity="1"/>`)
-  sections.push(`<rect width="${palluOx}" height="${palluH}" fill="url(#palShadowL_${gid})"/>`)
-  sections.push(`<rect x="${W - palluOx}" width="${palluOx}" height="${palluH}" fill="url(#palShadowR_${gid})"/>`)
-  sections.push(`<rect y="${palluH - palluBot}" width="${W}" height="${palluBot}" fill="url(#palBot_${gid})"/>`)
+  sections.push(staticPatternSvgString(palluPattern, patternMap?.[palluPattern], pc, ac, SW, palluH, 'pallu'))
+  sections.push(`<rect width="${SW}" height="${palluH}" fill="url(#palSheen_${gid})"/>`)
+  sections.push(`<rect width="${Math.round(10*scale)}" height="${palluH}" fill="rgba(0,0,0,0.22)"/>`)
+  sections.push(`<rect x="${SW - Math.round(10*scale)}" width="${Math.round(10*scale)}" height="${palluH}" fill="rgba(0,0,0,0.22)"/>`)
+  sections.push(`<rect y="${palluH - Math.round(14*scale)}" width="${SW}" height="${Math.round(14*scale)}" fill="rgba(0,0,0,0.28)"/>`)
   sections.push('</g>')
   y += palluH
 
-  const t3 = Math.round(3 * scale)
+  // ── Top border ──
   sections.push(`<g transform="translate(0,${y})">`)
-  sections.push(staticPatternSvgString(borderPattern, patternMap?.[borderPattern], sc, ac, W, borderH, 'borderT'))
-  sections.push(`<rect y="0" width="${W}" height="${t3}" fill="url(#zariHi_${gid})" opacity="1"/>`)
-  sections.push(`<rect y="${borderH - t3}" width="${W}" height="${t3}" fill="url(#zariLo_${gid})" opacity="1"/>`)
-  sections.push(`<rect width="${W}" height="${borderH}" fill="rgba(255,255,255,0.14)" opacity="1"/>`)
+  sections.push(staticPatternSvgString(borderPattern, patternMap?.[borderPattern], sc, ac, SW, borderH, 'borderT'))
+  sections.push(`<rect y="0" width="${SW}" height="${t3}" fill="url(#zariHi_${gid})"/>`)
+  sections.push(`<rect y="${borderH - t3}" width="${SW}" height="${t3}" fill="url(#zariLo_${gid})"/>`)
+  sections.push(`<rect width="${SW}" height="${borderH}" fill="rgba(255,255,255,0.14)"/>`)
   sections.push('</g>')
   y += borderH
 
+  // ── Body label ──
+  sections.push(`<rect x="0" y="${y}" width="${SW}" height="${labelH}" fill="rgba(0,0,0,0.35)"/>`)
+  sections.push(`<text x="${SW/2}" y="${y + labelH*0.72}" text-anchor="middle" font-size="${labelH*0.62}" fill="${ac}" letter-spacing="2" font-family="serif" font-weight="600">BODY</text>`)
+  y += labelH
+
+  // ── Body ──
   const zHL = Math.round(zW * 0.32)
-  const foldW = Math.max(1, scale)
   sections.push(`<g transform="translate(0,${y})">`)
-  sections.push(staticPatternSvgString(bodyPattern, patternMap?.[bodyPattern], pc, ac, W, bodyH, 'body'))
-  sections.push(`<rect width="${W}" height="${bodyH}" fill="url(#bodySheen_${gid})"/>`)
-  sections.push(`<rect x="${Math.round(W * 0.3)}" y="0" width="${foldW}" height="${bodyH}" fill="url(#foldL_${gid})"/>`)
-  sections.push(`<rect x="${Math.round(W * 0.65)}" y="0" width="${foldW}" height="${bodyH}" fill="url(#foldR_${gid})"/>`)
+  sections.push(staticPatternSvgString(bodyPattern, patternMap?.[bodyPattern], pc, ac, SW, bodyH, 'body'))
+  sections.push(`<rect width="${SW}" height="${bodyH}" fill="url(#bodySheen_${gid})"/>`)
   sections.push(`<rect x="0" y="0" width="${zW}" height="${bodyH}" fill="url(#lzG_${gid})"/>`)
-  sections.push(Array.from({ length: Math.ceil(bodyH / 4) }, (_, i) =>
-    `<line x1="0" y1="${i * 4}" x2="${zW}" y2="${i * 4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
-  sections.push(`<rect x="${zHL}" y="0" width="${Math.round(zW * 0.15)}" height="${bodyH}" fill="rgba(255,255,255,0.35)"/>`)
-  sections.push(`<rect x="${W - zW}" y="0" width="${zW}" height="${bodyH}" fill="url(#rzG_${gid})"/>`)
-  sections.push(Array.from({ length: Math.ceil(bodyH / 4) }, (_, i) =>
-    `<line x1="${W - zW}" y1="${i * 4}" x2="${W}" y2="${i * 4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
-  sections.push(`<rect x="${W - zHL - Math.round(zW * 0.15)}" y="0" width="${Math.round(zW * 0.15)}" height="${bodyH}" fill="rgba(255,255,255,0.35)"/>`)
+  sections.push(Array.from({length:Math.ceil(bodyH/4)},(_,i)=>`<line x1="0" y1="${i*4}" x2="${zW}" y2="${i*4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
+  sections.push(`<rect x="${zHL}" y="0" width="${Math.round(zW*0.15)}" height="${bodyH}" fill="rgba(255,255,255,0.35)"/>`)
+  sections.push(`<rect x="${SW - zW}" y="0" width="${zW}" height="${bodyH}" fill="url(#rzG_${gid})"/>`)
+  sections.push(Array.from({length:Math.ceil(bodyH/4)},(_,i)=>`<line x1="${SW-zW}" y1="${i*4}" x2="${SW}" y2="${i*4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
+  sections.push(`<rect x="${SW - zHL - Math.round(zW*0.15)}" y="0" width="${Math.round(zW*0.15)}" height="${bodyH}" fill="rgba(255,255,255,0.35)"/>`)
   sections.push('</g>')
   y += bodyH
 
+  // ── Bottom border ──
   sections.push(`<g transform="translate(0,${y})">`)
-  sections.push(staticPatternSvgString(borderPattern, patternMap?.[borderPattern], sc, ac, W, borderH, 'borderB'))
-  sections.push(`<rect y="0" width="${W}" height="${t3}" fill="url(#zariHi_${gid})" opacity="1"/>`)
-  sections.push(`<rect y="${borderH - t3}" width="${W}" height="${t3}" fill="url(#zariLo_${gid})" opacity="1"/>`)
-  sections.push(`<rect width="${W}" height="${borderH}" fill="rgba(255,255,255,0.14)" opacity="1"/>`)
+  sections.push(staticPatternSvgString(borderPattern, patternMap?.[borderPattern], sc, ac, SW, borderH, 'borderB'))
+  sections.push(`<rect y="0" width="${SW}" height="${t3}" fill="url(#zariHi_${gid})"/>`)
+  sections.push(`<rect y="${borderH - t3}" width="${SW}" height="${t3}" fill="url(#zariLo_${gid})"/>`)
+  sections.push(`<rect width="${SW}" height="${borderH}" fill="rgba(255,255,255,0.14)"/>`)
   sections.push('</g>')
-  y += borderH
 
-  sections.push(`<g transform="translate(0,${y})">`)
-  sections.push(staticPatternSvgString(bodyPattern, patternMap?.[bodyPattern], sc, ac, W, blouseH, 'blouse'))
-  sections.push(`<rect width="${W}" height="${blouseH}" fill="rgba(0,0,0,0.1)"/>`)
-  sections.push(`<rect width="${W}" height="${blouseH}" fill="url(#blSheen_${gid})"/>`)
-  sections.push(`<rect y="${blouseH - Math.round(16 * scale)}" width="${W}" height="${Math.round(16 * scale)}" fill="${ac}" opacity="0.85"/>`)
-  sections.push(`<rect y="${blouseH - Math.round(16 * scale)}" width="${W}" height="${Math.round(2 * scale)}" fill="rgba(255,255,255,0.5)"/>`)
+  // ── BLOUSE (separate panel, right side) ──
+  const bx = SW + gap
+  const by = Math.round(H * 0.12)  // vertically centered-ish
+
+  // Blouse label
+  sections.push(`<text x="${bx + blouseW/2}" y="${by - Math.round(8*scale)}" text-anchor="middle" font-size="${Math.round(7*scale)}" fill="${ac}" letter-spacing="2" font-family="serif" font-weight="600">BLOUSE</text>`)
+
+  // Blouse body
+  sections.push(`<g transform="translate(${bx},${by})">`)
+  sections.push(staticPatternSvgString(bodyPattern, patternMap?.[bodyPattern], sc, ac, blouseW, blouseH, 'blouse'))
+  sections.push(`<rect width="${blouseW}" height="${blouseH}" fill="rgba(0,0,0,0.08)"/>`)
+  sections.push(`<rect width="${blouseW}" height="${blouseH}" fill="url(#blSheen_${gid})"/>`)
+  // Collar V
+  sections.push(`<path d="M0,0 L${Math.round(blouseW*0.35)},${Math.round(22*scale)} L${Math.round(blouseW*0.5)},${Math.round(18*scale)} L${Math.round(blouseW*0.65)},${Math.round(22*scale)} L${blouseW},0" fill="rgba(0,0,0,0.18)" stroke="${ac}" stroke-width="${t3*0.4}" opacity="0.55"/>`)
+  // Bottom zari hem
+  sections.push(`<rect y="${blouseH - Math.round(12*scale)}" width="${blouseW}" height="${Math.round(12*scale)}" fill="${ac}" opacity="0.75"/>`)
+  sections.push(`<rect y="${blouseH - Math.round(12*scale)}" width="${blouseW}" height="${Math.round(2*scale)}" fill="rgba(255,255,255,0.45)"/>`)
+  // Border around blouse
+  sections.push(`<rect width="${blouseW}" height="${blouseH}" fill="none" stroke="${ac}" stroke-width="${Math.round(1.5*scale)}" opacity="0.55"/>`)
   sections.push('</g>')
+
+  // Color swatches under blouse
+  const swatchY = by + blouseH + Math.round(10*scale)
+  const swatchR = Math.round(6*scale)
+  ;[pc, sc, ac].forEach((c, i) => {
+    sections.push(`<circle cx="${bx + blouseW/2 + (i-1)*Math.round(18*scale)}" cy="${swatchY + swatchR}" r="${swatchR}" fill="${c}" opacity="0.9"/>`)
+  })
 
 
   const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${sections.join('')}</svg>`
