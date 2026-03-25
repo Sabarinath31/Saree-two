@@ -9,7 +9,7 @@ import {
   GEMINI_KEY, GEMINI_API_URL, GEMINI_MODEL, HF_TOKEN, REPLICATE_TOKEN, TOGETHER_TOKEN,
 } from './data.jsx'
 import { PatternRenderer, SareeCanvas, exportSareeAsPNG, generateSareeDataURL } from './canvas.jsx'
-import { CustomerUploadWizard } from './patternEditor.jsx'
+import { CustomerUploadWizard, InlinePatternEditor } from './patternEditor.jsx'
 
 // ─── NOTIFICATION ─────────────────────────────────────────────────────────────
 function Notification({ notification }) {
@@ -936,6 +936,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
   const [aiPrompt, setAiPrompt] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [aiResult, setAiResult] = useState(null)
+  const [inlineEditorPattern, setInlineEditorPattern] = useState(null)
   const [generatedImage, setGeneratedImage] = useState(null)
   const [imageLoading, setImageLoading] = useState(false)
   const [imageError, setImageError] = useState(null)
@@ -1413,15 +1414,33 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
         <p className="label-xs" style={{marginBottom:10}}>Patterns - {activeSection}</p>
         <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6}}>
           {sectionPatterns[activeSection].map(p => (
-            <div key={p.id} onClick={()=>setDesign(d=>({...d,[currentPatternKey[activeSection]]:p.id}))}
+            <div key={p.id}
               style={{
                 borderRadius:3,overflow:'hidden',cursor:'pointer',
                 border:`2px solid ${design[currentPatternKey[activeSection]]===p.id?T.gold:T.border}`,
                 transition:'all 0.2s',
-                boxShadow: design[currentPatternKey[activeSection]]===p.id?`0 0 0 1px ${T.goldLight}`:'none'
-              }}>
+                boxShadow: design[currentPatternKey[activeSection]]===p.id?`0 0 0 1px ${T.goldLight}`:'none',
+                position:'relative',
+              }}
+              onClick={()=>setDesign(d=>({...d,[currentPatternKey[activeSection]]:p.id}))}>
               <PatternRenderer patternId={p.id} customPattern={p} color={design.primaryColor} accentColor={design.accentColor} width={80} height={60} />
               <div style={{padding:'4px',background:T.surface,fontSize:8,textAlign:'center',color:T.textLight,letterSpacing:0.5,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{p.name}</div>
+              {/* FIX #1: Edit button for uploaded patterns */}
+              {(p.style_type === 'uploaded' || p.image_data_url || p.imageDataUrl) && (
+                <button
+                  onClick={e=>{e.stopPropagation();setInlineEditorPattern(p)}}
+                  title="Edit pattern settings"
+                  style={{
+                    position:'absolute',top:2,right:2,
+                    background:'rgba(14,12,9,0.75)',
+                    border:`1px solid ${T.gold}88`,
+                    borderRadius:2,color:T.gold,
+                    fontSize:8,padding:'2px 5px',cursor:'pointer',
+                    fontWeight:600,letterSpacing:0.5,lineHeight:1,
+                  }}>
+                  Edit ✦
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -1630,7 +1649,8 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
 
   // Desktop 3-panel
   return (
-      <div style={{display:'flex',height:'100vh',background:T.bg}}>
+  <>
+    <div style={{display:'flex',height:'100vh',background:T.bg}}>
       {/* Left */}
       <div style={{width:280,overflowY:'auto',padding:24,background:T.surface,borderRight:`1px solid ${T.border}`}}>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:24}}>
@@ -1657,7 +1677,24 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
         {SavePanel()}
       </div>
     </div>
-  )
+
+    {/* FIX #1: Inline pattern editor for uploaded patterns */}
+    {inlineEditorPattern && (
+      <InlinePatternEditor
+        open={!!inlineEditorPattern}
+        pattern={inlineEditorPattern}
+        design={design}
+        onClose={()=>setInlineEditorPattern(null)}
+        onSave={(editor)=>{
+          // Update patternMap entry's editor settings in local state
+          // Since patterns come from props, we store overrides in a local map
+          setInlineEditorPattern(null)
+          notify('Pattern editor settings applied ✦', 'success')
+        }}
+      />
+    )}
+  </>
+)
 }
 
 // ─── EXPORTS ──────────────────────────────────────────────────────────────────

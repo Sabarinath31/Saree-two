@@ -209,7 +209,7 @@ export default function App() {
           notify={notify}
           onLibraryChanged={refreshLibraryData}
           onBack={()=>setPage('home')}
-          onSaved={()=>setPage('mydesigns')}
+          onSaved={()=>setPage('home')}
         />
       </div>
       <Notification notification={notification} />
