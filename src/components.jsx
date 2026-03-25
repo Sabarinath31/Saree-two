@@ -390,12 +390,24 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
       }
 
       const hsl = hexToHsl(bodyColor)
+      const hslPallu = hexToHsl(palluColor)
+      const hslBorder = hexToHsl(borderColor)
       const h = hsl.h, s = hsl.s, lum = hsl.l
+      const variance = Math.abs(hsl.h - hslPallu.h) + Math.abs(hsl.h - hslBorder.h)
+      const colorHash = Math.round((h * 7 + s * 100 + lum * 100 + variance) % 17)
 
       // Pick body pattern by saturation + luminance
-      const bodyPattern   = s < 0.1 ? 'b1' : lum > 0.7 ? 'b16' : h < 30 ? 'b6' : h < 80 ? 'b4' : h < 160 ? 'b7' : h < 260 ? 'b11' : 'b4'
-      const borderPattern = s < 0.1 ? 'br7' : lum > 0.6 ? 'br1' : h < 60 ? 'br3' : 'br5'
-      const palluPattern  = s < 0.1 ? 'p5'  : lum > 0.6 ? 'p9'  : h < 60 ? 'p6'  : h < 160 ? 'p3' : 'p7'
+      const bodySetWarm = ['b4','b6','b8','b13']
+      const bodySetCool = ['b7','b11','b15','b17']
+      const bodySetSoft = ['b1','b2','b3','b9','b10','b12','b16']
+      const baseBodySet = s < 0.12 || lum > 0.76 ? bodySetSoft : (h < 70 || h > 320 ? bodySetWarm : bodySetCool)
+      const bodyPattern = baseBodySet[colorHash % baseBodySet.length]
+
+      const borderSet = s < 0.12 ? ['br1','br2','br7'] : (h < 90 ? ['br3','br4','br6'] : ['br5','br8','br11','br12'])
+      const borderPattern = borderSet[(colorHash + 3) % borderSet.length]
+
+      const palluSet = s < 0.12 ? ['p5','p9'] : (h < 90 ? ['p6','p8','p1'] : ['p3','p4','p7','p11'])
+      const palluPattern = palluSet[(colorHash + 5) % palluSet.length]
 
       return {
         colors: { primary: bodyColor, secondary: palluColor, accent: borderColor },
@@ -591,6 +603,101 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+function CustomerDesignUploadPage({ user, token, notify, onLibraryChanged, onBack, onSaved }) {
+  const [form, setForm] = useState({
+    id: '',
+    name: '',
+    occasion: 'Wedding',
+    part: 'body',
+  })
+  const [fileName, setFileName] = useState('')
+  const [fileDataUrl, setFileDataUrl] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const onFile = (file) => {
+    if (!file) return
+    setFileName(file.name || '')
+    const r = new FileReader()
+    r.onload = (e) => setFileDataUrl(e.target.result || '')
+    r.readAsDataURL(file)
+  }
+
+  const saveUpload = async () => {
+    if (!form.id || !form.name || !form.occasion || !fileDataUrl) {
+      notify('Please fill all fields and upload a file', 'error')
+      return
+    }
+    setBusy(true)
+    try {
+      const pid = form.id.trim()
+      const designData = {
+        primaryColor:'#8B0000',
+        secondaryColor:'#F5F5DC',
+        accentColor:'#C9A843',
+        bodyPattern: form.part === 'body' ? pid : 'b4',
+        borderPattern: form.part === 'border' ? pid : 'br3',
+        palluPattern: form.part === 'pallu' ? pid : 'p4',
+        uploadMeta: {
+          custom_id: form.id,
+          occasion: form.occasion,
+          part: form.part,
+          file_name: fileName,
+          file_data_url: fileDataUrl,
+          editor: {
+            opacity: 0.86, density: 1, zoom: 1, spacing: 1.18, rotation: 0, x: 0, y: 0, repeatStyle: 'grid',
+          },
+        }
+      }
+      const ins = await sb.insert('saved_designs', {
+        user_id: user.id,
+        name: form.name,
+        design_data: designData,
+        thumbnail_colors: [designData.primaryColor, designData.secondaryColor, designData.accentColor],
+        status: 'draft',
+      }, token)
+      if (ins && !Array.isArray(ins) && (ins.code || ins.message)) {
+        console.error('saved_designs insert:', ins)
+        notify(ins.message || ins.hint || `Upload failed (${ins.code || 'error'})`, 'error')
+        return
+      }
+      onLibraryChanged && await onLibraryChanged()
+      notify('Design uploaded successfully', 'success')
+      onSaved && onSaved()
+    } catch (e) {
+      console.error(e)
+      notify('Failed to upload design. Check console / Supabase RLS and required fields.', 'error')
+    }
+    setBusy(false)
+  }
+
+  return (
+    <div style={{maxWidth:620,margin:'0 auto',padding:'32px 20px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
+        <button onClick={onBack} className="btn-ghost" style={{padding:'6px 12px',fontSize:10}}>← Back</button>
+        <h2 style={{fontFamily:'Cormorant Garamond',fontSize:24,fontWeight:400,color:T.text}}>Upload New Design</h2>
+      </div>
+      <div className="card" style={{padding:16,display:'grid',gap:10}}>
+        <input className="input-field" placeholder="Design ID" value={form.id} onChange={e=>setForm(v=>({...v,id:e.target.value}))} />
+        <input className="input-field" placeholder="Design Name" value={form.name} onChange={e=>setForm(v=>({...v,name:e.target.value}))} />
+        <select className="input-field" value={form.occasion} onChange={e=>setForm(v=>({...v,occasion:e.target.value}))}>
+          <option value="Wedding">Wedding</option>
+          <option value="Festival">Festival</option>
+          <option value="Party">Party</option>
+          <option value="Office">Office</option>
+          <option value="Casual">Casual</option>
+          <option value="Reception">Reception</option>
+        </select>
+        <select className="input-field" value={form.part} onChange={e=>setForm(v=>({...v,part:e.target.value}))}>
+          <option value="body">Body</option><option value="border">Border</option><option value="pallu">Pallu</option>
+        </select>
+        <input className="input-field" type="file" accept=".jpg,.jpeg,.png,.svg,image/jpeg,image/png,image/svg+xml" onChange={e=>onFile(e.target.files?.[0])} />
+        {fileName && <p style={{fontSize:11,color:T.textLight}}>Selected: {fileName}</p>}
+        <button className="btn-primary" onClick={saveUpload} disabled={busy}>{busy ? 'Uploading...' : 'Upload Design'}</button>
+      </div>
     </div>
   )
 }
@@ -828,6 +935,13 @@ function CustomerHome({ user, onNavigate, templates: propTemplates, palettes: pr
         ))}
       </div>
 
+      <div style={{display:'flex',justifyContent:'flex-end',marginBottom:20}}>
+        <button className="btn-outline" onClick={() => onNavigate('uploaddesign')}
+          style={{fontSize:11,padding:'8px 14px'}}>
+          ↑ Upload My Design
+        </button>
+      </div>
+
       {/* Popular Templates */}
       <div style={{marginBottom:16,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <p className="label-xs">Popular Templates</p>
@@ -914,6 +1028,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
     border: patterns.filter(p => p.saree_part === 'border'),
     pallu: patterns.filter(p => p.saree_part === 'pallu'),
   }
+  const patternMap = patterns.reduce((acc, p) => { acc[p.id] = p; return acc }, {})
 
   const currentPatternKey = { body: 'bodyPattern', border: 'borderPattern', pallu: 'palluPattern' }
 
@@ -957,7 +1072,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
         user_id: user.id, name: designName,
         design_data: design,
         thumbnail_colors: [design.primaryColor, design.secondaryColor, design.accentColor],
-        status: 'draft'
+        status: 'draft',
       }, token)
       notify('Design saved!', 'success')
     } catch { notify('Could not save. Try again.', 'error') }
@@ -965,9 +1080,10 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
   }
 
   const exportPNG = () => {
-    exportSareeAsPNG(design, designName)
+    exportSareeAsPNG(design, designName, patternMap)
     notify('Design exported!', 'success')
   }
+
 
   // ── Realistic Image Generation ─────────────────────────────────────────────
   const hexToColor = (hex) => {
@@ -993,7 +1109,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
       b5:'ikat diamond pattern', b6:'temple gopuram motifs',
       b7:'detailed peacock feather motifs', b8:'zari dot embellishment',
       b9:'bandhani tie-dye pattern', b10:'leheriya diagonal stripes',
-      b11:'mughal arch lattice motifs', b12:'geometric star pattern',
+      b11:'banarasi kadwa jaal lattice', b12:'geometric star pattern',
       b13:'sacred lotus floral motifs', b14:'warli tribal art pattern',
       b15:'kashmiri chinar leaf motifs', b16:'fine pinstripe zari',
       b17:'meenakari jewel pattern',
@@ -1018,8 +1134,8 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
       p3:'peacock tail fan pallu with intricate zari',
       p4:'floral bouquet pallu',
       p5:'plain elegant pallu',
-      p6:'temple arch spire pallu',
-      p7:'mughal garden motif pallu',
+      p6:'gopuram panel zari pallu',
+      p7:'banarasi kadwa jaal floral pallu',
       p8:'scattered butta motif pallu',
       p9:'striped pallu with gold accents',
       p10:'vine creeper pallu',
@@ -1384,7 +1500,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
                 transition:'all 0.2s',
                 boxShadow: design[currentPatternKey[activeSection]]===p.id?`0 0 0 1px ${T.goldLight}`:'none'
               }}>
-              <PatternRenderer patternId={p.id} color={design.primaryColor} accentColor={design.accentColor} width={80} height={60} />
+              <PatternRenderer patternId={p.id} customPattern={p} color={design.primaryColor} accentColor={design.accentColor} width={80} height={60} />
               <div style={{padding:'4px',background:T.surface,fontSize:8,textAlign:'center',color:T.textLight,letterSpacing:0.5,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{p.name}</div>
             </div>
           ))}
@@ -1451,13 +1567,13 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
     const PATTERN_NAMES = {
       b1:'Plain', b2:'Stripes', b3:'Checks', b4:'Floral Butta', b5:'Ikat Diamond',
       b6:'Temple Motifs', b7:'Peacock Grid', b8:'Zari Dots', b9:'Bandhani',
-      b10:'Leheriya', b11:'Mughal Arch', b12:'Geometric', b13:'Lotus',
+      b10:'Leheriya', b11:'Banarasi Jaal', b12:'Geometric', b13:'Lotus',
       b14:'Warli', b15:'Kashmiri', b16:'Pinstripe', b17:'Meenakari',
       br1:'Single Kasavu', br2:'Double Kasavu', br3:'Temple', br4:'Mango',
       br5:'Peacock', br6:'Broad Zari', br7:'Thin Gold', br8:'Floral Chain',
       br9:'Geo Steps', br10:'Wave', br11:'Diamond', br12:'Lotus Row',
       p1:'Rich Zari', p2:'Contrast', p3:'Peacock', p4:'Floral', p5:'Minimal',
-      p6:'Temple Arch', p7:'Mughal Garden', p8:'Butta Scatter', p9:'Stripe',
+      p6:'Gopuram Panel', p7:'Kadwa Jaal Floral', p8:'Butta Scatter', p9:'Stripe',
       p10:'Vines', p11:'Kashmiri', p12:'Geometric',
     }
 
@@ -1561,7 +1677,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
               <span style={{fontSize:11,color:T.textMid}}>Generating...</span>
             </div>
           )}
-          <SareeCanvas design={design} scale={0.62} />
+          <SareeCanvas design={design} scale={0.62} patternMap={patternMap} />
           <div style={{position:'absolute',bottom:8,left:'50%',transform:'translateX(-50%)',display:'flex',gap:5}}>
             {[design.primaryColor,design.secondaryColor,design.accentColor].map((c,i)=>(
               <div key={i} style={{width:10,height:10,borderRadius:'50%',background:c,border:`1px solid ${T.border}`}} />
@@ -1594,7 +1710,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
 
   // Desktop 3-panel
   return (
-    <div style={{display:'flex',height:'100vh',background:T.bg}}>
+      <div style={{display:'flex',height:'100vh',background:T.bg}}>
       {/* Left */}
       <div style={{width:280,overflowY:'auto',padding:24,background:T.surface,borderRight:`1px solid ${T.border}`}}>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:24}}>
@@ -1612,7 +1728,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
             <span style={{fontFamily:'Cormorant Garamond',fontSize:20,color:T.textMid,fontStyle:'italic'}}>AI is creating...</span>
           </div>
         )}
-        <SareeCanvas design={design} scale={1.1} />
+        <SareeCanvas design={design} scale={1.1} patternMap={patternMap} />
         {/* Generate feature hidden — {false && generatedImage && (...)} */}
       </div>
 
@@ -1627,5 +1743,5 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
 // ─── EXPORTS ──────────────────────────────────────────────────────────────────
 export {
   Notification, VoiceQuestionnaire, ImageUploadPage,
-  AuthPage, CustomerHome, DesignerCanvas,
+  CustomerDesignUploadPage, AuthPage, CustomerHome, DesignerCanvas,
 }

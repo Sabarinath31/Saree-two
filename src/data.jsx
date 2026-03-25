@@ -4,7 +4,7 @@
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 export const SUPABASE_URL = 'https://glvmekmiwyyasnepceqp.supabase.co'
 export const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdsdm1la21pd3l5YXNuZXBjZXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzEwNjIsImV4cCI6MjA4ODkwNzA2Mn0.-Fx8aPqpxSHIkm9RAkVT92nXNyFPSBUYLmWhuEr3ONU'
-export const GEMINI_MODEL   = 'gemini-1.5-flash'
+export const GEMINI_MODEL   = 'gemini-2.5-flash'
 export const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
 
 // 🔑 Set VITE_GEMINI_KEY in your .env file
@@ -79,7 +79,7 @@ export const SEED_PATTERNS = [
   { id:'b8',  name:'Zari Dots',         saree_part:'body',   style_type:'festive',     richness_level:3, tags:['zari','dots','silk','party'] },
   { id:'b9',  name:'Bandhani',          saree_part:'body',   style_type:'traditional', richness_level:3, tags:['bandhani','rajasthani','tie-dye'] },
   { id:'b10', name:'Leheriya Wave',     saree_part:'body',   style_type:'traditional', richness_level:2, tags:['leheriya','wave','rajasthani'] },
-  { id:'b11', name:'Mughal Arch',       saree_part:'body',   style_type:'bridal',      richness_level:5, tags:['mughal','banarasi','bridal','brocade'] },
+  { id:'b11', name:'Banarasi Jaal',     saree_part:'body',   style_type:'bridal',      richness_level:5, tags:['jaal','banarasi','bridal','brocade'] },
   { id:'b12', name:'Geometric',         saree_part:'body',   style_type:'modern',      richness_level:3, tags:['geometric','modern','designer'] },
   { id:'b13', name:'Lotus Pattern',     saree_part:'body',   style_type:'traditional', richness_level:4, tags:['lotus','bengal','silk'] },
   { id:'b14', name:'Warli Art',         saree_part:'body',   style_type:'folk',        richness_level:2, tags:['warli','folk','tribal'] },
@@ -103,8 +103,8 @@ export const SEED_PATTERNS = [
   { id:'p3',  name:'Peacock Pallu',     saree_part:'pallu',  style_type:'bridal',      richness_level:5, tags:['peacock','pallu','bridal','wedding'] },
   { id:'p4',  name:'Floral Pallu',      saree_part:'pallu',  style_type:'festive',     richness_level:4, tags:['floral','pallu','festival','silk'] },
   { id:'p5',  name:'Minimal Pallu',     saree_part:'pallu',  style_type:'minimal',     richness_level:1, tags:['minimal','pallu','linen','office'] },
-  { id:'p6',  name:'Temple Arch',       saree_part:'pallu',  style_type:'traditional', richness_level:4, tags:['temple','arch','kanchipuram'] },
-  { id:'p7',  name:'Mughal Garden',     saree_part:'pallu',  style_type:'bridal',      richness_level:5, tags:['mughal','garden','banarasi','bridal'] },
+  { id:'p6',  name:'Gopuram Panel',     saree_part:'pallu',  style_type:'traditional', richness_level:4, tags:['temple','gopuram','kanchipuram'] },
+  { id:'p7',  name:'Kadwa Jaal Floral', saree_part:'pallu',  style_type:'bridal',      richness_level:5, tags:['kadwa','jaal','banarasi','bridal'] },
   { id:'p8',  name:'Butta Scatter',     saree_part:'pallu',  style_type:'festive',     richness_level:3, tags:['butta','scatter','festival'] },
   { id:'p9',  name:'Stripe Pallu',      saree_part:'pallu',  style_type:'modern',      richness_level:2, tags:['stripe','modern','casual'] },
   { id:'p10', name:'Embroidered Vines', saree_part:'pallu',  style_type:'designer',    richness_level:4, tags:['embroidered','vines','designer','party'] },
@@ -347,12 +347,12 @@ export function generateRecommendations(answers) {
 export const PATTERN_NAMES = {
   b1:'Plain', b2:'Stripes', b3:'Checks', b4:'Floral Butta', b5:'Ikat Diamond',
   b6:'Temple Motifs', b7:'Peacock Grid', b8:'Zari Dots', b9:'Bandhani',
-  b10:'Leheriya', b11:'Mughal Arch', b12:'Geometric', b13:'Lotus',
+  b10:'Leheriya', b11:'Banarasi Jaal', b12:'Geometric', b13:'Lotus',
   b14:'Warli', b15:'Kashmiri', b16:'Pinstripe', b17:'Meenakari',
   br1:'Single Kasavu', br2:'Double Kasavu', br3:'Temple', br4:'Mango',
   br5:'Peacock', br6:'Broad Zari', br7:'Thin Gold', br8:'Floral Chain',
   br9:'Geo Steps', br10:'Wave', br11:'Diamond', br12:'Lotus Row',
   p1:'Rich Zari', p2:'Contrast', p3:'Peacock', p4:'Floral', p5:'Minimal',
-  p6:'Temple Arch', p7:'Mughal Garden', p8:'Butta Scatter', p9:'Stripe',
+  p6:'Gopuram Panel', p7:'Kadwa Jaal Floral', p8:'Butta Scatter', p9:'Stripe',
   p10:'Vines', p11:'Kashmiri', p12:'Geometric',
 }

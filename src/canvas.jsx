@@ -1,8 +1,17 @@
 // ─── canvas.jsx ──────────────────────────────────────────────────────────────
 // PatternRenderer (50 SVG patterns) + SareeCanvas + exportSareeAsPNG
+import React from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { T } from './theme.jsx'
 
-function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843', width = 200, height = 200 }) {
+/** Exact same markup as live <PatternRenderer /> (used for PNG export). */
+function staticPatternSvgString(patternId, customPattern, color, accent, w, h, svgInstanceKey = 'def') {
+  return renderToStaticMarkup(
+    <PatternRenderer patternId={patternId} customPattern={customPattern ?? null} color={color} accentColor={accent} width={w} height={h} svgInstanceKey={svgInstanceKey} />
+  )
+}
+
+function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843', width = 200, height = 200, customPattern = null, svgInstanceKey = '0' }) {
   const c = color
   const a = accentColor
 
@@ -76,8 +85,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b4 — Floral Butta: classic mango/teardrop butta in offset rows (Kanjivaram)
     b4: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/26)},(_,x)=>Array.from({length:Math.ceil(H/28)},(_,y)=>{
-        const cx=x*26+(y%2===0?13:26), cy=y*28+14, s=10
+      {Array.from({length:Math.ceil(W/40)},(_,x)=>Array.from({length:Math.ceil(H/44)},(_,y)=>{
+        const cx=x*40+(y%2===0?20:40), cy=y*44+22, s=8.6
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           <path d={mangoPath(s)} fill={a} opacity="0.82"/>
           <path d={mangoPath(s*0.62)} fill={c} opacity="0.78"/>
@@ -91,8 +100,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b5 — Ikat Diamond: Pochampally staggered diamond
     b5: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/22)},(_,x)=>Array.from({length:Math.ceil(H/22)},(_,y)=>{
-        const cx=x*22+(y%2===0?11:22), cy=y*22+11
+      {Array.from({length:Math.ceil(W/28)},(_,x)=>Array.from({length:Math.ceil(H/28)},(_,y)=>{
+        const cx=x*28+(y%2===0?14:28), cy=y*28+14
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           <polygon points="0,-9 9,0 0,9 -9,0" fill={a} opacity="0.55"/>
           <polygon points="0,-6 6,0 0,6 -6,0" fill={c} opacity="0.9"/>
@@ -106,8 +115,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b6 — Temple Motifs: Kanjivaram 8-petal temple medallion
     b6: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/28)},(_,x)=>Array.from({length:Math.ceil(H/28)},(_,y)=>{
-        const cx=x*28+(y%2===0?14:28), cy=y*28+14
+      {Array.from({length:Math.ceil(W/54)},(_,x)=>Array.from({length:Math.ceil(H/54)},(_,y)=>{
+        const cx=x*54+(y%2===0?27:54), cy=y*54+27
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           <circle r="10" fill="none" stroke={a} strokeWidth="1.2" opacity="0.65"/>
           {[0,45,90,135,180,225,270,315].map(ang=>(
@@ -128,8 +137,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b7 — Peacock Grid: standing peacock with fanned tail (Paithani)
     b7: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/36)},(_,x)=>Array.from({length:Math.ceil(H/38)},(_,y)=>{
-        const cx=x*36+(y%2===0?18:36), cy=y*38+19
+      {Array.from({length:Math.ceil(W/44)},(_,x)=>Array.from({length:Math.ceil(H/46)},(_,y)=>{
+        const cx=x*44+(y%2===0?22:44), cy=y*46+23
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           {[-3,-2,-1,0,1,2,3].map(i=>(
             <path key={i} d={`M0,2 C${i*4},${-8+i*i*0.5} ${i*5+2},${-14} ${i*3},${-16}`}
@@ -153,8 +162,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b8 — Zari Dots: diamond butti scatter in zari
     b8: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/20)},(_,x)=>Array.from({length:Math.ceil(H/20)},(_,y)=>{
-        const cx=x*20+(y%2===0?10:20), cy=y*20+10
+      {Array.from({length:Math.ceil(W/34)},(_,x)=>Array.from({length:Math.ceil(H/34)},(_,y)=>{
+        const cx=x*34+(y%2===0?17:34), cy=y*34+17
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           <polygon points="0,-5 5,0 0,5 -5,0" fill={a} opacity="0.75"/>
           <polygon points="0,-3 3,0 0,3 -3,0" fill={c} opacity="0.9"/>
@@ -166,8 +175,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b9 — Bandhani: resist-dye dot clusters in offset grid
     b9: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/22)},(_,x)=>Array.from({length:Math.ceil(H/22)},(_,y)=>{
-        const cx=x*22+(y%2===0?11:22), cy=y*22+11
+      {Array.from({length:Math.ceil(W/36)},(_,x)=>Array.from({length:Math.ceil(H/36)},(_,y)=>{
+        const cx=x*36+(y%2===0?18:36), cy=y*36+18
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           <circle r="3.5" fill="none" stroke={a} strokeWidth="1" opacity="0.25"/>
           <circle r="2" fill={a} opacity="0.5"/>
@@ -195,8 +204,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b11 — Mughal Arch: jaal lattice of pointed arches (Banarasi)
     b11: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/30)},(_,x)=>Array.from({length:Math.ceil(H/30)},(_,y)=>{
-        const cx=x*30+15, cy=y*30+15
+      {Array.from({length:Math.ceil(W/46)},(_,x)=>Array.from({length:Math.ceil(H/48)},(_,y)=>{
+        const cx=x*46+23, cy=y*48+24
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           <path d="M-10,12 L-10,-2 C-10,-14 10,-14 10,-2 L10,12"
             fill="none" stroke={a} strokeWidth="1.4" opacity="0.65"/>
@@ -212,22 +221,22 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b12 — Geometric: diagonal trellis jaali (Chanderi)
     b12: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil((W+H)/18)},(_,i)=>(
-        <line key={`d1${i}`} x1={i*18-H} y1={0} x2={i*18} y2={H} stroke={a} strokeWidth="1" opacity="0.45"/>
+      {Array.from({length:Math.ceil((W+H)/22)},(_,i)=>(
+        <line key={`d1${i}`} x1={i*22-H} y1={0} x2={i*22} y2={H} stroke={a} strokeWidth="1" opacity="0.45"/>
       ))}
-      {Array.from({length:Math.ceil((W+H)/18)},(_,i)=>(
-        <line key={`d2${i}`} x1={W-i*18+H} y1={0} x2={W-i*18} y2={H} stroke={a} strokeWidth="1" opacity="0.45"/>
+      {Array.from({length:Math.ceil((W+H)/22)},(_,i)=>(
+        <line key={`d2${i}`} x1={W-i*22+H} y1={0} x2={W-i*22} y2={H} stroke={a} strokeWidth="1" opacity="0.45"/>
       ))}
-      {Array.from({length:Math.ceil(W/18)},(_,x)=>Array.from({length:Math.ceil(H/18)},(_,y)=>(
-        <circle key={`${x}-${y}`} cx={x*18+(y%2===0?0:9)} cy={y*18} r="1.5" fill={a} opacity="0.7"/>
+      {Array.from({length:Math.ceil(W/22)},(_,x)=>Array.from({length:Math.ceil(H/22)},(_,y)=>(
+        <circle key={`${x}-${y}`} cx={x*22+(y%2===0?0:11)} cy={y*22} r="1.5" fill={a} opacity="0.7"/>
       ))).flat()}
     </>,
 
     // b13 — Lotus Pattern: 8-petal lotus medallion (Bengal jamdani)
     b13: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/32)},(_,x)=>Array.from({length:Math.ceil(H/32)},(_,y)=>{
-        const cx=x*32+(y%2===0?16:32), cy=y*32+16
+      {Array.from({length:Math.ceil(W/40)},(_,x)=>Array.from({length:Math.ceil(H/40)},(_,y)=>{
+        const cx=x*40+(y%2===0?20:40), cy=y*40+20
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           {[0,45,90,135,180,225,270,315].map(ang=>(
             <path key={ang}
@@ -249,8 +258,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b14 — Warli Art: tribal stick figures
     b14: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/32)},(_,x)=>Array.from({length:Math.ceil(H/32)},(_,y)=>{
-        const cx=x*32+(y%2===0?16:32), cy=y*32+16
+      {Array.from({length:Math.ceil(W/40)},(_,x)=>Array.from({length:Math.ceil(H/40)},(_,y)=>{
+        const cx=x*40+(y%2===0?20:40), cy=y*40+20
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           <circle cy="-9" r="2.8" fill={a} opacity="0.75"/>
           <polygon points="0,-6 -4,2 4,2" fill={a} opacity="0.65"/>
@@ -265,8 +274,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b15 — Kashmiri Floral: 5-petal chinar flower (sozni)
     b15: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/28)},(_,x)=>Array.from({length:Math.ceil(H/28)},(_,y)=>{
-        const cx=x*28+(y%2===0?14:28), cy=y*28+14
+      {Array.from({length:Math.ceil(W/36)},(_,x)=>Array.from({length:Math.ceil(H/36)},(_,y)=>{
+        const cx=x*36+(y%2===0?18:36), cy=y*36+18
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           {[0,72,144,216,288].map(ang=>(
             <path key={ang}
@@ -296,8 +305,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // b17 — Meenakari: enamel-jewel rosette (Jaipur)
     b17: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/28)},(_,x)=>Array.from({length:Math.ceil(H/28)},(_,y)=>{
-        const cx=x*28+(y%2===0?14:28), cy=y*28+14
+      {Array.from({length:Math.ceil(W/36)},(_,x)=>Array.from({length:Math.ceil(H/36)},(_,y)=>{
+        const cx=x*36+(y%2===0?18:36), cy=y*36+18
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           <circle r="11" fill="none" stroke={a} strokeWidth="1.5" opacity="0.7"/>
           {[0,60,120,180,240,300].map(ang=>(
@@ -341,8 +350,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
       {Array.from({length:Math.ceil(W/3)},(_,i)=>(
         <line key={`v${i}`} x1={i*3} y1={0} x2={i*3} y2={H} stroke={cVDark} strokeWidth="0.35" opacity="0.1"/>
       ))}
-      {Array.from({length:Math.ceil(W/16)},(_,i)=>{
-        const cx=i*16+8, top=H*0.05, base=H*0.95, ht=H*0.9
+      {Array.from({length:Math.ceil(W/20)},(_,i)=>{
+        const cx=i*20+10, top=H*0.05, base=H*0.95, ht=H*0.9
         return <g key={i} transform={`translate(${cx},0)`}>
           <path d={`M-5,${base} L-5,${top+ht*0.35} C-5,${top} 5,${top} 5,${top+ht*0.35} L5,${base}Z`} fill={c} opacity="0.78"/>
           <path d={`M-3,${base} L-3,${top+ht*0.42} C-3,${top+H*0.08} 3,${top+H*0.08} 3,${top+ht*0.42} L3,${base}`} fill="none" stroke={c} strokeWidth="0.5" opacity="0.4"/>
@@ -376,8 +385,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
       <rect width={W} height={H} fill={c} />
       <line x1={0} y1={H*0.1} x2={W} y2={H*0.1} stroke={a} strokeWidth="0.7" opacity="0.4"/>
       <line x1={0} y1={H*0.9} x2={W} y2={H*0.9} stroke={a} strokeWidth="0.7" opacity="0.4"/>
-      {Array.from({length:Math.ceil(W/30)},(_,i)=>{
-        const cx=i*30+15, cy=H/2
+      {Array.from({length:Math.ceil(W/38)},(_,i)=>{
+        const cx=i*38+19, cy=H/2
         return <g key={i} transform={`translate(${cx},${cy})`}>
           {[-2,-1,0,1,2].map(j=>(
             <path key={j} d={`M-2,0 C${j*3-1},${-H*0.28} ${j*4},${-H*0.38} ${j*3},${-H*0.42}`} fill="none" stroke={a} strokeWidth="1.1" opacity="0.6"/>
@@ -447,11 +456,11 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // br9 — Geo Steps: stepped staircase geometric band
     br9: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/16)},(_,i)=>(
-        <g key={i} transform={`translate(${i*16},0)`}>
-          <rect x={0} y={0} width={14} height={H*0.3} fill={a} opacity="0.7"/>
-          <rect x={2} y={H*0.3} width={10} height={H*0.4} fill={a} opacity="0.55"/>
-          <rect x={4} y={H*0.7} width={6} height={H*0.3} fill={a} opacity="0.4"/>
+      {Array.from({length:Math.ceil(W/20)},(_,i)=>(
+        <g key={i} transform={`translate(${i*20},0)`}>
+          <rect x={0} y={0} width={17} height={H*0.3} fill={a} opacity="0.7"/>
+          <rect x={2} y={H*0.3} width={13} height={H*0.4} fill={a} opacity="0.55"/>
+          <rect x={4} y={H*0.7} width={9} height={H*0.3} fill={a} opacity="0.4"/>
         </g>
       ))}
     </>,
@@ -468,8 +477,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // br11 — Diamond Chain: linked diamond chain
     br11: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/18)},(_,i)=>{
-        const cx=i*18+9, hs=H*0.42
+      {Array.from({length:Math.ceil(W/22)},(_,i)=>{
+        const cx=i*22+11, hs=H*0.42
         return <g key={i} transform={`translate(${cx},${H/2})`}>
           <polygon points={`0,${-hs} ${hs},0 0,${hs} ${-hs},0`} fill="none" stroke={a} strokeWidth="1.3" opacity="0.75"/>
           <polygon points={`0,${-hs*0.55} ${hs*0.55},0 0,${hs*0.55} ${-hs*0.55},0`} fill={a} opacity="0.35"/>
@@ -484,8 +493,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     br12: <>
       <rect width={W} height={H} fill={c} />
       <line x1={0} y1={H*0.5} x2={W} y2={H*0.5} stroke={a} strokeWidth="0.7" opacity="0.3"/>
-      {Array.from({length:Math.ceil(W/20)},(_,i)=>{
-        const cx=i*20+10
+      {Array.from({length:Math.ceil(W/24)},(_,i)=>{
+        const cx=i*24+12
         return <g key={i} transform={`translate(${cx},${H/2})`}>
           <line x1={0} y1={0} x2={0} y2={H*0.38} stroke={a} strokeWidth="0.9" opacity="0.5"/>
           <ellipse cx="-3.5" cy={-H*0.15} rx="2.5" ry={H*0.28} fill={a} opacity="0.55" transform="rotate(-15,-3.5,0)"/>
@@ -541,8 +550,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // p3 — Peacock Pallu: large peacock feather eye (Paithani)
     p3: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/34)},(_,x)=>Array.from({length:Math.ceil(H/36)},(_,y)=>{
-        const cx=x*34+(y%2===0?17:34), cy=y*36+18
+      {Array.from({length:Math.ceil(W/42)},(_,x)=>Array.from({length:Math.ceil(H/44)},(_,y)=>{
+        const cx=x*42+(y%2===0?21:42), cy=y*44+22
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           {[0,20,40,60,80,100,120,140,160,180,200,220,240,260,280,300,320,340].map(ang=>(
             <line key={ang}
@@ -570,8 +579,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
           d={`M${j*W/3-20},0 C${j*W/3+W/6},${H/4} ${j*W/3-W/8},${H/2} ${j*W/3+W/5},${H*0.75} C${j*W/3+W/3},${H} ${j*W/3+W/5},${H} ${j*W/3+W/3},${H}`}
           fill="none" stroke={a} strokeWidth="1.3" opacity="0.45"/>
       ))}
-      {Array.from({length:Math.ceil(W/26)},(_,x)=>Array.from({length:Math.ceil(H/26)},(_,y)=>{
-        const cx=x*26+(y%2===0?13:26), cy=y*26+13
+      {Array.from({length:Math.ceil(W/34)},(_,x)=>Array.from({length:Math.ceil(H/36)},(_,y)=>{
+        const cx=x*34+(y%2===0?17:34), cy=y*36+18
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           {[0,72,144,216,288].map(ang=>(
             <ellipse key={ang}
@@ -601,8 +610,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // p6 — Temple Arch Pallu: column of gopuram spires
     p6: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/28)},(_,x)=>Array.from({length:Math.ceil(H/36)},(_,y)=>{
-        const cx=x*28+14, cy=y*36
+      {Array.from({length:Math.ceil(W/44)},(_,x)=>Array.from({length:Math.ceil(H/52)},(_,y)=>{
+        const cx=x*44+22, cy=y*52+26
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           <path d={`M-10,36 L-10,8 C-10,-6 10,-6 10,8 L10,36`} fill="none" stroke={a} strokeWidth="1.5" opacity="0.65"/>
           <path d={`M-6,36 L-6,11 C-6,2 6,2 6,11 L6,36`} fill="none" stroke={a} strokeWidth="0.8" opacity="0.35"/>
@@ -619,14 +628,14 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // p7 — Mughal Garden: Banarasi jaal trellis with rosettes
     p7: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil((W+H)/20)},(_,i)=>(
-        <line key={`d1${i}`} x1={i*20-H} y1={0} x2={i*20} y2={H} stroke={a} strokeWidth="0.7" opacity="0.22"/>
+      {Array.from({length:Math.ceil((W+H)/24)},(_,i)=>(
+        <line key={`d1${i}`} x1={i*24-H} y1={0} x2={i*24} y2={H} stroke={a} strokeWidth="0.7" opacity="0.22"/>
       ))}
-      {Array.from({length:Math.ceil((W+H)/20)},(_,i)=>(
-        <line key={`d2${i}`} x1={W-i*20+H} y1={0} x2={W-i*20} y2={H} stroke={a} strokeWidth="0.7" opacity="0.22"/>
+      {Array.from({length:Math.ceil((W+H)/24)},(_,i)=>(
+        <line key={`d2${i}`} x1={W-i*24+H} y1={0} x2={W-i*24} y2={H} stroke={a} strokeWidth="0.7" opacity="0.22"/>
       ))}
-      {Array.from({length:Math.ceil(W/20)},(_,x)=>Array.from({length:Math.ceil(H/20)},(_,y)=>{
-        const cx=x*20+(y%2===0?0:10), cy=y*20
+      {Array.from({length:Math.ceil(W/34)},(_,x)=>Array.from({length:Math.ceil(H/34)},(_,y)=>{
+        const cx=x*34+(y%2===0?0:17), cy=y*34
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           {[0,60,120,180,240,300].map(ang=>(
             <ellipse key={ang}
@@ -645,8 +654,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // p8 — Butta Scatter: dense mango butta in two alternating orientations
     p8: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/24)},(_,x)=>Array.from({length:Math.ceil(H/20)},(_,y)=>{
-        const cx=x*24+(y%2===0?12:24), cy=y*20+10, s=7, flip=y%3===0?-1:1
+      {Array.from({length:Math.ceil(W/40)},(_,x)=>Array.from({length:Math.ceil(H/36)},(_,y)=>{
+        const cx=x*40+(y%2===0?20:40), cy=y*36+18, s=6.2, flip=y%3===0?-1:1
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy}) scale(${flip},1)`}>
           <path d={mangoPath(s)} fill={a} opacity="0.75"/>
           <path d={mangoPath(s*0.58)} fill={c} opacity="0.8"/>
@@ -687,8 +696,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // p11 — Kashmiri Pallu: 5-lobe chinar leaf clusters
     p11: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/30)},(_,x)=>Array.from({length:Math.ceil(H/30)},(_,y)=>{
-        const cx=x*30+(y%2===0?15:30), cy=y*30+15
+      {Array.from({length:Math.ceil(W/38)},(_,x)=>Array.from({length:Math.ceil(H/38)},(_,y)=>{
+        const cx=x*38+(y%2===0?19:38), cy=y*38+19
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           {[0,72,144,216,288].map(ang=>(
             <path key={ang}
@@ -704,8 +713,8 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
     // p12 — Geometric Pallu: interlocking hexagonal trellis
     p12: <>
       <rect width={W} height={H} fill={c} />
-      {Array.from({length:Math.ceil(W/22)},(_,x)=>Array.from({length:Math.ceil(H/20)},(_,y)=>{
-        const cx=x*22+(y%2===0?0:11), cy=y*20, r=9
+      {Array.from({length:Math.ceil(W/26)},(_,x)=>Array.from({length:Math.ceil(H/24)},(_,y)=>{
+        const cx=x*26+(y%2===0?0:13), cy=y*24, r=9
         const pts=[0,60,120,180,240,300].map(ang=>`${(Math.cos((ang-90)*Math.PI/180)*r).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*r).toFixed(1)}`).join(' ')
         return <g key={`${x}-${y}`} transform={`translate(${cx},${cy})`}>
           <polygon points={pts} fill="none" stroke={a} strokeWidth="1" opacity="0.55"/>
@@ -719,9 +728,20 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
   const part = patternId?.startsWith('br') ? border_patterns : patternId?.startsWith('p') ? pallu_patterns : patterns
   const isBorder = patternId?.startsWith('br')
   const isPallu  = patternId?.startsWith('p')
+  const customImageUrl = customPattern?.image_data_url || customPattern?.imageDataUrl || ''
+  const editor = customPattern?.editor || {}
+  const density = Number(editor.density || 1)
+  const zoom = Number(editor.zoom || 1)
+  const spacing = Number(editor.spacing || 1.18)
+  const tile = Math.max(36, Math.round((90 / (density * zoom))))
+  const tileW = Math.max(36, Math.round(tile * spacing))
+  const tileH = Math.max(36, Math.round(tile * spacing))
+  const opacity = Math.min(0.9, Math.max(0.8, Number(editor.opacity || 0.86)))
 
-  // Unique IDs per instance to avoid defs collision when multiple SVGs render
-  const uid = (patternId||'x') + '_' + width + '_' + height
+  // Unique IDs per instance (required when one document contains two borders, body+blouse, etc.)
+  const safePid = String(patternId || 'x').replace(/[^a-zA-Z0-9]/g, '_')
+  const safeInst = String(svgInstanceKey || '0').replace(/[^a-zA-Z0-9]/g, '_')
+  const uid = `${safePid}_${Math.round(width)}_${Math.round(height)}_${safeInst}`
 
   return (
     <svg width={width} height={height} xmlns="http://www.w3.org/2000/svg" style={{display:'block'}}>
@@ -795,7 +815,17 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
 
       {/* ── Base pattern ── */}
       <g filter={`url(#weave_${uid})`}>
-        {part[patternId] || <rect width={width} height={height} fill={c} />}
+        {customImageUrl ? (
+          <>
+            <defs>
+              <pattern id={`up_${uid}`} x="0" y="0" width={tileW} height={tileH} patternUnits="userSpaceOnUse">
+                <image href={customImageUrl} x="0" y="0" width={tile} height={tile} preserveAspectRatio="xMidYMid slice" />
+              </pattern>
+            </defs>
+            <rect width={width} height={height} fill={c} />
+            <rect width={width} height={height} fill={`url(#up_${uid})`} opacity={opacity} />
+          </>
+        ) : (part[patternId] || <rect width={width} height={height} fill={c} />)}
       </g>
 
       {/* ── Warp thread lines (vertical grain) ── */}
@@ -841,7 +871,7 @@ function PatternRenderer({ patternId, color = '#8B0000', accentColor = '#C9A843'
 }
 
 // ─── SAREE CANVAS ─────────────────────────────────────────────────────────────
-function SareeCanvas({ design, scale = 1 }) {
+function SareeCanvas({ design, scale = 1, patternMap = {} }) {
   const w        = Math.round(220 * scale)
   const palluH   = Math.round(175 * scale)
   const borderH  = Math.round(32 * scale)   // thick realistic border
@@ -897,7 +927,7 @@ function SareeCanvas({ design, scale = 1 }) {
 
         {/* Pallu body */}
         <div style={{width:w, height:palluH, overflow:'hidden', position:'relative', marginTop:-1}}>
-          <PatternRenderer patternId={design.palluPattern} color={design.primaryColor} accentColor={ac} width={w} height={palluH} isPallu />
+          <PatternRenderer patternId={design.palluPattern} customPattern={patternMap?.[design.palluPattern]} color={design.primaryColor} accentColor={ac} width={w} height={palluH} svgInstanceKey="pallu" />
           {/* Wide silk diagonal sheen — key for realism */}
           <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,rgba(255,255,255,0.13) 0%,transparent 38%,rgba(0,0,0,0.06) 60%,rgba(255,255,255,0.04) 100%)',pointerEvents:'none'}} />
           {/* Left-edge shadow fold */}
@@ -911,7 +941,7 @@ function SareeCanvas({ design, scale = 1 }) {
 
       {/* ── TOP BORDER (thick zari) ── */}
       <div style={{width:w, height:borderH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.borderPattern} color={design.secondaryColor} accentColor={ac} width={w} height={borderH} isBorder />
+        <PatternRenderer patternId={design.borderPattern} customPattern={patternMap?.[design.borderPattern]} color={design.secondaryColor} accentColor={ac} width={w} height={borderH} svgInstanceKey="borderT" />
         {/* Zari metallic sheen top */}
         <div style={{position:'absolute',top:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.8),${ac},${acDark})`,pointerEvents:'none'}} />
         {/* Zari metallic sheen bottom */}
@@ -927,7 +957,7 @@ function SareeCanvas({ design, scale = 1 }) {
 
       {/* ── BODY ── */}
       <div style={{width:w, height:bodyH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.bodyPattern} color={design.primaryColor} accentColor={ac} width={w} height={bodyH} />
+        <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.primaryColor} accentColor={ac} width={w} height={bodyH} svgInstanceKey="body" />
 
         {/* ── Left zari border strip ── */}
         <div style={{position:'absolute',top:0,left:0,bottom:0,width:zW,
@@ -963,7 +993,7 @@ function SareeCanvas({ design, scale = 1 }) {
 
       {/* ── BOTTOM BORDER ── */}
       <div style={{width:w, height:borderH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.borderPattern} color={design.secondaryColor} accentColor={ac} width={w} height={borderH} isBorder />
+        <PatternRenderer patternId={design.borderPattern} customPattern={patternMap?.[design.borderPattern]} color={design.secondaryColor} accentColor={ac} width={w} height={borderH} svgInstanceKey="borderB" />
         <div style={{position:'absolute',top:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.8),${ac},${acDark})`,pointerEvents:'none'}} />
         <div style={{position:'absolute',bottom:0,left:0,right:0,height:Math.round(3*scale),background:`linear-gradient(90deg,${acDark},${ac},rgba(255,255,255,0.7),${ac},${acDark})`,pointerEvents:'none'}} />
         <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(255,255,255,0.14) 0%,transparent 30%,transparent 70%,rgba(0,0,0,0.12) 100%)',pointerEvents:'none'}} />
@@ -971,7 +1001,7 @@ function SareeCanvas({ design, scale = 1 }) {
 
       {/* ── BLOUSE ── */}
       <div style={{width:w, height:blouseH, overflow:'hidden', position:'relative'}}>
-        <PatternRenderer patternId={design.bodyPattern} color={design.secondaryColor} accentColor={ac} width={w} height={blouseH} />
+        <PatternRenderer patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]} color={design.secondaryColor} accentColor={ac} width={w} height={blouseH} svgInstanceKey="blouse" />
         {/* Blouse is slightly dimmed — separate panel feel */}
         <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.1)',pointerEvents:'none'}} />
         {/* Silk sheen */}
@@ -1208,251 +1238,175 @@ export function generateSareeDataURL(design) {
 // ─── SVG-TO-PNG EXPORT ────────────────────────────────────────────────────────
 // Mirrors SareeCanvas exactly — same dimensions, scalloped edge, zari strips.
 
-export function exportSareeAsPNG(design, filename = 'saree-design') {
+export function exportSareeAsPNG(design, filename = 'saree-design', patternMap = {}) {
   const scale   = 3          // 3× for high quality
   const W       = 220 * scale
   const palluH  = 175 * scale
   const borderH =  32 * scale
   const bodyH   = 270 * scale
   const blouseH =  65 * scale
-  const labelH  =  16 * scale
   const scallop =  10 * scale
   const zW      =  18 * scale
-  const H       = scallop + palluH + borderH*2 + bodyH + blouseH + labelH*3
+  const H       = scallop + palluH + borderH*2 + bodyH + blouseH
 
   const { primaryColor: pc, secondaryColor: sc, accentColor: ac,
           bodyPattern, borderPattern, palluPattern } = design
 
-  // ── colour helpers ──────────────────────────────────────────────────────────
-  const hexA = (hex, amt) => {
-    const n = parseInt((hex||'#888888').replace('#',''),16)
-    const r = Math.min(255,Math.max(0,(n>>16)+amt))
-    const g = Math.min(255,Math.max(0,((n>>8)&0xff)+amt))
-    const b = Math.min(255,Math.max(0,(n&0xff)+amt))
-    return '#'+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1)
-  }
   const acDark = '#8B6914'
 
-  // ── build pattern SVG string for a section ─────────────────────────────────
-  const buildSectionSVG = (patternId, color, accent, w, h) => {
-    const c = color, a = accent
-    const cL = hexA(c,28), cD = hexA(c,-22), cVD = hexA(c,-40)
-    const aL = hexA(a,55), aD = hexA(a,-30)
-    const uid = patternId + '_' + w + '_' + h
+  const gid = `exp_${W}_${H}`
+  const palluOx = Math.round(10 * scale)
+  const palluBot = Math.round(18 * scale)
 
-    const defs = `<defs>
-      <filter id="wv${uid}" x="0%" y="0%" width="100%" height="100%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.75 0.45" numOctaves="5" seed="8" result="noise"/>
-        <feColorMatrix type="saturate" values="0" in="noise" result="grey"/>
-        <feComponentTransfer in="grey" result="lt"><feFuncA type="linear" slope="0.3" intercept="0"/></feComponentTransfer>
-        <feBlend in="SourceGraphic" in2="lt" mode="soft-light" result="out"/>
-        <feComposite in="out" in2="SourceGraphic" operator="in"/>
-      </filter>
-      <linearGradient id="sk${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%"   stop-color="${cL}" stop-opacity="0.9"/>
-        <stop offset="30%"  stop-color="${c}"  stop-opacity="1"/>
-        <stop offset="55%"  stop-color="${cD}" stop-opacity="1"/>
-        <stop offset="75%"  stop-color="${c}"  stop-opacity="1"/>
-        <stop offset="100%" stop-color="${cL}" stop-opacity="0.85"/>
-      </linearGradient>
-      <linearGradient id="zr${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%"   stop-color="${aL}" stop-opacity="1"/>
-        <stop offset="25%"  stop-color="${a}"  stop-opacity="1"/>
-        <stop offset="50%"  stop-color="${aD}" stop-opacity="1"/>
-        <stop offset="75%"  stop-color="${a}"  stop-opacity="1"/>
-        <stop offset="100%" stop-color="${aL}" stop-opacity="0.9"/>
-      </linearGradient>
-      <linearGradient id="fd${uid}" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%"   stop-color="#000" stop-opacity="0.18"/>
-        <stop offset="15%"  stop-color="#000" stop-opacity="0"/>
-        <stop offset="45%"  stop-color="#000" stop-opacity="0.06"/>
-        <stop offset="60%"  stop-color="#000" stop-opacity="0"/>
-        <stop offset="82%"  stop-color="#000" stop-opacity="0.1"/>
-        <stop offset="100%" stop-color="#000" stop-opacity="0.2"/>
-      </linearGradient>
-      <linearGradient id="vg${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%"   stop-color="#000" stop-opacity="0.2"/>
-        <stop offset="12%"  stop-color="#000" stop-opacity="0"/>
-        <stop offset="88%"  stop-color="#000" stop-opacity="0"/>
-        <stop offset="100%" stop-color="#000" stop-opacity="0.18"/>
-      </linearGradient>
-    </defs>`
-
-    const overlays = `
-      <rect width="${w}" height="${h}" fill="url(#sk${uid})" opacity="0.45" style="mix-blend-mode:overlay"/>
-      <rect width="${w}" height="${h}" fill="url(#fd${uid})"/>
-      <rect width="${w}" height="${h}" fill="url(#vg${uid})"/>`
-
-    const patterns = {
-      b1: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/3)},(_,i)=>`<line x1="${i*3}" y1="0" x2="${i*3}" y2="${h}" stroke="${cD}" stroke-width="0.4" opacity="0.09"/>`).join('')}${Array.from({length:Math.ceil(h/3)},(_,i)=>`<line x1="0" y1="${i*3}" x2="${w}" y2="${i*3}" stroke="${cL}" stroke-width="0.4" opacity="0.07"/>`).join('')}`,
-
-      b2: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/20)},(_,i)=>`<rect x="${i*20}" y="0" width="8" height="${h}" fill="url(#zr${uid})" opacity="0.7"/><rect x="${i*20+1}" y="0" width="1" height="${h}" fill="${aL}" opacity="0.45"/>`).join('')}`,
-
-      b3: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(h/18)},(_,i)=>Array.from({length:Math.ceil(w/18)},(_,j)=>`<rect x="${j*18}" y="${i*18}" width="9" height="9" fill="${a}" opacity="${(i+j)%2===0?0.3:0.15}"/>`).join('')).join('')}`,
-
-      b4: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(h/3)},(_,i)=>`<line x1="0" y1="${i*3}" x2="${w}" y2="${i*3}" stroke="${cVD}" stroke-width="0.35" opacity="0.07"/>`).join('')}${Array.from({length:Math.ceil(w/20)},(_,x)=>Array.from({length:Math.ceil(h/22)},(_,y)=>{const cx=x*20+(y%2===0?10:20),cy=y*22+11;return`<g transform="translate(${cx},${cy})"><path d="M0,-9 C4,-7 6,-3 6,0 C6,4 4,7 2,8 C0,9 -2,9 -2,8 C-4,7 -6,4 -6,0 C-6,-3 -4,-7 0,-9Z" fill="rgba(0,0,0,0.3)" transform="translate(0.5,0.7)"/><path d="M0,-9 C4,-7 6,-3 6,0 C6,4 4,7 2,8 C0,9 -2,9 -2,8 C-4,7 -6,4 -6,0 C-6,-3 -4,-7 0,-9Z" fill="${a}" opacity="0.88"/><path d="M0,-6 C2.5,-4.5 4,-2 4,0 C4,2.5 2.5,5 1,6 C0,6.5 -1,6.5 -1,6 C-2.5,5 -4,2.5 -4,0 C-4,-2 -2.5,-4.5 0,-6Z" fill="${c}" opacity="0.7"/><path d="M0,-3.5 C1.5,-2.5 2,0 1.5,2 C0,3 -1.5,2 -2,0 C-2,-2.5 -1.5,-2.5 0,-3.5Z" fill="${a}" opacity="0.85"/><path d="M0,-9 C1.5,-12 3.5,-11 2.5,-9" fill="none" stroke="${a}" stroke-width="1.2" opacity="0.9"/><circle cx="2.5" cy="-9" r="1.2" fill="${a}" opacity="0.95"/><circle cy="7.5" r="1.5" fill="${a}" opacity="0.7"/></g>`}).join('')).join('')}`,
-
-      b5: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/22)},(_,x)=>Array.from({length:Math.ceil(h/22)},(_,y)=>{const cx=x*22+11+(y%2===0?0:11),cy=y*22+11;return`<g transform="translate(${cx},${cy})"><polygon points="0,-9 9,0 0,9 -9,0" fill="${a}" opacity="0.18"/><polygon points="0,-6 6,0 0,6 -6,0" fill="${a}" opacity="0.42"/><polygon points="0,-3.5 3.5,0 0,3.5 -3.5,0" fill="${a}" opacity="0.72"/><circle r="1.2" fill="${aL}" opacity="0.9"/></g>`}).join('')).join('')}`,
-
-      b6: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(h/3)},(_,i)=>`<line x1="0" y1="${i*3}" x2="${w}" y2="${i*3}" stroke="${cVD}" stroke-width="0.3" opacity="0.06"/>`).join('')}${Array.from({length:Math.ceil(w/22)},(_,x)=>Array.from({length:Math.ceil(h/24)},(_,y)=>{const cx=x*22+(y%2===0?11:22),cy=y*24+12;return`<g transform="translate(${cx},${cy})"><path d="M0,-11 C3,-9 5,-6 5,0 C5,5 3,8 0,10 L-3,8 C-5,5 -5,-6 0,-11Z" fill="rgba(0,0,0,0.32)" transform="translate(0.6,0.8)"/><path d="M0,-11 C3,-9 5,-6 5,0 C5,5 3,8 0,10 L-3,8 C-5,5 -5,-6 0,-11Z" fill="${a}" opacity="0.9"/><path d="M-5,0 C-8,-2 -10,-1 -9,1 C-8,3 -5,2 -5,0Z" fill="${a}" opacity="0.75"/><path d="M5,0 C8,-2 10,-1 9,1 C8,3 5,2 5,0Z" fill="${a}" opacity="0.75"/><path d="M0,-7 C2,-5 3,-2 3,1 C3,4 1.5,6 0,7 C-1.5,6 -3,4 -3,1 C-3,-2 -2,-5 0,-7Z" fill="${c}" opacity="0.72"/><circle r="2.2" fill="${a}" opacity="0.95"/><circle r="1" fill="${c}" opacity="1"/><path d="M0,-11 C1,-14 3,-13 2,-11" fill="none" stroke="${a}" stroke-width="1.3" opacity="0.95"/><circle cx="2" cy="-11" r="1.3" fill="${a}" opacity="1"/></g>`}).join('')).join('')}`,
-
-      b7: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/32)},(_,x)=>Array.from({length:Math.ceil(h/32)},(_,y)=>{const cx=x*32+16+(y%2===0?0:16),cy=y*32+16;const q=[0,30,60,90,120,150,180,210,240,270,300,330].map(ang=>`<line x1="${(Math.cos(ang*Math.PI/180)*5).toFixed(1)}" y1="${(Math.sin(ang*Math.PI/180)*5).toFixed(1)}" x2="${(Math.cos(ang*Math.PI/180)*13).toFixed(1)}" y2="${(Math.sin(ang*Math.PI/180)*13).toFixed(1)}" stroke="${a}" stroke-width="0.9" opacity="0.45"/>`).join('');return`<g transform="translate(${cx},${cy})">${q}<ellipse rx="3.5" ry="4" fill="${a}" opacity="0.45"/><ellipse rx="2" ry="2.5" fill="${a}" opacity="0.7"/><ellipse rx="1" ry="1.2" fill="${c}" opacity="1"/></g>`}).join('')).join('')}`,
-
-      b8: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/15)},(_,x)=>Array.from({length:Math.ceil(h/15)},(_,y)=>{const cx=x*15+7.5+(y%2===0?0:7.5),cy=y*15+7.5;return`<circle cx="${cx}" cy="${cy}" r="3" fill="${a}" opacity="0.5"/><circle cx="${cx}" cy="${cy}" r="2" fill="${a}" opacity="0.9"/><circle cx="${cx}" cy="${cy}" r="1" fill="${c}" opacity="0.7"/>`}).join('')).join('')}`,
-
-      b9: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/13)},(_,x)=>Array.from({length:Math.ceil(h/13)},(_,y)=>{const cx=x*13+6.5+(y%2===0?0:6.5),cy=y*13+6.5;return`<circle cx="${cx}" cy="${cy}" r="5.5" fill="none" stroke="${a}" stroke-width="1.5" opacity="0.2"/><circle cx="${cx}" cy="${cy}" r="2.5" fill="${a}" opacity="0.4"/><circle cx="${cx}" cy="${cy}" r="1.2" fill="${a}" opacity="0.85"/>`}).join('')).join('')}`,
-
-      b10: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil((w+h)/7)},(_,i)=>`<line x1="${i*7-h}" y1="0" x2="${i*7}" y2="${h}" stroke="${a}" stroke-width="${i%4===0?2:i%2===0?1:0.6}" opacity="${i%4===0?0.65:i%2===0?0.35:0.18}"/>`).join('')}`,
-
-      b11: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/28)},(_,x)=>Array.from({length:Math.ceil(h/34)},(_,y)=>`<g transform="translate(${x*28+14},${y*34+17})"><path d="M-11,14 L-11,-4 C-11,-16 11,-16 11,-4 L11,14" fill="none" stroke="${a}" stroke-width="1.8" opacity="0.65"/><path d="M-7,14 L-7,-2 C-7,-10 7,-10 7,-2 L7,14" fill="none" stroke="${a}" stroke-width="1" opacity="0.45"/><circle cy="-17" r="2.5" fill="${a}" opacity="0.75"/></g>`).join('')).join('')}`,
-
-      b12: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/26)},(_,x)=>Array.from({length:Math.ceil(h/26)},(_,y)=>`<g transform="translate(${x*26+13},${y*26+13})"><polygon points="0,-11 2.8,-2.8 11,0 2.8,2.8 0,11 -2.8,2.8 -11,0 -2.8,-2.8" fill="none" stroke="${a}" stroke-width="1.2" opacity="0.7"/><polygon points="0,-7 1.8,-1.8 7,0 1.8,1.8 0,7 -1.8,1.8 -7,0 -1.8,-1.8" fill="${a}" opacity="0.25"/><circle r="2.5" fill="${a}" opacity="0.7"/><circle r="1.2" fill="${c}" opacity="1"/></g>`).join('')).join('')}`,
-
-      b13: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/30)},(_,x)=>Array.from({length:Math.ceil(h/30)},(_,y)=>{const cx=x*30+15+(y%2===0?0:15),cy=y*30+15;const petals=[0,45,90,135,180,225,270,315].map(ang=>`<ellipse cx="${(Math.cos((ang-90)*Math.PI/180)*7).toFixed(1)}" cy="${(Math.sin((ang-90)*Math.PI/180)*7).toFixed(1)}" rx="2.5" ry="5.2" fill="${a}" opacity="0.65" transform="rotate(${ang},${(Math.cos((ang-90)*Math.PI/180)*7).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*7).toFixed(1)})"/>`).join('');return`<g transform="translate(${cx},${cy})">${petals}<circle r="3.5" fill="${a}" opacity="0.85"/><circle r="2" fill="${aL}" opacity="0.8"/><circle r="1" fill="${c}" opacity="1"/></g>`}).join('')).join('')}`,
-
-      b14: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/34)},(_,x)=>Array.from({length:Math.ceil(h/34)},(_,y)=>`<g transform="translate(${x*34+17},${y*34+17})"><circle r="13" fill="none" stroke="${a}" stroke-width="0.5" opacity="0.2"/><circle cy="-9" r="2" fill="${a}" opacity="0.7"/><line x1="0" y1="-5.5" x2="0" y2="3" stroke="${a}" stroke-width="1.4" opacity="0.85"/><line x1="-7" y1="-1" x2="0" y2="-3" stroke="${a}" stroke-width="1.2" opacity="0.8"/><line x1="0" y1="-3" x2="7" y2="-1" stroke="${a}" stroke-width="1.2" opacity="0.8"/><line x1="0" y1="3" x2="-5" y2="11" stroke="${a}" stroke-width="1.2" opacity="0.8"/><line x1="0" y1="3" x2="5" y2="11" stroke="${a}" stroke-width="1.2" opacity="0.8"/></g>`).join('')).join('')}`,
-
-      b15: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/28)},(_,x)=>Array.from({length:Math.ceil(h/28)},(_,y)=>{const cx=x*28+14+(y%2===0?0:14),cy=y*28+14;return`<g transform="translate(${cx},${cy})"><path d="M0,-11 C3,-7 9,-5 7,0 C9,5 3,8 0,11 C-3,8 -9,5 -7,0 C-9,-5 -3,-7 0,-11Z" fill="none" stroke="${a}" stroke-width="1.4" opacity="0.75"/><line x1="0" y1="-11" x2="0" y2="11" stroke="${a}" stroke-width="0.8" opacity="0.5"/><circle r="2" fill="${a}" opacity="0.7"/><circle r="1" fill="${aL}" opacity="0.9"/></g>`}).join('')).join('')}`,
-
-      b16: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/9)},(_,i)=>i%3===0?`<rect x="${i*9}" y="0" width="2" height="${h}" fill="${a}" opacity="0.65"/><rect x="${i*9+0.5}" y="0" width="0.7" height="${h}" fill="${aL}" opacity="0.4"/>`:`<rect x="${i*9}" y="0" width="0.8" height="${h}" fill="${a}" opacity="0.2"/>`).join('')}`,
-
-      b17: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/24)},(_,x)=>Array.from({length:Math.ceil(h/24)},(_,y)=>{const cx=x*24+12,cy=y*24+12;const petals=[0,60,120,180,240,300].map(ang=>`<ellipse cx="${(Math.cos(ang*Math.PI/180)*6.5).toFixed(1)}" cy="${(Math.sin(ang*Math.PI/180)*6.5).toFixed(1)}" rx="2.2" ry="3.8" fill="${a}" opacity="0.65" transform="rotate(${ang},${(Math.cos(ang*Math.PI/180)*6.5).toFixed(1)},${(Math.sin(ang*Math.PI/180)*6.5).toFixed(1)})"/>`).join('');return`<g transform="translate(${cx},${cy})"><circle r="10" fill="none" stroke="${a}" stroke-width="2" opacity="0.65"/>${petals}<circle r="3.5" fill="${a}" opacity="0.7"/><circle r="1.5" fill="${c}" opacity="1"/></g>`}).join('')).join('')}`,
-
-      // ── BORDERS ───────────────────────────────────────────────────────────
-      br1: `<rect width="${w}" height="${h}" fill="${c}"/><rect y="${h*0.15}" width="${w}" height="${h*0.7}" fill="url(#zr${uid})" opacity="0.9"/><rect y="${h*0.18}" width="${w}" height="${h*0.06}" fill="${aL}" opacity="0.5"/>`,
-
-      br2: `<rect width="${w}" height="${h}" fill="${c}"/><rect y="0" width="${w}" height="${h*0.3}" fill="url(#zr${uid})" opacity="0.9"/><rect y="${h*0.7}" width="${w}" height="${h*0.3}" fill="url(#zr${uid})" opacity="0.9"/><rect y="${h*0.02}" width="${w}" height="${h*0.06}" fill="${aL}" opacity="0.45"/>`,
-
-      br3: `<rect width="${w}" height="${h}" fill="url(#zr${uid})"/>${Array.from({length:Math.ceil(w/3)},(_,i)=>`<line x1="${i*3}" y1="0" x2="${i*3}" y2="${h}" stroke="${c}" stroke-width="0.5" opacity="0.1"/>`).join('')}${Array.from({length:Math.ceil(w/14)},(_,i)=>`<g transform="translate(${i*14+7},${h/2})"><ellipse rx="2" ry="${h/2-1}" fill="rgba(0,0,0,0.22)" transform="translate(0.4,0.5)"/><ellipse rx="2" ry="${h/2-1}" fill="${c}" opacity="0.75"/><ellipse rx="1" ry="${h/2-2.5}" fill="${c}" opacity="0.5"/></g>`).join('')}<rect y="0" width="${w}" height="1.5" fill="${aL}" opacity="0.7"/><rect y="${h-1.5}" width="${w}" height="1.5" fill="${aL}" opacity="0.7"/><rect y="${h*0.35}" width="${w}" height="${h*0.3}" fill="rgba(255,255,255,0.09)"/>`,
-
-      br4: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/20)},(_,i)=>`<g transform="translate(${i*20+10},${h/2})"><path d="M0,-${h/2-1} C${h/3.5},-${h/3.5} ${h/3},${h*0.1} 0,${h/3} C-${h/9},${h/3} -${h/4},${h*0.1} 0,-${h/2-1}Z" fill="rgba(0,0,0,0.2)" transform="translate(0.4,0.5)"/><path d="M0,-${h/2-1} C${h/3.5},-${h/3.5} ${h/3},${h*0.1} 0,${h/3} C-${h/9},${h/3} -${h/4},${h*0.1} 0,-${h/2-1}Z" fill="${a}" opacity="0.8"/><circle cy="${h/3+1}" r="1.5" fill="${a}" opacity="0.9"/></g>`).join('')}`,
-
-      br5: `<rect width="${w}" height="${h}" fill="url(#zr${uid})"/>${Array.from({length:Math.ceil(w/26)},(_,i)=>`<g transform="translate(${i*26+13},${h/2})"><ellipse rx="7" ry="4.5" fill="${c}" opacity="0.92"/><path d="M4,-4 C5,-8 7,-11 6,-13" fill="none" stroke="${c}" stroke-width="2.2" opacity="0.92"/><circle cx="6" cy="-14" r="3" fill="${c}" opacity="0.92"/></g>`).join('')}<line x1="0" y1="1" x2="${w}" y2="1" stroke="${aL}" stroke-width="0.8" opacity="0.5"/><line x1="0" y1="${h-1}" x2="${w}" y2="${h-1}" stroke="${aL}" stroke-width="0.8" opacity="0.5"/>`,
-
-      br6: `<rect width="${w}" height="${h}" fill="url(#zr${uid})"/>${Array.from({length:Math.ceil(w/3)},(_,i)=>`<line x1="${i*3}" y1="0" x2="${i*3}" y2="${h}" stroke="${c}" stroke-width="0.5" opacity="0.1"/>`).join('')}${Array.from({length:Math.ceil(h/3)},(_,i)=>`<line x1="0" y1="${i*3}" x2="${w}" y2="${i*3}" stroke="${aL}" stroke-width="0.3" opacity="0.12"/>`).join('')}<rect y="0" width="${w}" height="2" fill="${aL}" opacity="0.8"/><rect y="${h-2}" width="${w}" height="2" fill="${aL}" opacity="0.8"/><rect y="${h*0.3}" width="${w}" height="${h*0.4}" fill="rgba(255,255,255,0.1)"/>`,
-
-      br7: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(h/2)},(_,i)=>`<line x1="0" y1="${i*2}" x2="${w}" y2="${i*2}" stroke="${cD}" stroke-width="0.3" opacity="0.05"/>`).join('')}<rect y="${h*0.32}" width="${w}" height="${h*0.36}" fill="${a}" opacity="0.88"/><rect y="${h*0.34}" width="${w}" height="${h*0.08}" fill="${aL}" opacity="0.5"/>`,
-
-      br8: `<rect width="${w}" height="${h}" fill="${c}"/><path d="M0,${h/2} ${Array.from({length:Math.ceil(w/18)+1},(_,i)=>`C${i*18+4},${h*0.15} ${i*18+14},${h*0.15} ${(i+1)*18},${h/2} C${(i+1)*18+4},${h*0.85} ${(i+1)*18+14},${h*0.85} ${(i+2)*18},${h/2}`).join(' ')}" fill="none" stroke="${a}" stroke-width="1.5" opacity="0.75"/>${Array.from({length:Math.ceil(w/18)},(_,i)=>`<circle cx="${i*18+9}" cy="${h*0.15}" r="3.5" fill="${a}" opacity="0.75"/><circle cx="${i*18+9}" cy="${h*0.15}" r="2" fill="${c}" opacity="0.8"/><circle cx="${i*18+9}" cy="${h*0.85}" r="3.5" fill="${a}" opacity="0.75"/><circle cx="${i*18+9}" cy="${h*0.85}" r="2" fill="${c}" opacity="0.8"/>`).join('')}`,
-
-      br9:  `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/13)},(_,i)=>`<rect x="${i*13}" y="0" width="11" height="${h*0.28}" fill="${a}" opacity="0.75"/><rect x="${i*13+1}" y="${h*0.28}" width="9" height="${h*0.44}" fill="${a}" opacity="0.55"/><rect x="${i*13+2}" y="${h*0.72}" width="7" height="${h*0.28}" fill="${a}" opacity="0.38"/>`).join('')}`,
-
-      br10: `<rect width="${w}" height="${h}" fill="${c}"/><path d="M0,${h*0.65} ${Array.from({length:Math.ceil(w/22)+1},(_,i)=>`Q${i*22+11},${-h*0.3} ${(i+1)*22},${h*0.65}`).join(' ')}" fill="${a}" opacity="0.65"/><path d="M0,${h*0.72} ${Array.from({length:Math.ceil(w/22)+1},(_,i)=>`Q${i*22+11},${h*0.1} ${(i+1)*22},${h*0.72}`).join(' ')}" fill="none" stroke="${a}" stroke-width="1.2" opacity="0.5"/>`,
-
-      br11: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/17)},(_,i)=>`<g transform="translate(${i*17+8.5},${h/2})"><polygon points="0,-${h/2-1} ${h/2-1},0 0,${h/2-1} -${h/2-1},0" fill="none" stroke="${a}" stroke-width="1.4" opacity="0.8"/><polygon points="0,-${h/3} ${h/3},0 0,${h/3} -${h/3},0" fill="${a}" opacity="0.35"/><circle r="2.2" fill="${a}" opacity="0.9"/></g>`).join('')}`,
-
-      br12: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/19)},(_,i)=>`<g transform="translate(${i*19+9.5},${h/2})"><ellipse cx="-4.5" cy="-${h*0.18}" rx="3.8" ry="${h*0.4}" fill="${a}" opacity="0.5"/><ellipse cx="0" cy="-${h*0.18}" rx="3.8" ry="${h*0.4}" fill="${a}" opacity="0.55"/><ellipse cx="4.5" cy="-${h*0.18}" rx="3.8" ry="${h*0.4}" fill="${a}" opacity="0.5"/><circle cy="-${h*0.35}" r="2.5" fill="${a}" opacity="0.9"/><circle r="3" fill="${a}" opacity="0.65"/></g>`).join('')}`,
-
-      // ── PALLU ─────────────────────────────────────────────────────────────
-      p1: `<rect width="${w}" height="${h}" fill="url(#zr${uid})"/>${Array.from({length:Math.ceil(w/4)},(_,i)=>`<line x1="${i*4}" y1="0" x2="${i*4}" y2="${h}" stroke="${c}" stroke-width="0.6" opacity="0.14"/>`).join('')}${Array.from({length:Math.ceil(w/22)},(_,x)=>Array.from({length:Math.ceil(h/22)},(_,y)=>`<g transform="translate(${x*22+11},${y*22+11})"><polygon points="0,-9 2.2,-2.2 9,0 2.2,2.2 0,9 -2.2,2.2 -9,0 -2.2,-2.2" fill="${c}" opacity="0.38"/><circle r="2.5" fill="${c}" opacity="0.55"/></g>`).join('')).join('')}`,
-
-      p2: `<rect width="${w}" height="${h}" fill="url(#zr${uid})"/><rect width="${w}" height="${h*0.52}" fill="${c}" opacity="0.95"/>${Array.from({length:Math.ceil(w/16)},(_,i)=>`<g transform="translate(${i*16+8},${h*0.52})"><polygon points="0,-9 7,0 0,9 -7,0" fill="${a}" opacity="0.88"/><polygon points="0,-5 4,0 0,5 -4,0" fill="${c}" opacity="0.85"/><circle r="1.5" fill="${a}" opacity="0.9"/></g>`).join('')}`,
-
-      p3: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/36)},(_,x)=>Array.from({length:Math.ceil(h/40)},(_,y)=>{const cx=x*36+18+(y%2===0?0:18),cy=y*40+20;const spokes=[0,24,48,72,96,120,144,168,192,216,240,264,288,312,336].map(ang=>`<path d="M0,0 C${(Math.cos(ang*Math.PI/180)*7).toFixed(1)},${(Math.sin(ang*Math.PI/180)*7).toFixed(1)} ${(Math.cos(ang*Math.PI/180)*13).toFixed(1)},${(Math.sin(ang*Math.PI/180)*13).toFixed(1)} ${(Math.cos(ang*Math.PI/180)*16).toFixed(1)},${(Math.sin(ang*Math.PI/180)*16).toFixed(1)}" fill="none" stroke="${a}" stroke-width="0.9" opacity="0.45"/>`).join('');return`<g transform="translate(${cx},${cy})">${spokes}<circle r="9" fill="none" stroke="${a}" stroke-width="1.2" opacity="0.4"/><circle r="5" fill="${a}" opacity="0.3"/><circle r="3.5" fill="${a}" opacity="0.55"/><circle r="2" fill="${c}" opacity="1"/><circle r="0.9" fill="${a}" opacity="1"/></g>`}).join('')).join('')}`,
-
-      p4: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/3)},(_,i)=>`<line x1="${i*3}" y1="0" x2="${i*3}" y2="${h}" stroke="${cD}" stroke-width="0.35" opacity="0.13"/>`).join('')}${Array.from({length:Math.ceil(w/26)},(_,x)=>Array.from({length:Math.ceil(h/26)},(_,y)=>{const cx=x*26+13+(y%2===0?0:13),cy=y*26+13;return`<g transform="translate(${cx},${cy})"><ellipse rx="6.5" ry="10" fill="rgba(0,0,0,0.25)" transform="translate(0.5,0.8)"/><ellipse rx="6.5" ry="10" fill="${a}" opacity="0.78"/><ellipse rx="4.5" ry="7" fill="${aL}" opacity="0.28"/><ellipse rx="3" ry="4.8" fill="${c}" opacity="0.88"/><ellipse rx="1.5" ry="2.4" fill="${a}" opacity="0.92"/><ellipse rx="1.2" ry="1.8" cx="-0.5" cy="-2.5" fill="rgba(255,255,255,0.38)"/><path d="M0,-10 C1.8,-13.5 4,-12 3,-10" fill="none" stroke="${a}" stroke-width="1.2" opacity="0.88"/><circle cx="3" cy="-10" r="1.2" fill="${a}" opacity="0.9"/><circle cx="-5" cy="-1" r="1.1" fill="${a}" opacity="0.5"/><circle cx="5" cy="-1" r="1.1" fill="${a}" opacity="0.5"/></g>`}).join('')).join('')}`,
-
-      p5: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/3)},(_,i)=>`<line x1="${i*3}" y1="0" x2="${i*3}" y2="${h}" stroke="${cD}" stroke-width="0.35" opacity="0.09"/>`).join('')}${Array.from({length:Math.ceil(h/3)},(_,i)=>`<line x1="0" y1="${i*3}" x2="${w}" y2="${i*3}" stroke="${cL}" stroke-width="0.35" opacity="0.07"/>`).join('')}`,
-
-      p6: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/3)},(_,i)=>`<line x1="${i*3}" y1="0" x2="${i*3}" y2="${h}" stroke="${cD}" stroke-width="0.3" opacity="0.1"/>`).join('')}${Array.from({length:Math.ceil(w/32)},(_,x)=>Array.from({length:Math.ceil(h/38)},(_,y)=>`<g transform="translate(${x*32+16},${y*38+19})"><path d="M-13,16 L-13,-5 C-13,-21 13,-21 13,-5 L13,16" fill="none" stroke="${a}" stroke-width="2" opacity="0.75"/><path d="M-8,16 L-8,-3 C-8,-13 8,-13 8,-3 L8,16" fill="none" stroke="${a}" stroke-width="1.2" opacity="0.5"/><rect x="-15" y="13" width="5" height="4" fill="${a}" opacity="0.5"/><rect x="10" y="13" width="5" height="4" fill="${a}" opacity="0.5"/><circle cy="-22" r="3" fill="${a}" opacity="0.8"/><circle cy="-22" r="1.5" fill="${aL}" opacity="0.9"/></g>`).join('')).join('')}`,
-
-      p7: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil((w+h)/16)},(_,i)=>`<line x1="${i*16-h}" y1="0" x2="${i*16}" y2="${h}" stroke="${a}" stroke-width="0.8" opacity="0.2"/><line x1="${w-i*16+h}" y1="0" x2="${w-i*16}" y2="${h}" stroke="${a}" stroke-width="0.8" opacity="0.2"/>`).join('')}${Array.from({length:Math.ceil(w/28)},(_,x)=>Array.from({length:Math.ceil(h/28)},(_,y)=>{const cx=x*28+14+(y%2===0?0:14),cy=y*28+14;const petals=[0,45,90,135,180,225,270,315].map(ang=>`<ellipse cx="${(Math.cos((ang-90)*Math.PI/180)*5).toFixed(1)}" cy="${(Math.sin((ang-90)*Math.PI/180)*5).toFixed(1)}" rx="2" ry="4" fill="${a}" opacity="0.5" transform="rotate(${ang},${(Math.cos((ang-90)*Math.PI/180)*5).toFixed(1)},${(Math.sin((ang-90)*Math.PI/180)*5).toFixed(1)})"/>`).join('');return`<g transform="translate(${cx},${cy})">${petals}<circle r="2.8" fill="${a}" opacity="0.75"/><circle r="0.6" fill="${c}" opacity="1"/></g>`}).join('')).join('')}`,
-
-      p8: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/22)},(_,x)=>Array.from({length:Math.ceil(h/22)},(_,y)=>{const cx=x*22+11+(y%2===0?0:11),cy=y*22+11;return`<g transform="translate(${cx},${cy})"><path d="M0,-9 C5,-5 5,2 2.5,6 C0,8 -2.5,8 -2.5,6 C-5,2 -5,-5 0,-9Z" fill="${a}" opacity="0.75"/><path d="M0,-6 C3,-3 3,1 1.5,4 C0,5.5 -1.5,5.5 -1.5,4 C-3,1 -3,-3 0,-6Z" fill="${c}" opacity="0.85"/><path d="M0,-9 C2,-12 4,-11 3,-9" fill="none" stroke="${a}" stroke-width="1.2" opacity="0.8"/></g>`}).join('')).join('')}`,
-
-      p9: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/22)},(_,i)=>`<rect x="${i*22}" y="0" width="${i%4===0?10:i%2===0?5:2.5}" height="${h}" fill="${a}" opacity="${i%4===0?0.72:i%2===0?0.48:0.26}"/>${i%4===0?`<rect x="${i*22+1}" y="0" width="1.5" height="${h}" fill="${aL}" opacity="0.45"/>`:''}`).join('')}`,
-
-      p10: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:3},(_,j)=>`<path d="M${j*w/3},0 C${j*w/3+w/5},${h/4} ${j*w/3-w/6},${h/2} ${j*w/3},${h*0.78}" fill="none" stroke="${a}" stroke-width="1.6" opacity="0.55"/>`).join('')}${Array.from({length:Math.ceil(h/20)},(_,i)=>`<g transform="translate(${w/6+Math.sin(i*1.1)*15},${i*20+10}) rotate(${i*25})"><ellipse rx="6" ry="3.5" fill="${a}" opacity="0.5"/></g>`).join('')}`,
-
-      p11: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil(w/30)},(_,x)=>Array.from({length:Math.ceil(h/30)},(_,y)=>{const cx=x*30+15+(y%2===0?0:15),cy=y*30+15;const outer=[0,45,90,135,180,225,270,315].map(ang=>`<path d="M0,0 C${(Math.cos((ang-20)*Math.PI/180)*7).toFixed(1)},${(Math.sin((ang-20)*Math.PI/180)*7).toFixed(1)} ${(Math.cos((ang+20)*Math.PI/180)*7).toFixed(1)},${(Math.sin((ang+20)*Math.PI/180)*7).toFixed(1)} ${(Math.cos(ang*Math.PI/180)*13).toFixed(1)},${(Math.sin(ang*Math.PI/180)*13).toFixed(1)}" fill="${a}" opacity="0.35"/>`).join('');const inner=[22,67,112,157,202,247,292,337].map(ang=>`<path d="M0,0 C${(Math.cos((ang-15)*Math.PI/180)*4).toFixed(1)},${(Math.sin((ang-15)*Math.PI/180)*4).toFixed(1)} ${(Math.cos((ang+15)*Math.PI/180)*4).toFixed(1)},${(Math.sin((ang+15)*Math.PI/180)*4).toFixed(1)} ${(Math.cos(ang*Math.PI/180)*8).toFixed(1)},${(Math.sin(ang*Math.PI/180)*8).toFixed(1)}" fill="${a}" opacity="0.55"/>`).join('');return`<g transform="translate(${cx},${cy})">${outer}${inner}<circle r="4" fill="${a}" opacity="0.75"/><circle r="1.2" fill="${c}" opacity="1"/></g>`}).join('')).join('')}`,
-      p12: `<rect width="${w}" height="${h}" fill="${c}"/>${Array.from({length:Math.ceil((w+h)/18)},(_,i)=>`<line x1="${i*18-h}" y1="0" x2="${i*18}" y2="${h}" stroke="${a}" stroke-width="0.8" opacity="0.22"/><line x1="${w-i*18+h}" y1="0" x2="${w-i*18}" y2="${h}" stroke="${a}" stroke-width="0.8" opacity="0.22"/>`).join('')}${Array.from({length:Math.ceil(w/20)},(_,x)=>Array.from({length:Math.ceil(h/20)},(_,y)=>{const cx=x*20+10+(y%2===0?0:10),cy=y*20+10;return`<g transform="translate(${cx},${cy})"><polygon points="0,-6 6,0 0,6 -6,0" fill="none" stroke="${a}" stroke-width="1" opacity="0.6"/><polygon points="0,-3.5 3.5,0 0,3.5 -3.5,0" fill="${a}" opacity="0.3"/><circle r="1.5" fill="${a}" opacity="0.8"/></g>`}).join('')).join('')}`,
-    }
-
-    const shape = patterns[patternId] || patterns['b1']
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">${defs}<g filter="url(#wv${uid})">${shape}</g>${overlays}</svg>`
-  }
-
-  // ── Assemble full SVG — mirrors SareeCanvas layout exactly ──────────────────
-  const aL = hexA(ac, 55)
-  let y = 0
-  const sections = []
-
-  // Scalloped pallu edge
   const scallopCount = Math.ceil(W / (scallop * 2))
   const scallopW = W / scallopCount
-  const scallopPath = Array.from({length: scallopCount}, (_,i) => {
-    const x1 = i * scallopW, x2 = (i+0.5)*scallopW, x3 = (i+1)*scallopW
+  const scallopPath = Array.from({ length: scallopCount }, (_, i) => {
+    const x2 = (i + 0.5) * scallopW
+    const x3 = (i + 1) * scallopW
     return `Q${x2},${scallop} ${x3},0`
   }).join(' ')
-  sections.push(`<defs>
-    <linearGradient id="scG" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="${acDark}" stop-opacity="1"/>
-      <stop offset="30%"  stop-color="${ac}"     stop-opacity="1"/>
-      <stop offset="70%"  stop-color="${ac}"     stop-opacity="1"/>
+
+  const overlayDefs = `<defs>
+    <linearGradient id="scG_${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${acDark}" stop-opacity="1"/>
+      <stop offset="30%" stop-color="${ac}" stop-opacity="1"/>
+      <stop offset="70%" stop-color="${ac}" stop-opacity="1"/>
       <stop offset="100%" stop-color="${acDark}" stop-opacity="1"/>
     </linearGradient>
-  </defs>`)
-  sections.push(`<path d="M0,0 ${scallopPath} L${W},0 Z" fill="url(#scG)" y="${y}"/>`)
-  sections.push(`<path d="M0,${y} ${scallopPath.split(' ').map((s,i)=>{ const parts=s.split(','); return s }).join(' ')}" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>`)
+    <linearGradient id="palSheen_${gid}" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.13"/>
+      <stop offset="38%" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="60%" stop-color="#000" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0.04"/>
+    </linearGradient>
+    <linearGradient id="palShadowL_${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="palShadowR_${gid}" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="palBot_${gid}" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bodySheen_${gid}" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.09"/>
+      <stop offset="35%" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="65%" stop-color="#000" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="lzG_${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${acDark}" stop-opacity="1"/>
+      <stop offset="40%" stop-color="${ac}" stop-opacity="1"/>
+      <stop offset="60%" stop-color="${ac}" stop-opacity="1"/>
+      <stop offset="100%" stop-color="${acDark}" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="rzG_${gid}" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="${acDark}" stop-opacity="1"/>
+      <stop offset="40%" stop-color="${ac}" stop-opacity="1"/>
+      <stop offset="60%" stop-color="${ac}" stop-opacity="1"/>
+      <stop offset="100%" stop-color="${acDark}" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="foldL_${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="foldR_${gid}" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="blSheen_${gid}" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.12"/>
+      <stop offset="50%" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="zariHi_${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${acDark}"/>
+      <stop offset="35%" stop-color="${ac}"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.8"/>
+      <stop offset="65%" stop-color="${ac}"/>
+      <stop offset="100%" stop-color="${acDark}"/>
+    </linearGradient>
+    <linearGradient id="zariLo_${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${acDark}"/>
+      <stop offset="35%" stop-color="${ac}"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="65%" stop-color="${ac}"/>
+      <stop offset="100%" stop-color="${acDark}"/>
+    </linearGradient>
+  </defs>`
+
+  let y = 0
+  const sections = [overlayDefs]
+
+  sections.push(`<path d="M0,0 ${scallopPath} L${W},0 Z" fill="url(#scG_${gid})"/>`)
+  sections.push(`<path d="M0,0 ${scallopPath}" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>`)
+  sections.push(`<path d="M0,0 ${scallopPath} L${W},0 Z" fill="rgba(0,0,0,0.18)" transform="translate(0,${scallop * 0.4})"/>`)
   y += scallop
 
-  // Label: Pallu
-  sections.push(`<rect x="0" y="${y}" width="${W}" height="${labelH}" fill="rgba(0,0,0,0.55)"/>`)
-  sections.push(`<text x="${W/2}" y="${y+labelH*0.72}" text-anchor="middle" font-size="${labelH*0.6}" fill="${ac}" letter-spacing="3" font-family="sans-serif" font-weight="600">PALLU</text>`)
-  y += labelH
-
-  // Pallu
-  sections.push(`<svg x="0" y="${y}" width="${W}" height="${palluH}">${buildSectionSVG(palluPattern, pc, ac, W, palluH)}<rect width="${W}" height="${palluH}" fill="rgba(0,0,0,0)" style="background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent)"/></svg>`)
+  sections.push(`<g transform="translate(0,${y})">`)
+  sections.push(staticPatternSvgString(palluPattern, patternMap?.[palluPattern], pc, ac, W, palluH, 'pallu'))
+  sections.push(`<rect width="${W}" height="${palluH}" fill="url(#palSheen_${gid})" opacity="1"/>`)
+  sections.push(`<rect width="${palluOx}" height="${palluH}" fill="url(#palShadowL_${gid})"/>`)
+  sections.push(`<rect x="${W - palluOx}" width="${palluOx}" height="${palluH}" fill="url(#palShadowR_${gid})"/>`)
+  sections.push(`<rect y="${palluH - palluBot}" width="${W}" height="${palluBot}" fill="url(#palBot_${gid})"/>`)
+  sections.push('</g>')
   y += palluH
 
-  // Top border — thick zari with edge lines
-  sections.push(`<svg x="0" y="${y}" width="${W}" height="${borderH}">${buildSectionSVG(borderPattern, sc, ac, W, borderH)}<rect y="0" width="${W}" height="${Math.round(3*scale)}" fill="${aL}" opacity="0.7"/><rect y="${borderH-Math.round(3*scale)}" width="${W}" height="${Math.round(3*scale)}" fill="${aL}" opacity="0.7"/><rect width="${W}" height="${borderH}" fill="rgba(255,255,255,0.07)"/></svg>`)
+  const t3 = Math.round(3 * scale)
+  sections.push(`<g transform="translate(0,${y})">`)
+  sections.push(staticPatternSvgString(borderPattern, patternMap?.[borderPattern], sc, ac, W, borderH, 'borderT'))
+  sections.push(`<rect y="0" width="${W}" height="${t3}" fill="url(#zariHi_${gid})" opacity="1"/>`)
+  sections.push(`<rect y="${borderH - t3}" width="${W}" height="${t3}" fill="url(#zariLo_${gid})" opacity="1"/>`)
+  sections.push(`<rect width="${W}" height="${borderH}" fill="rgba(255,255,255,0.14)" opacity="1"/>`)
+  sections.push('</g>')
   y += borderH
 
-  // Label: Body
-  sections.push(`<rect x="0" y="${y}" width="${W}" height="${labelH}" fill="rgba(0,0,0,0.35)"/>`)
-  sections.push(`<text x="${W/2}" y="${y+labelH*0.72}" text-anchor="middle" font-size="${labelH*0.6}" fill="${ac}" letter-spacing="3" font-family="sans-serif" font-weight="600">BODY</text>`)
-  y += labelH
-
-  // Body + thick zari strips with crosshatch
-  const zHL = Math.round(zW * 0.32)  // highlight position
-  sections.push(`<svg x="0" y="${y}" width="${W}" height="${bodyH}">`)
-  sections.push(buildSectionSVG(bodyPattern, pc, ac, W, bodyH))
-  // diagonal sheen
-  sections.push(`<rect width="${W}" height="${bodyH}" fill="rgba(255,255,255,0)" style="background:linear-gradient(150deg,rgba(255,255,255,0.07) 0%,transparent 40%)"/>`)
-  // left zari strip
-  sections.push(`<defs><linearGradient id="lzG" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="${acDark}" stop-opacity="1"/><stop offset="40%" stop-color="${ac}" stop-opacity="1"/><stop offset="60%" stop-color="${ac}" stop-opacity="1"/><stop offset="100%" stop-color="${acDark}" stop-opacity="1"/></linearGradient><linearGradient id="rzG" x1="100%" y1="0%" x2="0%" y2="0%"><stop offset="0%" stop-color="${acDark}" stop-opacity="1"/><stop offset="40%" stop-color="${ac}" stop-opacity="1"/><stop offset="60%" stop-color="${ac}" stop-opacity="1"/><stop offset="100%" stop-color="${acDark}" stop-opacity="1"/></linearGradient></defs>`)
-  sections.push(`<rect x="0" y="0" width="${zW}" height="${bodyH}" fill="url(#lzG)"/>`)
-  // crosshatch on left strip
-  sections.push(Array.from({length:Math.ceil(bodyH/4)},(_,i)=>`<line x1="0" y1="${i*4}" x2="${zW}" y2="${i*4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
-  sections.push(`<rect x="${zHL}" y="0" width="${Math.round(zW*0.15)}" height="${bodyH}" fill="rgba(255,255,255,0.35)"/>`)
-  // right zari strip
-  sections.push(`<rect x="${W-zW}" y="0" width="${zW}" height="${bodyH}" fill="url(#rzG)"/>`)
-  sections.push(Array.from({length:Math.ceil(bodyH/4)},(_,i)=>`<line x1="${W-zW}" y1="${i*4}" x2="${W}" y2="${i*4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
-  sections.push(`<rect x="${W-zHL-Math.round(zW*0.15)}" y="0" width="${Math.round(zW*0.15)}" height="${bodyH}" fill="rgba(255,255,255,0.35)"/>`)
-  sections.push(`</svg>`)
+  const zHL = Math.round(zW * 0.32)
+  const foldW = Math.max(1, scale)
+  sections.push(`<g transform="translate(0,${y})">`)
+  sections.push(staticPatternSvgString(bodyPattern, patternMap?.[bodyPattern], pc, ac, W, bodyH, 'body'))
+  sections.push(`<rect width="${W}" height="${bodyH}" fill="url(#bodySheen_${gid})"/>`)
+  sections.push(`<rect x="${Math.round(W * 0.3)}" y="0" width="${foldW}" height="${bodyH}" fill="url(#foldL_${gid})"/>`)
+  sections.push(`<rect x="${Math.round(W * 0.65)}" y="0" width="${foldW}" height="${bodyH}" fill="url(#foldR_${gid})"/>`)
+  sections.push(`<rect x="0" y="0" width="${zW}" height="${bodyH}" fill="url(#lzG_${gid})"/>`)
+  sections.push(Array.from({ length: Math.ceil(bodyH / 4) }, (_, i) =>
+    `<line x1="0" y1="${i * 4}" x2="${zW}" y2="${i * 4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
+  sections.push(`<rect x="${zHL}" y="0" width="${Math.round(zW * 0.15)}" height="${bodyH}" fill="rgba(255,255,255,0.35)"/>`)
+  sections.push(`<rect x="${W - zW}" y="0" width="${zW}" height="${bodyH}" fill="url(#rzG_${gid})"/>`)
+  sections.push(Array.from({ length: Math.ceil(bodyH / 4) }, (_, i) =>
+    `<line x1="${W - zW}" y1="${i * 4}" x2="${W}" y2="${i * 4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
+  sections.push(`<rect x="${W - zHL - Math.round(zW * 0.15)}" y="0" width="${Math.round(zW * 0.15)}" height="${bodyH}" fill="rgba(255,255,255,0.35)"/>`)
+  sections.push('</g>')
   y += bodyH
 
-  // Bottom border
-  sections.push(`<svg x="0" y="${y}" width="${W}" height="${borderH}">${buildSectionSVG(borderPattern, sc, ac, W, borderH)}<rect y="0" width="${W}" height="${Math.round(3*scale)}" fill="${aL}" opacity="0.7"/><rect y="${borderH-Math.round(3*scale)}" width="${W}" height="${Math.round(3*scale)}" fill="${aL}" opacity="0.7"/><rect width="${W}" height="${borderH}" fill="rgba(255,255,255,0.07)"/></svg>`)
+  sections.push(`<g transform="translate(0,${y})">`)
+  sections.push(staticPatternSvgString(borderPattern, patternMap?.[borderPattern], sc, ac, W, borderH, 'borderB'))
+  sections.push(`<rect y="0" width="${W}" height="${t3}" fill="url(#zariHi_${gid})" opacity="1"/>`)
+  sections.push(`<rect y="${borderH - t3}" width="${W}" height="${t3}" fill="url(#zariLo_${gid})" opacity="1"/>`)
+  sections.push(`<rect width="${W}" height="${borderH}" fill="rgba(255,255,255,0.14)" opacity="1"/>`)
+  sections.push('</g>')
   y += borderH
 
-  // Blouse
-  sections.push(`<svg x="0" y="${y}" width="${W}" height="${blouseH}">${buildSectionSVG(bodyPattern, sc, ac, W, blouseH)}<rect width="${W}" height="${blouseH}" fill="rgba(0,0,0,0.1)"/><rect y="${blouseH-Math.round(16*scale)}" width="${W}" height="${Math.round(16*scale)}" fill="${ac}" opacity="0.85"/><rect y="${blouseH-Math.round(16*scale)}" width="${W}" height="${Math.round(2*scale)}" fill="rgba(255,255,255,0.5)"/></svg>`)
-  y += blouseH
+  sections.push(`<g transform="translate(0,${y})">`)
+  sections.push(staticPatternSvgString(bodyPattern, patternMap?.[bodyPattern], sc, ac, W, blouseH, 'blouse'))
+  sections.push(`<rect width="${W}" height="${blouseH}" fill="rgba(0,0,0,0.1)"/>`)
+  sections.push(`<rect width="${W}" height="${blouseH}" fill="url(#blSheen_${gid})"/>`)
+  sections.push(`<rect y="${blouseH - Math.round(16 * scale)}" width="${W}" height="${Math.round(16 * scale)}" fill="${ac}" opacity="0.85"/>`)
+  sections.push(`<rect y="${blouseH - Math.round(16 * scale)}" width="${W}" height="${Math.round(2 * scale)}" fill="rgba(255,255,255,0.5)"/>`)
+  sections.push('</g>')
 
-  // Label: Blouse
-  sections.push(`<rect x="0" y="${y}" width="${W}" height="${labelH}" fill="rgba(0,0,0,0.55)"/>`)
-  sections.push(`<text x="${W/2}" y="${y+labelH*0.72}" text-anchor="middle" font-size="${labelH*0.6}" fill="${ac}" letter-spacing="3" font-family="sans-serif" font-weight="600">BLOUSE</text>`)
 
-  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="background:#0E0C09">${sections.join('')}</svg>`
+  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${sections.join('')}</svg>`
 
-  const blob = new Blob([svgString], { type:'image/svg+xml;charset=utf-8' })
-  const url  = URL.createObjectURL(blob)
-  const img  = new Image()
+  const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const img = new Image()
   img.onload = () => {
     const canvas = document.createElement('canvas')
-    canvas.width  = W
+    canvas.width = W
     canvas.height = H
     const ctx = canvas.getContext('2d')
     ctx.fillStyle = '#0E0C09'
@@ -1460,11 +1414,14 @@ export function exportSareeAsPNG(design, filename = 'saree-design') {
     ctx.drawImage(img, 0, 0)
     URL.revokeObjectURL(url)
     const link = document.createElement('a')
-    link.download = filename.replace(/\s/g,'-') + '.png'
+    link.download = filename.replace(/\s/g, '-') + '.png'
     link.href = canvas.toDataURL('image/png')
     link.click()
   }
-  img.onerror = () => { URL.revokeObjectURL(url); console.error('SVG export failed') }
+  img.onerror = () => {
+    URL.revokeObjectURL(url)
+    console.error('SVG export failed')
+  }
   img.src = url
 }
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { T, GlobalStyles } from './theme.jsx'
 import { sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES } from './data.jsx'
-import { Notification, AuthPage, CustomerHome, DesignerCanvas, ImageUploadPage } from './components.jsx'
+import { Notification, AuthPage, CustomerHome, DesignerCanvas, ImageUploadPage, CustomerDesignUploadPage } from './components.jsx'
 import { AIModePage, MyDesignsPage, DesignerDashboard, TopNav } from './pages.jsx'
 
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
@@ -17,9 +17,52 @@ export default function App() {
   const [notification, setNotification] = useState(null)
   // Supabase-loaded data
   const [dbPatterns, setDbPatterns] = useState([])
+  const [dbUserUploadPatterns, setDbUserUploadPatterns] = useState([])
   const [dbPalettes, setDbPalettes] = useState([])
   const [dbTemplates, setDbTemplates] = useState([])
   const [dbLoaded, setDbLoaded] = useState(false)
+
+  const refreshLibraryData = async () => {
+    try {
+      const [pats, pals, tmps] = await Promise.all([
+        sb.select('design_patterns', 'order=id.asc'),
+        sb.select('color_palettes', 'order=id.asc'),
+        sb.select('ai_design_templates', 'order=id.asc'),
+      ])
+      if (Array.isArray(pats)) setDbPatterns(pats)
+      if (Array.isArray(pals)) setDbPalettes(pals)
+      if (Array.isArray(tmps)) setDbTemplates(tmps)
+      if (user && userRole === 'customer') {
+        const mine = await sb.select('saved_designs', `user_id=eq.${user.id}&order=created_at.desc`, token)
+        const uploadPats = (Array.isArray(mine) ? mine : []).flatMap((d) => {
+          const u = d?.design_data?.uploadMeta
+          if (!u?.file_data_url || !u?.custom_id || !u?.part) return []
+          return [{
+            id: u.custom_id,
+            name: d.name || 'My Upload',
+            saree_part: u.part,
+            style_type: 'uploaded',
+            richness_level: 3,
+            tags: ['uploaded', (u.occasion || '').toLowerCase()].filter(Boolean),
+            image_data_url: u.file_data_url,
+            editor: (u.editor && typeof u.editor === 'object') ? u.editor : {
+              opacity: 0.86, density: 1, zoom: 1, spacing: 1.18, rotation: 0, x: 0, y: 0, repeatStyle: 'grid',
+            },
+          }]
+        })
+        const uniq = []
+        const seen = new Set()
+        for (const p of uploadPats) {
+          if (seen.has(p.id)) continue
+          seen.add(p.id)
+          uniq.push(p)
+        }
+        setDbUserUploadPatterns(uniq)
+      } else {
+        setDbUserUploadPatterns([])
+      }
+    } catch {}
+  }
 
   // Restore session
   useEffect(() => {
@@ -58,8 +101,15 @@ export default function App() {
     loadFromSupabase()
   }, [])
 
+  useEffect(() => {
+    if (user) refreshLibraryData()
+  }, [user?.id, userRole])
+
   // Merge: use Supabase data if available, else fall back to seed
-  const patterns = dbPatterns.length > 0 ? dbPatterns : SEED_PATTERNS
+  const basePatterns = dbPatterns.length > 0 ? dbPatterns : SEED_PATTERNS
+  const patterns = userRole === 'customer'
+    ? [...basePatterns, ...dbUserUploadPatterns.filter(p => !basePatterns.some(b => b.id === p.id))]
+    : basePatterns
   const palettes = dbPalettes.length > 0 ? dbPalettes : SEED_PALETTES
   const templates = dbTemplates.length > 0 ? dbTemplates : SEED_TEMPLATES
 
@@ -114,7 +164,15 @@ export default function App() {
   if (page === 'canvas') return (
     <>
       <GlobalStyles />
-      <DesignerCanvas user={user} token={token} initialDesign={initialDesign} notify={notify} onBack={()=>setPage('home')} />
+      <DesignerCanvas
+        user={user}
+        token={token}
+        initialDesign={initialDesign}
+        notify={notify}
+        onBack={()=>setPage('home')}
+        patterns={patterns}
+        palettes={palettes}
+      />
       <Notification notification={notification} />
     </>
   )
@@ -140,12 +198,29 @@ export default function App() {
       <Notification notification={notification} />
     </>
   )
+  if (page === 'uploaddesign') return (
+    <>
+      <GlobalStyles />
+      <div style={{minHeight:'100dvh',background:T.bg}}>
+        <TopNav user={user} userRole={userRole} onSignOut={handleSignOut} onHome={()=>setPage('home')} />
+        <CustomerDesignUploadPage
+          user={user}
+          token={token}
+          notify={notify}
+          onLibraryChanged={refreshLibraryData}
+          onBack={()=>setPage('home')}
+          onSaved={()=>setPage('mydesigns')}
+        />
+      </div>
+      <Notification notification={notification} />
+    </>
+  )
   if (page === 'mydesigns') return (
     <>
       <GlobalStyles />
       <div style={{minHeight:'100dvh',background:T.bg}}>
         <TopNav user={user} userRole={userRole} onSignOut={handleSignOut} onHome={()=>setPage('home')} />
-        <MyDesignsPage user={user} token={token} onBack={()=>setPage('home')} onOpenDesign={handleDesignReady} notify={notify} />
+        <MyDesignsPage user={user} userRole={userRole} token={token} onBack={()=>setPage('home')} onOpenDesign={handleDesignReady} notify={notify} />
       </div>
       <Notification notification={notification} />
     </>
@@ -153,7 +228,7 @@ export default function App() {
   if (page === 'designer' || (page === 'home' && userRole === 'designer')) return (
     <>
       <GlobalStyles />
-      <DesignerDashboard user={user} token={token} notify={notify} onBack={()=>setPage('home')} patterns={patterns} palettes={palettes} templates={templates} />
+      <DesignerDashboard user={user} token={token} notify={notify} onLibraryChanged={refreshLibraryData} onBack={()=>setPage('home')} onSignOut={handleSignOut} onOpenDesign={handleDesignReady} patterns={patterns} palettes={palettes} templates={templates} />
       <Notification notification={notification} />
     </>
   )
@@ -165,7 +240,7 @@ export default function App() {
       <div style={{minHeight:'100dvh',background:T.bg}}>
         <TopNav user={user} userRole={userRole} onSignOut={handleSignOut} onHome={()=>setPage('home')} />
         {userRole === 'designer'
-          ? <DesignerDashboard user={user} token={token} notify={notify} onBack={()=>setPage('home')} patterns={patterns} palettes={palettes} templates={templates} />
+          ? <DesignerDashboard user={user} token={token} notify={notify} onLibraryChanged={refreshLibraryData} onBack={()=>setPage('home')} onSignOut={handleSignOut} onOpenDesign={handleDesignReady} patterns={patterns} palettes={palettes} templates={templates} />
           : <CustomerHome user={user} onNavigate={handleNavigate} templates={templates} palettes={palettes} />
         }
       </div>

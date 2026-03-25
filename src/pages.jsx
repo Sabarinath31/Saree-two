@@ -5,6 +5,7 @@ import { T } from './theme.jsx'
 import { sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, GEMINI_MODEL, GEMINI_API_URL, GEMINI_KEY } from './data.jsx'
 import { PatternRenderer, SareeCanvas } from './canvas.jsx'
 import { VoiceQuestionnaire } from './components.jsx'
+import { UploadPattern, PatternEditor } from './patternEditor.jsx'
 
 // ─── AI MODE PAGE ─────────────────────────────────────────────────────────────
 function AIModePage({ onBack, onDesignReady, notify }) {
@@ -318,7 +319,7 @@ Pattern IDs — body: b1-b17, border: br1-br12, pallu: p1-p12. Return exactly 3 
 }
 
 // ─── MY DESIGNS — CATALOGUE VIEW ─────────────────────────────────────────────
-function MyDesignsPage({ user, token, onBack, onOpenDesign, notify }) {
+function MyDesignsPage({ user, userRole, token, onBack, onOpenDesign, notify }) {
   const [designs,    setDesigns]    = useState([])
   const [loading,    setLoading]    = useState(true)
   const [search,     setSearch]     = useState('')
@@ -330,7 +331,10 @@ function MyDesignsPage({ user, token, onBack, onOpenDesign, notify }) {
   const loadDesigns = async () => {
     setLoading(true)
     try {
-      const data = await sb.select('saved_designs', `user_id=eq.${user.id}&order=created_at.desc`, token)
+      const filters = userRole === 'designer'
+        ? 'order=created_at.desc'
+        : `user_id=eq.${user.id}&order=created_at.desc`
+      const data = await sb.select('saved_designs', filters, token)
       setDesigns(Array.isArray(data) ? data : [])
     } catch { setDesigns([]) }
     setLoading(false)
@@ -453,13 +457,15 @@ function MyDesignsPage({ user, token, onBack, onOpenDesign, notify }) {
 
             {/* Actions */}
             <div style={{display:'flex',gap:10}}>
-              <button className="btn-primary" style={{flex:1}} onClick={()=>{setSelected(null);onOpenDesign(dd)}}>
-                ✦ Edit Design
+              <button className="btn-ghost" style={{flex:1,padding:'10px 12px',fontSize:11}} onClick={()=>setSelected(null)}>
+                Close
               </button>
-              <button className="btn-ghost" style={{padding:'10px 14px',fontSize:11,color:T.error,borderColor:T.error+'55'}}
-                onClick={()=>deleteDesign(d.id)}>
-                Delete
-              </button>
+              {(userRole === 'designer' || d.user_id === user.id) && (
+                <button className="btn-ghost" style={{padding:'10px 14px',fontSize:11,color:T.error,borderColor:T.error+'55'}}
+                  onClick={()=>deleteDesign(d.id)}>
+                  Delete
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -623,173 +629,307 @@ function MyDesignsPage({ user, token, onBack, onOpenDesign, notify }) {
 }
 
 // ─── DESIGNER DASHBOARD ───────────────────────────────────────────────────────
-function DesignerDashboard({ user, token, notify, onBack, patterns: propPatterns, palettes: propPalettes, templates: propTemplates }) {
-  const [activeTab, setActiveTab] = useState('requests')
-  const [requests, setRequests] = useState([])
-  const [loading, setLoading] = useState(false)
+function DesignerDashboard({ user, token, notify, onLibraryChanged, onBack, onSignOut, onOpenDesign, patterns: propPatterns, palettes: propPalettes, templates: propTemplates }) {
+  const [activeTab, setActiveTab] = useState('patterns')
+  const [patternRows, setPatternRows] = useState(propPatterns && propPatterns.length > 0 ? propPatterns : SEED_PATTERNS)
+  const [templateRows, setTemplateRows] = useState(propTemplates && propTemplates.length > 0 ? propTemplates : SEED_TEMPLATES)
+  const paletteRows = propPalettes && propPalettes.length > 0 ? propPalettes : SEED_PALETTES
+  const [editingPattern, setEditingPattern] = useState(null)
+  const [editingTemplate, setEditingTemplate] = useState(null)
+  const [newTemplate, setNewTemplate] = useState({ id:'', name:'', description:'', body_pattern_id:'b4', border_pattern_id:'br3', pallu_pattern_id:'p4', palette_id:'pal1' })
+  const [editorPattern, setEditorPattern] = useState(null)
+  useEffect(() => { setPatternRows(propPatterns && propPatterns.length > 0 ? propPatterns : SEED_PATTERNS) }, [propPatterns])
+  useEffect(() => { setTemplateRows(propTemplates && propTemplates.length > 0 ? propTemplates : SEED_TEMPLATES) }, [propTemplates])
 
-  useEffect(() => {
-    if (activeTab === 'requests') loadRequests()
-  }, [activeTab])
-
-  const loadRequests = async () => {
-    setLoading(true)
-    try {
-      const data = await sb.select('saved_designs', `order=created_at.desc&limit=30`, token)
-      setRequests(Array.isArray(data) ? data : [])
-    } catch { setRequests([]) }
-    setLoading(false)
+  const downloadPatternPng = (p) => {
+    const holder = document.getElementById(`pattern-preview-${p.id}`)
+    const svg = holder?.querySelector('svg')
+    if (!svg) return notify('Pattern preview not ready', 'error')
+    const raw = new XMLSerializer().serializeToString(svg)
+    const svgText = raw.includes('xmlns=') ? raw : raw.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ')
+    const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.width || 180
+      canvas.height = img.height || 110
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      URL.revokeObjectURL(url)
+      const a = document.createElement('a')
+      a.href = canvas.toDataURL('image/png')
+      a.download = `pattern-${p.id}-${p.name}`.replace(/\s+/g,'-').toLowerCase() + '.png'
+      a.click()
+      notify('Pattern downloaded', 'success')
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); notify('Pattern download failed', 'error') }
+    img.src = url
   }
 
-  const updateStatus = async (id, status) => {
+  const savePatternEdit = async () => {
+    if (!editingPattern?.id) return
     try {
-      await sb.update('saved_designs', { status }, `id=eq.${id}`, token)
-      setRequests(r => r.map(x => x.id===id ? {...x, status} : x))
-      notify(`Status updated to: ${status}`,'success')
-    } catch { notify('Could not update status','error') }
+      const payload = {
+        name: editingPattern.name,
+        saree_part: editingPattern.saree_part,
+        style_type: editingPattern.style_type,
+        richness_level: Number(editingPattern.richness_level) || 1,
+        tags: (editingPattern.tags || '').split(',').map(x => x.trim()).filter(Boolean),
+      }
+      await sb.update('design_patterns', payload, `id=eq.${editingPattern.id}`, token)
+      setPatternRows(rows => rows.map(r => r.id === editingPattern.id ? { ...r, ...payload } : r))
+      setEditingPattern(null)
+      notify('Pattern updated', 'success')
+    } catch {
+      notify('Pattern update failed', 'error')
+    }
   }
 
-  // patternLibrary | customerRequests tabs
-  const tabs = [
-    { id:'requests', label:'Customer Requests', icon:'📋' },
-    { id:'patterns', label:'Pattern Library', icon:'🗂️' },
-    { id:'templates', label:'Style Templates', icon:'📐' },
-  ]
+  const uploadImagePattern = async (row) => {
+    const pid = row.id || `up_${Date.now()}`
+    const name = row.name || 'Uploaded Design'
+    const part = row.saree_part || 'body'
+    const imageDataUrl = row.imageDataUrl || ''
+    if (!imageDataUrl) return notify('Image file is required', 'error')
+    const designData = {
+      primaryColor:'#8B0000',
+      secondaryColor:'#F5F5DC',
+      accentColor:'#C9A843',
+      bodyPattern: part === 'body' ? pid : 'b4',
+      borderPattern: part === 'border' ? pid : 'br3',
+      palluPattern: part === 'pallu' ? pid : 'p4',
+      uploadMeta: {
+        custom_id: pid,
+        occasion: row.occasion || 'Wedding',
+        part,
+        file_name: row.fileName || '',
+        file_data_url: imageDataUrl,
+        editor: row.editor && typeof row.editor === 'object' ? row.editor : {
+          opacity: 0.86, density: 1, zoom: 1, spacing: 1.18, rotation: 0, x: 0, y: 0, repeatStyle: 'grid',
+        },
+      }
+    }
+    try {
+      const s1 = await sb.insert('saved_designs', {
+        user_id: user.id,
+        name,
+        design_data: designData,
+        thumbnail_colors: [designData.primaryColor, designData.secondaryColor, designData.accentColor],
+        status: 'draft',
+      }, token)
+      if (s1 && !Array.isArray(s1) && (s1.code || s1.message)) {
+        console.error('saved_designs:', s1)
+        notify(s1.message || s1.details || 'Could not save designer draft', 'error')
+        return
+      }
+      const s2 = await sb.insert('design_patterns', {
+        id: pid,
+        name,
+        saree_part: part,
+        style_type: 'uploaded',
+        richness_level: 3,
+        tags: ['uploaded', (row.occasion || 'wedding').toLowerCase()],
+        image_data_url: imageDataUrl,
+      }, token)
+      if (s2 && !Array.isArray(s2) && (s2.code || s2.message)) {
+        console.error('design_patterns:', s2)
+        notify(s2.message || s2.details || 'Pattern ID may already exist — use a unique ID', 'error')
+        return
+      }
+      const newRow = { ...row, id: pid, name, image_data_url: imageDataUrl, imageDataUrl, editor: designData.uploadMeta.editor }
+      setPatternRows(rows => [newRow, ...rows])
+      onLibraryChanged && await onLibraryChanged()
+      notify('Admin design uploaded', 'success')
+    } catch (e) {
+      console.error(e)
+      notify('Admin upload failed — check network and Supabase policies', 'error')
+    }
+  }
+  const deletePattern = async (id) => {
+    try {
+      await sb.delete('design_patterns', `id=eq.${id}`, token)
+      setPatternRows(rows => rows.filter(r => r.id !== id))
+      onLibraryChanged && await onLibraryChanged()
+      notify('Pattern deleted', 'success')
+    } catch {
+      notify('Pattern delete failed', 'error')
+    }
+  }
 
-  const statusColors = {
-    draft:'#B7791F', submitted:'#2B6CB0', review:'#C53030',
-    approved:'#276749', production:'#6B46C1'
+  const saveTemplateEdit = async () => {
+    if (!editingTemplate?.id) return
+    try {
+      const payload = {
+        name: editingTemplate.name,
+        description: editingTemplate.description || '',
+        body_pattern_id: editingTemplate.body_pattern_id,
+        border_pattern_id: editingTemplate.border_pattern_id,
+        pallu_pattern_id: editingTemplate.pallu_pattern_id,
+        palette_id: editingTemplate.palette_id,
+      }
+      await sb.update('ai_design_templates', payload, `id=eq.${editingTemplate.id}`, token)
+      setTemplateRows(rows => rows.map(r => r.id === editingTemplate.id ? { ...r, ...payload } : r))
+      setEditingTemplate(null)
+      notify('Template updated', 'success')
+    } catch {
+      notify('Template update failed', 'error')
+    }
+  }
+
+  const uploadTemplate = async () => {
+    if (!newTemplate.id || !newTemplate.name) return notify('Template ID and name are required', 'error')
+    try {
+      await sb.insert('ai_design_templates', newTemplate, token)
+      setTemplateRows(rows => [newTemplate, ...rows])
+      setNewTemplate({ id:'', name:'', description:'', body_pattern_id:'b4', border_pattern_id:'br3', pallu_pattern_id:'p4', palette_id:'pal1' })
+      notify('New template uploaded', 'success')
+    } catch {
+      notify('Template upload failed', 'error')
+    }
   }
 
   return (
     <div style={{minHeight:'100vh',background:T.bg}}>
-      {/* Header */}
       <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:'16px 24px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-        <div style={{display:'flex',alignItems:'center',gap:16}}>
-          <button onClick={onBack} className="btn-ghost" style={{padding:'5px 12px',fontSize:10}}>← Home</button>
-          <h1 style={{fontFamily:'Cormorant Garamond',fontSize:24,fontWeight:400,color:T.text}}>Designer Dashboard</h1>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <button onClick={() => { setActiveTab('patterns'); onBack && onBack() }} className="btn-ghost" style={{padding:'5px 12px',fontSize:10}}>← Home</button>
+          <h1 style={{fontFamily:'Cormorant Garamond',fontSize:24,fontWeight:400,color:T.text}}>Designer Dashboard (Admin CMS)</h1>
         </div>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <div style={{width:8,height:8,borderRadius:'50%',background:T.success}} />
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:11,color:T.textMid}}>{user?.email}</span>
+          <button className="btn-ghost" style={{padding:'5px 12px',fontSize:10}} onClick={onSignOut}>Sign Out</button>
         </div>
       </div>
 
-      {/* Stats */}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,padding:'20px 24px',maxWidth:900,margin:'0 auto'}}>
-        {[
-          {label:'Total Requests', value:requests.length, icon:'📋'},
-          {label:'Pending Review', value:requests.filter(r=>r.status==='submitted'||r.status==='review').length, icon:'⏳'},
-          {label:'Approved', value:requests.filter(r=>r.status==='approved').length, icon:'✅'},
-          {label:'In Production', value:requests.filter(r=>r.status==='production').length, icon:'🏭'},
-        ].map(s => (
-          <div key={s.label} className="card" style={{padding:16,textAlign:'center'}}>
-            <div style={{fontSize:24,marginBottom:6}}>{s.icon}</div>
-            <div style={{fontFamily:'Cormorant Garamond',fontSize:28,color:T.gold,marginBottom:4}}>{s.value}</div>
-            <div style={{fontSize:10,color:T.textLight,letterSpacing:0.5}}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Tabs */}
-      <div style={{maxWidth:900,margin:'0 auto',padding:'0 24px'}}>
-        <div style={{display:'flex',gap:0,borderBottom:`1px solid ${T.border}`,marginBottom:24}}>
-          {tabs.map(t => (
+      <div style={{maxWidth:980,margin:'0 auto',padding:'20px 24px'}}>
+        <p style={{fontSize:11,color:T.textLight,marginBottom:14}}>
+          Admin access: full control over pattern/template database entries.
+        </p>
+        <div style={{display:'flex',gap:0,borderBottom:`1px solid ${T.border}`,marginBottom:20}}>
+          {[{id:'patterns',label:'Pattern Library',icon:'🗂️'},{id:'templates',label:'Style Templates',icon:'📐'}].map(t => (
             <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{
-              padding:'12px 20px',border:'none',cursor:'pointer',
-              background:'transparent',fontSize:12,letterSpacing:0.5,
-              color:activeTab===t.id?T.gold:T.textMid,
-              borderBottom:`2px solid ${activeTab===t.id?T.gold:'transparent'}`,
-              transition:'all 0.2s',fontFamily:'Jost',fontWeight:activeTab===t.id?500:300
+              padding:'12px 20px',border:'none',cursor:'pointer',background:'transparent',
+              color:activeTab===t.id?T.gold:T.textMid,borderBottom:`2px solid ${activeTab===t.id?T.gold:'transparent'}`
             }}>{t.icon} {t.label}</button>
           ))}
         </div>
 
-        {/* Customer Requests */}
-        {activeTab === 'requests' && (
-          loading ? (
-            <div style={{textAlign:'center',padding:48}}>
-              <div style={{width:40,height:40,borderRadius:'50%',border:`2px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite',margin:'0 auto'}} />
-            </div>
-          ) : requests.length === 0 ? (
-            <div style={{textAlign:'center',padding:60}}>
-              <div style={{fontSize:48,marginBottom:12}}>📭</div>
-              <p style={{fontFamily:'Cormorant Garamond',fontSize:20,color:T.textMid}}>No requests yet</p>
-            </div>
-          ) : (
-            <div style={{display:'flex',flexDirection:'column',gap:12}}>
-              {requests.map(r => (
-                <div key={r.id} className="card" style={{padding:16}}>
-                  <div style={{display:'flex',gap:16,alignItems:'center'}}>
-                    {/* Color preview */}
-                    <div style={{display:'flex',gap:2,flexShrink:0}}>
-                      {(r.thumbnail_colors||['#ccc']).map((c,i)=>(
-                        <div key={i} style={{width:20,height:48,borderRadius:2,background:c}} />
-                      ))}
+        {activeTab === 'patterns' && (
+          <>
+            <UploadPattern onUpload={uploadImagePattern} />
+
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:12}}>
+              {patternRows.map(p => (
+                <div key={p.id} className="card" style={{padding:0,overflow:'hidden'}}>
+                  <div id={`pattern-preview-${p.id}`}>
+                    <PatternRenderer patternId={p.id} customPattern={p} color="#8B0000" accentColor="#C9A843" width={180} height={110} />
+                  </div>
+                  <div style={{padding:10}}>
+                    <div style={{fontSize:12,color:T.text,fontWeight:500}}>{p.name}</div>
+                    <div style={{fontSize:10,color:T.textLight,marginBottom:8}}>{p.id} · {p.saree_part} · {p.style_type}</div>
+                    <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                      <button className="btn-ghost" style={{fontSize:10,padding:'5px 8px'}} onClick={()=>{
+                        if (p.imageDataUrl || p.image_data_url) setEditorPattern({ ...p, imageDataUrl: p.imageDataUrl || p.image_data_url })
+                        else setEditingPattern({...p, tags:Array.isArray(p.tags)?p.tags.join(', '):(p.tags||'')})
+                      }}>Edit</button>
+                      <button className="btn-outline" style={{fontSize:10,padding:'5px 8px'}} onClick={()=>downloadPatternPng(p)}>Download</button>
+                      <button className="btn-ghost" style={{fontSize:10,padding:'5px 8px',color:T.error,borderColor:T.error+'55'}} onClick={()=>deletePattern(p.id)}>Delete</button>
                     </div>
-                    <div style={{flex:1}}>
-                      <div style={{fontFamily:'Cormorant Garamond',fontSize:17,color:T.text,marginBottom:4}}>{r.name}</div>
-                      <div style={{fontSize:11,color:T.textLight,marginBottom:8}}>{r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : ''}</div>
-                      {/* Status actions */}
-                      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-                        {['review','approved','production'].map(s => (
-                          <button key={s} onClick={()=>updateStatus(r.id,s)} style={{
-                            padding:'4px 10px',border:`1px solid ${r.status===s?statusColors[s]:T.border}`,
-                            background:r.status===s?`${statusColors[s]}15`:'transparent',
-                            color:r.status===s?statusColors[s]:T.textLight,
-                            borderRadius:40,cursor:'pointer',fontSize:9,
-                            letterSpacing:0.8,textTransform:'uppercase',
-                            transition:'all 0.2s'
-                          }}>{s}</button>
-                        ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'templates' && (
+          <>
+            <div className="card" style={{padding:14,marginBottom:16}}>
+              <p className="label-xs" style={{marginBottom:10}}>Upload New Template</p>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+                <input className="input-field" placeholder="id (e.g. t7)" value={newTemplate.id} onChange={e=>setNewTemplate(v=>({...v,id:e.target.value}))} />
+                <input className="input-field" placeholder="name" value={newTemplate.name} onChange={e=>setNewTemplate(v=>({...v,name:e.target.value}))} />
+                <input className="input-field" placeholder="description" value={newTemplate.description} onChange={e=>setNewTemplate(v=>({...v,description:e.target.value}))} />
+                <input className="input-field" placeholder="body pattern id" value={newTemplate.body_pattern_id} onChange={e=>setNewTemplate(v=>({...v,body_pattern_id:e.target.value}))} />
+                <input className="input-field" placeholder="border pattern id" value={newTemplate.border_pattern_id} onChange={e=>setNewTemplate(v=>({...v,border_pattern_id:e.target.value}))} />
+                <input className="input-field" placeholder="pallu pattern id" value={newTemplate.pallu_pattern_id} onChange={e=>setNewTemplate(v=>({...v,pallu_pattern_id:e.target.value}))} />
+              </div>
+              <select className="input-field" style={{marginTop:8,maxWidth:280}} value={newTemplate.palette_id} onChange={e=>setNewTemplate(v=>({...v,palette_id:e.target.value}))}>
+                {paletteRows.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+              <button className="btn-primary" style={{marginTop:10}} onClick={uploadTemplate}>Upload Template</button>
+            </div>
+
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:14}}>
+              {templateRows.map(t => {
+                const pal = paletteRows.find(p=>p.id===t.palette_id) || paletteRows[0]
+                const design = { primaryColor:pal?.primary_color||'#8B0000', secondaryColor:pal?.secondary_color||'#F5F5DC', accentColor:pal?.accent_color||'#C9A843', bodyPattern:t.body_pattern_id, borderPattern:t.border_pattern_id, palluPattern:t.pallu_pattern_id }
+                return (
+                  <div key={t.id} className="card" style={{padding:0,overflow:'hidden'}}>
+                    <div style={{height:120,display:'flex',alignItems:'center',justifyContent:'center',background:`linear-gradient(135deg,${pal?.primary_color||'#8B0000'},${pal?.secondary_color||'#F5F5DC'})`}}>
+                      <SareeCanvas design={design} scale={0.4} />
+                    </div>
+                    <div style={{padding:12}}>
+                      <div style={{fontFamily:'Cormorant Garamond',fontSize:17,color:T.text}}>{t.name}</div>
+                      <div style={{fontSize:11,color:T.textLight,margin:'4px 0 8px'}}>{t.description}</div>
+                      <div style={{display:'flex',gap:8}}>
+                        <button className="btn-ghost" style={{fontSize:10,padding:'5px 9px'}} onClick={()=>setEditingTemplate({...t})}>Edit</button>
+                        <button className="btn-outline" style={{fontSize:10,padding:'5px 9px'}} onClick={()=>onOpenDesign && onOpenDesign(design)}>Edit in Canvas</button>
                       </div>
                     </div>
-                    <div style={{flexShrink:0}}>
-                      <span className={`status-${r.status||'draft'}`}>{r.status||'Draft'}</span>
-                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
-          )
+          </>
         )}
 
-        {/* Pattern Library */}
-        {activeTab === 'patterns' && (
-          <div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:12}}>
-              {(propPatterns&&propPatterns.length>0?propPatterns:SEED_PATTERNS).map(p => (
-                <div key={p.id} className="card" style={{overflow:'hidden'}}>
-                  <PatternRenderer patternId={p.id} color='#8B0000' accentColor='#C9A843' width={120} height={90} />
-                  <div style={{padding:'8px 10px'}}>
-                    <div style={{fontSize:11,color:T.text,fontWeight:400,marginBottom:2}}>{p.name}</div>
-                    <div style={{fontSize:9,color:T.textLight,textTransform:'capitalize'}}>{p.saree_part} · {p.style_type}</div>
-                  </div>
-                </div>
-              ))}
+        {editingPattern && (
+          <div className="card" style={{padding:14,marginTop:16}}>
+            <p className="label-xs" style={{marginBottom:10}}>Edit Pattern - {editingPattern.id}</p>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+              <input className="input-field" value={editingPattern.name||''} onChange={e=>setEditingPattern(v=>({...v,name:e.target.value}))} />
+              <select className="input-field" value={editingPattern.saree_part||'body'} onChange={e=>setEditingPattern(v=>({...v,saree_part:e.target.value}))}><option value="body">body</option><option value="border">border</option><option value="pallu">pallu</option></select>
+              <input className="input-field" value={editingPattern.style_type||''} onChange={e=>setEditingPattern(v=>({...v,style_type:e.target.value}))} />
+              <input className="input-field" type="number" value={editingPattern.richness_level||1} onChange={e=>setEditingPattern(v=>({...v,richness_level:e.target.value}))} />
+              <input className="input-field" style={{gridColumn:'span 2'}} value={editingPattern.tags||''} onChange={e=>setEditingPattern(v=>({...v,tags:e.target.value}))} />
+            </div>
+            <div style={{display:'flex',gap:8,marginTop:10}}>
+              <button className="btn-primary" onClick={savePatternEdit}>Save</button>
+              <button className="btn-ghost" onClick={()=>setEditingPattern(null)}>Cancel</button>
             </div>
           </div>
         )}
 
-        {/* Style Templates */}
-        {activeTab === 'templates' && (
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:16}}>
-            {(propTemplates&&propTemplates.length>0?propTemplates:SEED_TEMPLATES).map(t => {
-              const pal = (propPalettes&&propPalettes.length>0?propPalettes:SEED_PALETTES).find(p=>p.id===t.palette_id) || SEED_PALETTES[0]
-              return (
-                <div key={t.id} className="card" style={{padding:0,overflow:'hidden'}}>
-                  <div style={{height:120,display:'flex',alignItems:'center',justifyContent:'center',background:`linear-gradient(135deg,${pal.primary_color},${pal.secondary_color})`}}>
-                    <SareeCanvas design={{primaryColor:pal.primary_color,secondaryColor:pal.secondary_color,accentColor:pal.accent_color,bodyPattern:t.body_pattern_id,borderPattern:t.border_pattern_id,palluPattern:t.pallu_pattern_id}} scale={0.4} />
-                  </div>
-                  <div style={{padding:14}}>
-                    <div style={{fontFamily:'Cormorant Garamond',fontSize:17,color:T.text,marginBottom:4}}>{t.name}</div>
-                    <div style={{fontSize:11,color:T.textLight}}>{t.description}</div>
-                  </div>
-                </div>
-              )
-            })}
+        {editingTemplate && (
+          <div className="card" style={{padding:14,marginTop:16}}>
+            <p className="label-xs" style={{marginBottom:10}}>Edit Template - {editingTemplate.id}</p>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+              <input className="input-field" value={editingTemplate.name||''} onChange={e=>setEditingTemplate(v=>({...v,name:e.target.value}))} />
+              <input className="input-field" value={editingTemplate.description||''} onChange={e=>setEditingTemplate(v=>({...v,description:e.target.value}))} />
+              <select className="input-field" value={editingTemplate.palette_id||''} onChange={e=>setEditingTemplate(v=>({...v,palette_id:e.target.value}))}>{paletteRows.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select>
+              <input className="input-field" value={editingTemplate.body_pattern_id||''} onChange={e=>setEditingTemplate(v=>({...v,body_pattern_id:e.target.value}))} />
+              <input className="input-field" value={editingTemplate.border_pattern_id||''} onChange={e=>setEditingTemplate(v=>({...v,border_pattern_id:e.target.value}))} />
+              <input className="input-field" value={editingTemplate.pallu_pattern_id||''} onChange={e=>setEditingTemplate(v=>({...v,pallu_pattern_id:e.target.value}))} />
+            </div>
+            <div style={{display:'flex',gap:8,marginTop:10}}>
+              <button className="btn-primary" onClick={saveTemplateEdit}>Save</button>
+              <button className="btn-ghost" onClick={()=>setEditingTemplate(null)}>Cancel</button>
+            </div>
           </div>
         )}
+        <PatternEditor
+          open={!!editorPattern}
+          design={{ primaryColor:'#8B0000', secondaryColor:'#F5F5DC', accentColor:'#C9A843', bodyPattern:'b1', borderPattern:'br1', palluPattern:'p5' }}
+          pattern={editorPattern}
+          onClose={() => setEditorPattern(null)}
+          onSave={(editor) => {
+            setPatternRows(rows => rows.map(r => r.id === editorPattern.id ? { ...r, editor } : r))
+            setEditorPattern(null)
+            notify('Pattern editor settings saved', 'success')
+          }}
+        />
       </div>
     </div>
   )
