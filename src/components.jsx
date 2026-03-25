@@ -9,6 +9,7 @@ import {
   GEMINI_KEY, GEMINI_API_URL, GEMINI_MODEL, HF_TOKEN, REPLICATE_TOKEN, TOGETHER_TOKEN,
 } from './data.jsx'
 import { PatternRenderer, SareeCanvas, exportSareeAsPNG, generateSareeDataURL } from './canvas.jsx'
+import { CustomerUploadWizard } from './patternEditor.jsx'
 
 // ─── NOTIFICATION ─────────────────────────────────────────────────────────────
 function Notification({ notification }) {
@@ -608,97 +609,16 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
 }
 
 function CustomerDesignUploadPage({ user, token, notify, onLibraryChanged, onBack, onSaved }) {
-  const [form, setForm] = useState({
-    id: '',
-    name: '',
-    occasion: 'Wedding',
-    part: 'body',
-  })
-  const [fileName, setFileName] = useState('')
-  const [fileDataUrl, setFileDataUrl] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  const onFile = (file) => {
-    if (!file) return
-    setFileName(file.name || '')
-    const r = new FileReader()
-    r.onload = (e) => setFileDataUrl(e.target.result || '')
-    r.readAsDataURL(file)
-  }
-
-  const saveUpload = async () => {
-    if (!form.id || !form.name || !form.occasion || !fileDataUrl) {
-      notify('Please fill all fields and upload a file', 'error')
-      return
-    }
-    setBusy(true)
-    try {
-      const pid = form.id.trim()
-      const designData = {
-        primaryColor:'#8B0000',
-        secondaryColor:'#F5F5DC',
-        accentColor:'#C9A843',
-        bodyPattern: form.part === 'body' ? pid : 'b4',
-        borderPattern: form.part === 'border' ? pid : 'br3',
-        palluPattern: form.part === 'pallu' ? pid : 'p4',
-        uploadMeta: {
-          custom_id: form.id,
-          occasion: form.occasion,
-          part: form.part,
-          file_name: fileName,
-          file_data_url: fileDataUrl,
-          editor: {
-            opacity: 0.86, density: 1, zoom: 1, spacing: 1.18, rotation: 0, x: 0, y: 0, repeatStyle: 'grid',
-          },
-        }
-      }
-      const ins = await sb.insert('saved_designs', {
-        user_id: user.id,
-        name: form.name,
-        design_data: designData,
-        thumbnail_colors: [designData.primaryColor, designData.secondaryColor, designData.accentColor],
-        status: 'draft',
-      }, token)
-      if (ins && !Array.isArray(ins) && (ins.code || ins.message)) {
-        console.error('saved_designs insert:', ins)
-        notify(ins.message || ins.hint || `Upload failed (${ins.code || 'error'})`, 'error')
-        return
-      }
-      onLibraryChanged && await onLibraryChanged()
-      notify('Design uploaded successfully', 'success')
-      onSaved && onSaved()
-    } catch (e) {
-      console.error(e)
-      notify('Failed to upload design. Check console / Supabase RLS and required fields.', 'error')
-    }
-    setBusy(false)
-  }
-
+  // Replaced with rich 3-step wizard from patternEditor.jsx
   return (
-    <div style={{maxWidth:620,margin:'0 auto',padding:'32px 20px'}}>
-      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
-        <button onClick={onBack} className="btn-ghost" style={{padding:'6px 12px',fontSize:10}}>← Back</button>
-        <h2 style={{fontFamily:'Cormorant Garamond',fontSize:24,fontWeight:400,color:T.text}}>Upload New Design</h2>
-      </div>
-      <div className="card" style={{padding:16,display:'grid',gap:10}}>
-        <input className="input-field" placeholder="Design ID" value={form.id} onChange={e=>setForm(v=>({...v,id:e.target.value}))} />
-        <input className="input-field" placeholder="Design Name" value={form.name} onChange={e=>setForm(v=>({...v,name:e.target.value}))} />
-        <select className="input-field" value={form.occasion} onChange={e=>setForm(v=>({...v,occasion:e.target.value}))}>
-          <option value="Wedding">Wedding</option>
-          <option value="Festival">Festival</option>
-          <option value="Party">Party</option>
-          <option value="Office">Office</option>
-          <option value="Casual">Casual</option>
-          <option value="Reception">Reception</option>
-        </select>
-        <select className="input-field" value={form.part} onChange={e=>setForm(v=>({...v,part:e.target.value}))}>
-          <option value="body">Body</option><option value="border">Border</option><option value="pallu">Pallu</option>
-        </select>
-        <input className="input-field" type="file" accept=".jpg,.jpeg,.png,.svg,image/jpeg,image/png,image/svg+xml" onChange={e=>onFile(e.target.files?.[0])} />
-        {fileName && <p style={{fontSize:11,color:T.textLight}}>Selected: {fileName}</p>}
-        <button className="btn-primary" onClick={saveUpload} disabled={busy}>{busy ? 'Uploading...' : 'Upload Design'}</button>
-      </div>
-    </div>
+    <CustomerUploadWizard
+      user={user}
+      token={token}
+      notify={notify}
+      onLibraryChanged={onLibraryChanged}
+      onBack={onBack}
+      onSaved={onSaved}
+    />
   )
 }
 
