@@ -13,7 +13,6 @@ function AIModePage({ onBack, onDesignReady, notify }) {
   const [prompt, setPrompt] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [results, setResults] = useState(null)
-  const [questionnaireAnswers, setQuestionnaireAnswers] = useState(null)
   const [activeRec, setActiveRec] = useState(0)
 
   // Fallback: derive a design from keywords in the prompt text
@@ -81,7 +80,6 @@ Pattern IDs — body: b1-b17, border: br1-br12, pallu: p1-p12. Return exactly 3 
   }
 
   const handleQuestionnaireComplete = (result, answers) => {
-    setQuestionnaireAnswers(answers)
     setResults(result)
     setActiveRec(0)
     setMode('results')
@@ -443,6 +441,7 @@ function MyDesignsPage({ user, userRole, token, onBack, onOpenDesign, notify }) 
                 {label:'Body',   val: PATTERN_NAMES[dd.bodyPattern]   || dd.bodyPattern},
                 {label:'Border', val: PATTERN_NAMES[dd.borderPattern] || dd.borderPattern},
                 {label:'Pallu',  val: PATTERN_NAMES[dd.palluPattern]  || dd.palluPattern},
+                {label:'Blouse', val: PATTERN_NAMES[dd.blousePattern] || dd.blousePattern || '—'},
               ].map(r=>(
                 <div key={r.label} style={{display:'flex',justifyContent:'space-between',padding:'5px 0',borderBottom:`1px solid ${T.borderLight}`}}>
                   <span style={{fontSize:11,color:T.textLight}}>{r.label}</span>
@@ -459,6 +458,10 @@ function MyDesignsPage({ user, userRole, token, onBack, onOpenDesign, notify }) 
             <div style={{display:'flex',gap:10}}>
               <button className="btn-ghost" style={{flex:1,padding:'10px 12px',fontSize:11}} onClick={()=>setSelected(null)}>
                 Close
+              </button>
+              <button className="btn-primary" style={{flex:1,padding:'10px 12px',fontSize:11}}
+                onClick={()=>{ setSelected(null); onOpenDesign && onOpenDesign(dd) }}>
+                ✦ Edit Design
               </button>
               {(userRole === 'designer' || d.user_id === user.id) && (
                 <button className="btn-ghost" style={{padding:'10px 14px',fontSize:11,color:T.error,borderColor:T.error+'55'}}

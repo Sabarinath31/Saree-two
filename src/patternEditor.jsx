@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useCallback } from 'react'
+import { useMemo, useRef, useState, useCallback, useEffect } from 'react'
 import { SareeCanvas } from './canvas.jsx'
 import { T } from './theme.jsx'
 
@@ -245,7 +245,7 @@ export function UpdatedSareeCanvas({ design, patternState, patternMap = {}, onDr
 export function PatternEditor({ open, design, pattern, patternMap = {}, onClose, onSave }) {
   const [state, setState] = useState(buildPatternState())
 
-  useMemo(() => {
+  useEffect(() => {
     if (pattern) setState({ ...buildPatternState(), ...(pattern.editor || {}), section: pattern.saree_part || 'body' })
   }, [pattern?.id])
 
@@ -331,7 +331,7 @@ export function PatternEditor({ open, design, pattern, patternMap = {}, onClose,
 export function InlinePatternEditor({ open, pattern, design, onClose, onSave }) {
   const [state, setState] = useState(buildPatternState())
 
-  useMemo(() => {
+  useEffect(() => {
     if (pattern) {
       setState({
         ...buildPatternState(),

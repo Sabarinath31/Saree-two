@@ -1086,6 +1086,10 @@ export function generateSareeDataURL(design) {
     const { primaryColor: pc, secondaryColor: sc, accentColor: ac,
             bodyPattern, borderPattern, palluPattern } = design
 
+    // Blouse uses its own pattern/color if set, else falls back to body
+    const blousePattern = design.blousePattern || bodyPattern
+    const blouseColor   = design.blouseColor   || sc
+
     // ── colour helpers ──────────────────────────────────────────────────────
     const hexAdd = (hex, amt) => {
       const h = (hex || '#888').replace('#', '')
@@ -1255,7 +1259,7 @@ export function generateSareeDataURL(design) {
     y += labelH
 
     // Blouse
-    secs.push(`<svg x="0" y="${y}" width="${W}" height="${blouseH}">${pat(bodyPattern, sc, ac, W, blouseH)}`)
+    secs.push(`<svg x="0" y="${y}" width="${W}" height="${blouseH}">${pat(blousePattern, blouseColor, ac, W, blouseH)}`)
     secs.push(`<rect width="${W}" height="${blouseH}" fill="rgba(255,255,255,0.06)"/>`)
     secs.push(`<rect y="${blouseH - Math.round(14*SCALE)}" width="${W}" height="${Math.round(14*SCALE)}" fill="${ac}" opacity="0.8"/>`)
     secs.push(`<rect y="${blouseH - Math.round(16*SCALE)}" width="${W}" height="${Math.round(2*SCALE)}" fill="rgba(255,255,255,0.5)"/>`)
@@ -1304,6 +1308,10 @@ export function exportSareeAsPNG(design, filename = 'saree-design', patternMap =
 
   const { primaryColor: pc, secondaryColor: sc, accentColor: ac,
           bodyPattern, borderPattern, palluPattern } = design
+
+  // Blouse uses its own pattern/color if set, else falls back to body
+  const blousePattern = design.blousePattern || bodyPattern
+  const blouseColor   = design.blouseColor   || sc
 
   const acDark = '#8B6914'
   const gid = `exp_${W}_${H}`
@@ -1366,9 +1374,20 @@ export function exportSareeAsPNG(design, filename = 'saree-design', patternMap =
   sections.push(`<text x="${SW/2}" y="${y + labelH*0.72}" text-anchor="middle" font-size="${labelH*0.62}" fill="${ac}" letter-spacing="2" font-family="serif" font-weight="600">PALLU</text>`)
   y += labelH
 
+  // ── Helper: render pattern at 1× density then scale up for high-res crispness ──
+  // PatternRenderer uses absolute pixel spacing (e.g. tile every 28px) designed for
+  // ~200px canvas. At scale=3 the canvas is 600px so we'd get 3× too many tiles.
+  // Fix: render at logical 1× size (SW/scale × sectionH/scale) then scale the group up.
+  const scaledPat = (patternId, customPat, color, accent, fullW, fullH, key) => {
+    const lw = Math.round(fullW / scale)
+    const lh = Math.round(fullH / scale)
+    const inner = staticPatternSvgString(patternId, customPat, color, accent, lw, lh, key)
+    return `<g transform="scale(${scale})">${inner}</g>`
+  }
+
   // ── Pallu ──
   sections.push(`<g transform="translate(0,${y})">`)
-  sections.push(staticPatternSvgString(palluPattern, patternMap?.[palluPattern], pc, ac, SW, palluH, 'pallu'))
+  sections.push(scaledPat(palluPattern, patternMap?.[palluPattern], pc, ac, SW, palluH, 'pallu'))
   sections.push(`<rect width="${SW}" height="${palluH}" fill="url(#palSheen_${gid})"/>`)
   sections.push(`<rect width="${Math.round(10*scale)}" height="${palluH}" fill="rgba(0,0,0,0.22)"/>`)
   sections.push(`<rect x="${SW - Math.round(10*scale)}" width="${Math.round(10*scale)}" height="${palluH}" fill="rgba(0,0,0,0.22)"/>`)
@@ -1378,7 +1397,7 @@ export function exportSareeAsPNG(design, filename = 'saree-design', patternMap =
 
   // ── Top border ──
   sections.push(`<g transform="translate(0,${y})">`)
-  sections.push(staticPatternSvgString(borderPattern, patternMap?.[borderPattern], sc, ac, SW, borderH, 'borderT'))
+  sections.push(scaledPat(borderPattern, patternMap?.[borderPattern], sc, ac, SW, borderH, 'borderT'))
   sections.push(`<rect y="0" width="${SW}" height="${t3}" fill="url(#zariHi_${gid})"/>`)
   sections.push(`<rect y="${borderH - t3}" width="${SW}" height="${t3}" fill="url(#zariLo_${gid})"/>`)
   sections.push(`<rect width="${SW}" height="${borderH}" fill="rgba(255,255,255,0.14)"/>`)
@@ -1393,7 +1412,7 @@ export function exportSareeAsPNG(design, filename = 'saree-design', patternMap =
   // ── Body ──
   const zHL = Math.round(zW * 0.32)
   sections.push(`<g transform="translate(0,${y})">`)
-  sections.push(staticPatternSvgString(bodyPattern, patternMap?.[bodyPattern], pc, ac, SW, bodyH, 'body'))
+  sections.push(scaledPat(bodyPattern, patternMap?.[bodyPattern], pc, ac, SW, bodyH, 'body'))
   sections.push(`<rect width="${SW}" height="${bodyH}" fill="url(#bodySheen_${gid})"/>`)
   sections.push(`<rect x="0" y="0" width="${zW}" height="${bodyH}" fill="url(#lzG_${gid})"/>`)
   sections.push(Array.from({length:Math.ceil(bodyH/4)},(_,i)=>`<line x1="0" y1="${i*4}" x2="${zW}" y2="${i*4}" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>`).join(''))
@@ -1406,7 +1425,7 @@ export function exportSareeAsPNG(design, filename = 'saree-design', patternMap =
 
   // ── Bottom border ──
   sections.push(`<g transform="translate(0,${y})">`)
-  sections.push(staticPatternSvgString(borderPattern, patternMap?.[borderPattern], sc, ac, SW, borderH, 'borderB'))
+  sections.push(scaledPat(borderPattern, patternMap?.[borderPattern], sc, ac, SW, borderH, 'borderB'))
   sections.push(`<rect y="0" width="${SW}" height="${t3}" fill="url(#zariHi_${gid})"/>`)
   sections.push(`<rect y="${borderH - t3}" width="${SW}" height="${t3}" fill="url(#zariLo_${gid})"/>`)
   sections.push(`<rect width="${SW}" height="${borderH}" fill="rgba(255,255,255,0.14)"/>`)
@@ -1421,7 +1440,7 @@ export function exportSareeAsPNG(design, filename = 'saree-design', patternMap =
 
   // Blouse body
   sections.push(`<g transform="translate(${bx},${by})">`)
-  sections.push(staticPatternSvgString(bodyPattern, patternMap?.[bodyPattern], sc, ac, blouseW, blouseH, 'blouse'))
+  sections.push(scaledPat(blousePattern, patternMap?.[blousePattern], blouseColor, ac, blouseW, blouseH, 'blouse'))
   sections.push(`<rect width="${blouseW}" height="${blouseH}" fill="rgba(0,0,0,0.08)"/>`)
   sections.push(`<rect width="${blouseW}" height="${blouseH}" fill="url(#blSheen_${gid})"/>`)
   // Collar V
@@ -1436,7 +1455,7 @@ export function exportSareeAsPNG(design, filename = 'saree-design', patternMap =
   // Color swatches under blouse
   const swatchY = by + blouseH + Math.round(10*scale)
   const swatchR = Math.round(6*scale)
-  ;[pc, sc, ac].forEach((c, i) => {
+  ;[pc, blouseColor, ac].forEach((c, i) => {
     sections.push(`<circle cx="${bx + blouseW/2 + (i-1)*Math.round(18*scale)}" cy="${swatchY + swatchR}" r="${swatchR}" fill="${c}" opacity="0.9"/>`)
   })
 

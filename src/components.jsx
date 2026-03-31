@@ -950,15 +950,13 @@ function CustomerHome({ user, onNavigate, templates: propTemplates, palettes: pr
 }
 
 // ─── DESIGNER CANVAS ──────────────────────────────────────────────────────────
-function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: propPatterns, palettes: propPalettes }) {
+function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: propPatterns, palettes: propPalettes, templates: propTemplates }) {
   const isMobile = window.innerWidth < 768
   const [design, setDesign] = useState(() => ({
     primaryColor: '#8B0000', secondaryColor: '#F5F5DC',
     accentColor: '#C9A843', bodyPattern: 'b4',
     borderPattern: 'br1', palluPattern: 'p2',
-    blousePattern: 'b4',
     ...(initialDesign || {}),
-    // ensure blousePattern always has a value
     blousePattern: initialDesign?.blousePattern || initialDesign?.bodyPattern || 'b4',
   }))
   const [designName, setDesignName] = useState('My Saree Design')
@@ -975,6 +973,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
 
   const patterns = propPatterns && propPatterns.length > 0 ? propPatterns : SEED_PATTERNS
   const palettes = propPalettes && propPalettes.length > 0 ? propPalettes : SEED_PALETTES
+  const templates = propTemplates && propTemplates.length > 0 ? propTemplates : SEED_TEMPLATES
 
   const sectionPatterns = {
     body:   patterns.filter(p => p.saree_part === 'body'),
@@ -1022,7 +1021,12 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
       if (!data.error) {
         const text   = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
         const parsed = JSON.parse(text.replace(/```json|```/g, '').trim())
-        setDesign(d => ({...d, ...parsed}))
+        setDesign(d => ({
+          ...d,
+          ...parsed,
+          // Keep blouse in sync with body unless AI explicitly set it
+          blousePattern: parsed.blousePattern || parsed.bodyPattern || d.blousePattern,
+        }))
         setAiResult(parsed.explanation)
       }
     } catch (e) { notify('AI generation failed. Try again.', 'error') }
@@ -1572,8 +1576,8 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
   )
 
   const SavePanel = () => {
-    const tmplList = (palettes && palettes.length > 0)
-      ? SEED_TEMPLATES
+    const tmplList = (templates && templates.length > 0)
+      ? templates
       : SEED_TEMPLATES
 
     const applyTemplate = (t) => {

@@ -20,7 +20,6 @@ export default function App() {
   const [dbUserUploadPatterns, setDbUserUploadPatterns] = useState([])
   const [dbPalettes, setDbPalettes] = useState([])
   const [dbTemplates, setDbTemplates] = useState([])
-  const [dbLoaded, setDbLoaded] = useState(false)
 
   const refreshLibraryData = async () => {
     try {
@@ -91,11 +90,9 @@ export default function App() {
         if (validPats) setDbPatterns(pats)
         if (validPals) setDbPalettes(pals)
         if (validTmps) setDbTemplates(tmps)
-        setDbLoaded(true)
         console.log(`✅ Supabase loaded: ${validPats?pats.length:0} patterns, ${validPals?pals.length:0} palettes, ${validTmps?tmps.length:0} templates`)
       } catch(e) {
         console.warn('⚠️ Supabase load failed, using seed data:', e)
-        setDbLoaded(true)
       }
     }
     loadFromSupabase()
@@ -127,7 +124,8 @@ export default function App() {
     if (token) await sb.signOut(token)
     sessionStorage.removeItem('sb_token')
     sessionStorage.removeItem('sb_user')
-    setUser(null); setToken(null)
+    setUser(null); setToken(null); setUserRole('customer')
+    setDbUserUploadPatterns([])
     setPage('home')
   }
 
@@ -172,6 +170,7 @@ export default function App() {
         onBack={()=>setPage('home')}
         patterns={patterns}
         palettes={palettes}
+        templates={templates}
       />
       <Notification notification={notification} />
     </>
