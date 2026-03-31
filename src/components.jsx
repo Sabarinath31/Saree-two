@@ -8,7 +8,7 @@ import {
   QUESTIONS, buildDesignFromAnswers, generateRecommendations,
   GEMINI_KEY, GEMINI_API_URL, GEMINI_MODEL, HF_TOKEN, REPLICATE_TOKEN, TOGETHER_TOKEN,
 } from './data.jsx'
-import { PatternRenderer, SareeCanvas, exportSareeAsPNG, generateSareeDataURL } from './canvas.jsx'
+import { PatternRenderer, SareeCanvas, exportSareeAsPNG, generateSareeDataURL, MannequinCanvas } from './canvas.jsx'
 import { CustomerUploadWizard, InlinePatternEditor } from './patternEditor.jsx'
 
 // ─── NOTIFICATION ─────────────────────────────────────────────────────────────
@@ -970,6 +970,7 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
   const [generatedImage, setGeneratedImage] = useState(null)
   const [imageLoading, setImageLoading] = useState(false)
   const [imageError, setImageError] = useState(null)
+  const [canvasMode, setCanvasMode] = useState('flat') // 'flat' | 'mannequin'
 
   const patterns = propPatterns && propPatterns.length > 0 ? propPatterns : SEED_PATTERNS
   const palettes = propPalettes && propPalettes.length > 0 ? propPalettes : SEED_PALETTES
@@ -1702,14 +1703,31 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
         </div>
 
         {/* Canvas - top 42% */}
-        <div style={{height:'42%',display:'flex',alignItems:'center',justifyContent:'center',background:`radial-gradient(ellipse at center,${T.surfaceAlt} 0%,${T.bg} 70%)`,padding:12,position:'relative'}}>
+        <div style={{height:'42%',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:`radial-gradient(ellipse at center,${T.surfaceAlt} 0%,${T.bg} 70%)`,padding:12,position:'relative'}}>
           {isGenerating && (
             <div style={{position:'absolute',inset:0,background:'rgba(14,12,9,0.85)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',zIndex:10}}>
               <div style={{width:32,height:32,borderRadius:'50%',border:`2px solid ${T.goldLight}`,borderTopColor:T.gold,animation:'spin 1s linear infinite',marginBottom:8}} />
               <span style={{fontSize:11,color:T.textMid}}>Generating...</span>
             </div>
           )}
-          <SareeCanvas design={design} scale={0.62} patternMap={patternMap} />
+          {/* Mobile view toggle */}
+          <div style={{display:'flex',gap:0,marginBottom:8,border:`1px solid ${T.border}`,borderRadius:2,overflow:'hidden',flexShrink:0}}>
+            {[['flat','Flat'],['mannequin','👗']].map(([mode,label])=>(
+              <button key={mode} onClick={()=>setCanvasMode(mode)} style={{
+                padding:'4px 12px',border:'none',cursor:'pointer',
+                fontSize:9,letterSpacing:1,fontWeight:canvasMode===mode?600:300,
+                textTransform:'uppercase',
+                background: canvasMode===mode ? `linear-gradient(135deg,${T.goldDark},${T.gold})` : T.surfaceAlt,
+                color: canvasMode===mode ? '#0E0C09' : T.textMid,
+              }}>{label}</button>
+            ))}
+          </div>
+          <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
+            {canvasMode === 'flat'
+              ? <SareeCanvas design={design} scale={0.62} patternMap={patternMap} />
+              : <MannequinCanvas design={design} scale={0.62} patternMap={patternMap} />
+            }
+          </div>
           <div style={{position:'absolute',bottom:8,left:'50%',transform:'translateX(-50%)',display:'flex',gap:5}}>
             {[design.primaryColor,design.secondaryColor,design.accentColor].map((c,i)=>(
               <div key={i} style={{width:10,height:10,borderRadius:'50%',background:c,border:`1px solid ${T.border}`}} />
@@ -1761,8 +1779,28 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
             <span style={{fontFamily:'Cormorant Garamond',fontSize:20,color:T.textMid,fontStyle:'italic'}}>AI is creating...</span>
           </div>
         )}
-        <SareeCanvas design={design} scale={1.1} patternMap={patternMap} />
-        {/* Generate feature hidden — {false && generatedImage && (...)} */}
+
+        {/* ── View toggle ── */}
+        <div style={{
+          display:'flex',gap:0,marginBottom:20,
+          border:`1px solid ${T.border}`,borderRadius:3,overflow:'hidden',
+        }}>
+          {[['flat','⬛ Flat'],['mannequin','👗 Mannequin']].map(([mode,label])=>(
+            <button key={mode} onClick={()=>setCanvasMode(mode)} style={{
+              padding:'7px 18px',border:'none',cursor:'pointer',
+              fontSize:10,letterSpacing:1.5,fontWeight:canvasMode===mode?600:300,
+              textTransform:'uppercase',
+              background: canvasMode===mode ? `linear-gradient(135deg,${T.goldDark},${T.gold})` : T.surfaceAlt,
+              color: canvasMode===mode ? '#0E0C09' : T.textMid,
+              transition:'all 0.2s',
+            }}>{label}</button>
+          ))}
+        </div>
+
+        {canvasMode === 'flat'
+          ? <SareeCanvas design={design} scale={1.1} patternMap={patternMap} />
+          : <MannequinCanvas design={design} scale={1.0} patternMap={patternMap} />
+        }
       </div>
 
       {/* Right */}
