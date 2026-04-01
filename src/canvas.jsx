@@ -1386,251 +1386,235 @@ export function exportSareeAsPNG(design, filename = 'saree-design', patternMap =
 export { PatternRenderer, SareeCanvas }
 
 // ─── MANNEQUIN CANVAS ────────────────────────────────────────────────────────
+// ─── SAREE DISPLAY (no mannequin) ─────────────────────────────────────────────
+// Floating fabric panels in the same layout as the reference image.
+// No human figure, no silhouette — pure textile display.
 export function MannequinCanvas({ design, scale = 1, patternMap = {} }) {
-  const W = Math.round(340 * scale)
-  const H = Math.round(580 * scale)
-
-  const ac    = design.accentColor  || '#C9A843'
-  const acD   = '#8B6914'
-  const pc    = design.primaryColor || '#8B0000'
-  const sc    = design.secondaryColor || '#F5F5DC'
-  const blouseColor = design.blouseColor || sc
+  const ac  = design.accentColor    || '#C9A843'
+  const acD = '#8B6914'
+  const pc  = design.primaryColor   || '#8B0000'
+  const sc  = design.secondaryColor || '#F5F5DC'
+  const blouseColor     = design.blouseColor || sc
   const blousePatternId = design.blousePattern || design.bodyPattern
 
   const s = (n) => Math.round(n * scale)
 
-  const neckX = s(170), neckTopY = s(42), neckBotY = s(72)
-  const neckW = s(28)
+  // Canvas
+  const W = s(460)
+  const H = s(720)
 
-  const lShoulderX = s(82),  rShoulderX = s(258), shoulderY = s(78)
-  const lArmpitX = s(94),    rArmpitX   = s(246), armpitY   = s(120)
-  const lWaistX  = s(100),   rWaistX    = s(240), waistY    = s(220)
-  const lHipX    = s(90),    rHipX      = s(250), hipY      = s(280)
-  const lHemX    = s(96),    rHemX      = s(244), hemY      = s(530)
-  const lFootX   = s(110),   rFootX     = s(230), footY     = s(570)
+  // ── Panel geometry (tuned to match the screenshot layout) ─────────────────
+  // BLOUSE: top-left panel
+  const blouseX = s(40)
+  const blouseY = s(110)
+  const blouseW = s(220)
+  const blouseH = s(120)
 
-  const bodyPath = [
-    `M ${neckX - neckW/2},${neckBotY}`,
-    `C ${lShoulderX},${shoulderY} ${lArmpitX},${armpitY} ${lArmpitX},${armpitY}`,
-    `L ${lWaistX},${waistY}`,
-    `C ${lWaistX - s(4)},${hipY - s(20)} ${lHipX},${hipY} ${lHipX},${hipY}`,
-    `L ${lHemX},${hemY}`,
-    `C ${lHemX + s(2)},${footY - s(10)} ${lFootX},${footY} ${lFootX},${footY}`,
-    `L ${rFootX},${footY}`,
-    `C ${rHemX - s(2)},${footY - s(10)} ${rHemX},${hemY} ${rHemX},${hemY}`,
-    `L ${rHipX},${hipY}`,
-    `C ${rHipX + s(4)},${hipY - s(20)} ${rWaistX},${waistY} ${rWaistX},${waistY}`,
-    `L ${rArmpitX},${armpitY}`,
-    `C ${rArmpitX},${armpitY} ${rShoulderX},${shoulderY} ${neckX + neckW/2},${neckBotY}`,
-    `C ${neckX + neckW*0.6},${neckBotY - s(6)} ${neckX + neckW*0.4},${neckTopY} ${neckX},${neckTopY}`,
-    `C ${neckX - neckW*0.4},${neckTopY} ${neckX - neckW*0.6},${neckBotY - s(6)} ${neckX - neckW/2},${neckBotY}`,
-    'Z'
-  ].join(' ')
+  // PALLU: right panel, taller, starts at same top as blouse
+  const palluX  = s(248)
+  const palluY  = s(110)
+  const palluW  = s(172)
+  const palluH  = s(350)   // blouseH + bodyH - palluBdrH
 
-  const headCX = s(170), headCY = s(24), headR = s(20)
+  // BODY: below blouse, same left edge, same right edge as blouse
+  const bodyX   = s(30)
+  const bodyY   = blouseY + blouseH
+  const bodyW   = s(232)
+  const bodyH   = s(290)
 
-  const lSleeveP = `M ${lShoulderX},${shoulderY}
-    C ${lShoulderX - s(22)},${shoulderY + s(4)} ${lShoulderX - s(28)},${armpitY - s(10)} ${lArmpitX - s(8)},${armpitY + s(4)}
-    L ${lArmpitX},${armpitY}
-    C ${lArmpitX - s(2)},${shoulderY + s(18)} ${lShoulderX - s(4)},${shoulderY + s(10)} ${lShoulderX},${shoulderY} Z`
+  // BORDER: below body, full width spanning blouse+body width
+  const borderX = s(30)
+  const borderY = bodyY + bodyH
+  const borderW = s(234)
+  const borderH = s(72)
 
-  const rSleeveP = `M ${rShoulderX},${shoulderY}
-    C ${rShoulderX + s(22)},${shoulderY + s(4)} ${rShoulderX + s(28)},${armpitY - s(10)} ${rArmpitX + s(8)},${armpitY + s(4)}
-    L ${rArmpitX},${armpitY}
-    C ${rArmpitX + s(2)},${shoulderY + s(18)} ${rShoulderX + s(4)},${shoulderY + s(10)} ${rShoulderX},${shoulderY} Z`
+  // Pallu border strip (bottom portion of pallu)
+  const palluBdrH   = s(54)
+  const palluBdrY   = palluY + palluH - palluBdrH
 
-  const blouseTopY = s(78), blouseBotY = s(155)
-  const blouseClip = `M ${lArmpitX},${blouseTopY}
-    L ${rArmpitX},${blouseTopY}
-    C ${rShoulderX},${shoulderY} ${rArmpitX},${armpitY} ${rArmpitX},${armpitY}
-    L ${rWaistX - s(10)},${blouseBotY}
-    L ${lWaistX + s(10)},${blouseBotY}
-    L ${lArmpitX},${armpitY}
-    C ${lArmpitX},${armpitY} ${lShoulderX},${shoulderY} ${lArmpitX},${blouseTopY} Z`
+  const uid = `sdf_${Math.round(scale * 100)}`
 
-  const bodyClip = `M ${lArmpitX},${armpitY}
-    L ${rWaistX - s(10)},${blouseBotY}
-    C ${rWaistX},${waistY} ${rHipX - s(20)},${hipY} ${rHipX - s(20)},${hipY}
-    L ${rHemX - s(20)},${hemY}
-    L ${lHemX},${hemY}
-    C ${lHipX},${hipY} ${lWaistX},${waistY} ${lWaistX},${waistY}
-    L ${lArmpitX},${armpitY} Z`
-
-  const borderH = s(38)
-  const borderClip = `M ${lHipX},${hemY - borderH}
-    L ${rHemX - s(20)},${hemY - borderH}
-    L ${rHemX - s(20)},${hemY}
-    L ${lHemX},${hemY}
-    L ${lHipX},${hemY - borderH} Z`
-
-  const palluTopY  = s(78),  palluBotY = s(480)
-  const palluLeftX = s(218), palluRightX = s(306)
-  const palluBotLeftX = s(214), palluBotRightX = s(308)
-  const palluBorderH = s(42)
-  const palluClipP = `M ${palluLeftX},${palluTopY}
-    L ${palluRightX},${palluTopY}
-    L ${palluBotRightX},${palluBotY}
-    L ${palluBotLeftX},${palluBotY} Z`
-
-  const palluBorderClipP = `M ${palluBotLeftX},${palluBotY - palluBorderH}
-    L ${palluBotRightX},${palluBotY - palluBorderH}
-    L ${palluBotRightX},${palluBotY}
-    L ${palluBotLeftX},${palluBotY} Z`
-
-  const palluTopBorderH = s(18)
-  const lAnkleX = s(118), rAnkleX = s(222), ankleY = s(545)
-
-  const FO = ({ id, patternId, customPattern, color, accent, px, py, pw, ph, instanceKey }) => (
-    <foreignObject x={px} y={py} width={pw} height={ph}>
+  const FO = ({ patId, custPat, col, acc, x, y, w, h, ky }) => (
+    <foreignObject x={x} y={y} width={Math.max(1,w)} height={Math.max(1,h)}>
       <div xmlns="http://www.w3.org/1999/xhtml"
-        style={{ width: pw, height: ph, overflow: 'hidden', display: 'block' }}>
+        style={{ width: Math.max(1,w), height: Math.max(1,h), overflow: 'hidden', display: 'block' }}>
         <PatternRenderer
-          patternId={patternId}
-          customPattern={customPattern}
-          color={color}
-          accentColor={accent}
-          width={pw}
-          height={ph}
-          svgInstanceKey={instanceKey}
+          patternId={patId}
+          customPattern={custPat}
+          color={col}
+          accentColor={acc}
+          width={Math.max(1,w)}
+          height={Math.max(1,h)}
+          svgInstanceKey={ky}
         />
       </div>
     </foreignObject>
   )
 
-  const bodyFOW  = s(160), bodyFOH  = s(420)
-  const blouseFOW = s(180), blouseFOH = s(100)
-  const palluFOW  = s(100), palluFOH  = s(420)
-  const borderFOW = s(180), borderFOH = borderH
-  const palluBorderFOW = palluFOW, palluBorderFOH = palluBorderH
-
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}
+      xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
       <defs>
-        <clipPath id={`mn_body_${scale}`}><path d={bodyClip} /></clipPath>
-        <clipPath id={`mn_blouse_${scale}`}><path d={blouseClip} /></clipPath>
-        <clipPath id={`mn_lsleeve_${scale}`}><path d={lSleeveP} /></clipPath>
-        <clipPath id={`mn_rsleeve_${scale}`}><path d={rSleeveP} /></clipPath>
-        <clipPath id={`mn_border_${scale}`}><path d={borderClip} /></clipPath>
-        <clipPath id={`mn_pallu_${scale}`}><path d={palluClipP} /></clipPath>
-        <clipPath id={`mn_pallubdr_${scale}`}><path d={palluBorderClipP} /></clipPath>
-
-        <linearGradient id={`mn_skin_${scale}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#d4b896" stopOpacity="0.9"/>
-          <stop offset="50%" stopColor="#e8cdb0" stopOpacity="1"/>
-          <stop offset="100%" stopColor="#c8a882" stopOpacity="0.9"/>
-        </linearGradient>
-        <linearGradient id={`mn_bodyshad_${scale}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#000" stopOpacity="0.18"/>
-          <stop offset="18%" stopColor="#000" stopOpacity="0"/>
-          <stop offset="55%" stopColor="#000" stopOpacity="0.06"/>
-          <stop offset="78%" stopColor="#fff" stopOpacity="0.06"/>
-          <stop offset="100%" stopColor="#000" stopOpacity="0.12"/>
-        </linearGradient>
-        <linearGradient id={`mn_pallushad_${scale}`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#fff" stopOpacity="0.15"/>
-          <stop offset="40%" stopColor="#000" stopOpacity="0"/>
-          <stop offset="100%" stopColor="#000" stopOpacity="0.25"/>
-        </linearGradient>
-        <linearGradient id={`mn_palluleft_${scale}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#000" stopOpacity="0.28"/>
-          <stop offset="30%" stopColor="#000" stopOpacity="0"/>
-          <stop offset="100%" stopColor="#000" stopOpacity="0"/>
-        </linearGradient>
-        <linearGradient id={`mn_zari_${scale}`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor={ac} stopOpacity="0.9"/>
-          <stop offset="45%" stopColor="#fff" stopOpacity="0.35"/>
-          <stop offset="100%" stopColor={acD} stopOpacity="1"/>
-        </linearGradient>
-        <linearGradient id={`mn_blousesheen_${scale}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#fff" stopOpacity="0.18"/>
-          <stop offset="60%" stopColor="#000" stopOpacity="0"/>
-          <stop offset="100%" stopColor="#000" stopOpacity="0.10"/>
-        </linearGradient>
-        <linearGradient id={`mn_zarih_${scale}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor={acD}/>
-          <stop offset="30%" stopColor={ac}/>
-          <stop offset="50%" stopColor="#fff" stopOpacity="0.8"/>
-          <stop offset="70%" stopColor={ac}/>
+        <linearGradient id={`${uid}_zarih`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor={acD}/>
+          <stop offset="25%"  stopColor={ac}/>
+          <stop offset="50%"  stopColor="#fffbe0" stopOpacity="0.9"/>
+          <stop offset="75%"  stopColor={ac}/>
           <stop offset="100%" stopColor={acD}/>
         </linearGradient>
+        <linearGradient id={`${uid}_zarih2`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor={acD}/>
+          <stop offset="30%"  stopColor={ac}/>
+          <stop offset="50%"  stopColor="#fff" stopOpacity="0.65"/>
+          <stop offset="70%"  stopColor={ac}/>
+          <stop offset="100%" stopColor={acD}/>
+        </linearGradient>
+        <linearGradient id={`${uid}_sheen`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stopColor="#fff" stopOpacity="0.14"/>
+          <stop offset="45%"  stopColor="#fff" stopOpacity="0"/>
+          <stop offset="100%" stopColor="#000" stopOpacity="0.09"/>
+        </linearGradient>
+        <linearGradient id={`${uid}_bodyshadL`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor="#000" stopOpacity="0.14"/>
+          <stop offset="10%"  stopColor="#000" stopOpacity="0"/>
+          <stop offset="100%" stopColor="#000" stopOpacity="0"/>
+        </linearGradient>
+        <linearGradient id={`${uid}_pallushad`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor="#000" stopOpacity="0.20"/>
+          <stop offset="16%"  stopColor="#000" stopOpacity="0"/>
+          <stop offset="100%" stopColor="#000" stopOpacity="0"/>
+        </linearGradient>
+        <linearGradient id={`${uid}_vignette`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#000" stopOpacity="0.10"/>
+          <stop offset="10%"  stopColor="#000" stopOpacity="0"/>
+          <stop offset="90%"  stopColor="#000" stopOpacity="0"/>
+          <stop offset="100%" stopColor="#000" stopOpacity="0.14"/>
+        </linearGradient>
+        {/* Clip rects */}
+        <clipPath id={`${uid}_blouseClip`}>
+          <rect x={blouseX} y={blouseY} width={blouseW} height={blouseH} />
+        </clipPath>
+        <clipPath id={`${uid}_bodyClip`}>
+          <rect x={bodyX} y={bodyY} width={bodyW} height={bodyH} />
+        </clipPath>
+        <clipPath id={`${uid}_borderClip`}>
+          <rect x={borderX} y={borderY} width={borderW} height={borderH} />
+        </clipPath>
+        <clipPath id={`${uid}_palluClip`}>
+          <rect x={palluX} y={palluY} width={palluW} height={palluH} />
+        </clipPath>
+        <clipPath id={`${uid}_palluBdrClip`}>
+          <rect x={palluX} y={palluBdrY} width={palluW} height={palluBdrH} />
+        </clipPath>
+        {/* Drop shadows */}
+        <filter id={`${uid}_shadow`} x="-8%" y="-8%" width="116%" height="116%">
+          <feDropShadow dx="2" dy="3" stdDeviation="5" floodColor="#000" floodOpacity="0.45"/>
+        </filter>
+        <filter id={`${uid}_shadowSm`} x="-6%" y="-6%" width="112%" height="112%">
+          <feDropShadow dx="1" dy="2" stdDeviation="3" floodColor="#000" floodOpacity="0.35"/>
+        </filter>
       </defs>
 
-      <path d={bodyPath} fill={`url(#mn_skin_${scale})`} />
-      <circle cx={headCX} cy={headCY} r={headR} fill={`url(#mn_skin_${scale})`} />
-      <path d={lSleeveP} fill={`url(#mn_skin_${scale})`} />
-      <path d={rSleeveP} fill={`url(#mn_skin_${scale})`} />
-      <ellipse cx={lAnkleX} cy={ankleY} rx={s(14)} ry={s(16)} fill={`url(#mn_skin_${scale})`} />
-      <ellipse cx={rAnkleX} cy={ankleY} rx={s(14)} ry={s(16)} fill={`url(#mn_skin_${scale})`} />
-
-      <g clipPath={`url(#mn_body_${scale})`}>
-        <FO id="body" patternId={design.bodyPattern} customPattern={patternMap?.[design.bodyPattern]}
-          color={pc} accent={ac} px={lArmpitX - s(4)} py={blouseBotY - s(10)}
-          pw={bodyFOW} ph={bodyFOH} instanceKey="mn_body" />
-        <rect x={lArmpitX - s(4)} y={blouseBotY} width={bodyFOW} height={bodyFOH} fill={`url(#mn_bodyshad_${scale})`} />
+      {/* ══ BODY panel ══ */}
+      <g filter={`url(#${uid}_shadow)`}>
+        <rect x={bodyX} y={bodyY} width={bodyW} height={bodyH} fill={pc} />
       </g>
-
-      <g clipPath={`url(#mn_border_${scale})`}>
-        <FO id="border" patternId={design.borderPattern} customPattern={patternMap?.[design.borderPattern]}
-          color={sc} accent={ac} px={lHipX} py={hemY - borderH}
-          pw={borderFOW} ph={borderFOH} instanceKey="mn_border" />
-        <rect x={lHipX} y={hemY - borderH} width={borderFOW} height={s(3)} fill={`url(#mn_zarih_${scale})`} />
+      <g clipPath={`url(#${uid}_bodyClip)`}>
+        <FO patId={design.bodyPattern} custPat={patternMap?.[design.bodyPattern]}
+          col={pc} acc={ac} x={bodyX} y={bodyY} w={bodyW} h={bodyH} ky="sdf_body" />
+        <rect x={bodyX} y={bodyY} width={bodyW} height={bodyH} fill={`url(#${uid}_bodyshadL)`} />
+        <rect x={bodyX} y={bodyY} width={bodyW} height={bodyH} fill={`url(#${uid}_sheen)`} />
+        <rect x={bodyX} y={bodyY} width={bodyW} height={bodyH} fill={`url(#${uid}_vignette)`} />
       </g>
+      {/* Body panel border stroke */}
+      <rect x={bodyX} y={bodyY} width={bodyW} height={bodyH}
+        fill="none" stroke={`${ac}55`} strokeWidth={s(1)} />
 
-      <g clipPath={`url(#mn_blouse_${scale})`}>
-        <FO id="blouse" patternId={blousePatternId} customPattern={patternMap?.[blousePatternId]}
-          color={blouseColor} accent={ac} px={lArmpitX} py={blouseTopY}
-          pw={blouseFOW} ph={blouseFOH} instanceKey="mn_blouse" />
-        <rect x={lArmpitX} y={blouseTopY} width={blouseFOW} height={blouseFOH} fill={`url(#mn_blousesheen_${scale})`} />
+      {/* ══ BORDER strip ══ */}
+      <g filter={`url(#${uid}_shadowSm)`}>
+        <rect x={borderX} y={borderY} width={borderW} height={borderH} fill={sc} />
       </g>
-
-      <g clipPath={`url(#mn_lsleeve_${scale})`}>
-        <FO id="lsleeve" patternId={blousePatternId} customPattern={patternMap?.[blousePatternId]}
-          color={blouseColor} accent={ac} px={lShoulderX - s(30)} py={shoulderY}
-          pw={s(60)} ph={s(60)} instanceKey="mn_lsleeve" />
+      <g clipPath={`url(#${uid}_borderClip)`}>
+        <FO patId={design.borderPattern} custPat={patternMap?.[design.borderPattern]}
+          col={sc} acc={ac} x={borderX} y={borderY} w={borderW} h={borderH} ky="sdf_bdr" />
+        <rect x={borderX} y={borderY} width={borderW} height={borderH} fill={`url(#${uid}_sheen)`} />
+        {/* Zari top line */}
+        <rect x={borderX} y={borderY}           width={borderW} height={s(6)} fill={`url(#${uid}_zarih)`} />
+        {/* Zari bottom line */}
+        <rect x={borderX} y={borderY + borderH - s(6)} width={borderW} height={s(6)} fill={`url(#${uid}_zarih2)`} />
+        {/* Accent hairlines */}
+        <rect x={borderX} y={borderY + s(20)}           width={borderW} height={s(2)} fill={ac} opacity="0.35" />
+        <rect x={borderX} y={borderY + borderH - s(22)} width={borderW} height={s(2)} fill={ac} opacity="0.35" />
       </g>
-      <g clipPath={`url(#mn_rsleeve_${scale})`}>
-        <FO id="rsleeve" patternId={blousePatternId} customPattern={patternMap?.[blousePatternId]}
-          color={blouseColor} accent={ac} px={rShoulderX - s(30)} py={shoulderY}
-          pw={s(60)} ph={s(60)} instanceKey="mn_rsleeve" />
+      <rect x={borderX} y={borderY} width={borderW} height={borderH}
+        fill="none" stroke={`${ac}55`} strokeWidth={s(1)} />
+
+      {/* ══ PALLU panel ══ */}
+      <g filter={`url(#${uid}_shadow)`}>
+        <rect x={palluX} y={palluY} width={palluW} height={palluH} fill={pc} />
       </g>
-
-      <g clipPath={`url(#mn_pallu_${scale})`}>
-        <FO id="pallu" patternId={design.palluPattern} customPattern={patternMap?.[design.palluPattern]}
-          color={pc} accent={ac} px={palluLeftX} py={palluTopY}
-          pw={palluFOW} ph={palluFOH} instanceKey="mn_pallu" />
-        <rect x={palluLeftX} y={palluTopY} width={palluFOW} height={palluFOH} fill={`url(#mn_pallushad_${scale})`} />
-        <rect x={palluLeftX} y={palluTopY} width={s(18)} height={palluFOH} fill={`url(#mn_palluleft_${scale})`} />
+      <g clipPath={`url(#${uid}_palluClip)`}>
+        <FO patId={design.palluPattern} custPat={patternMap?.[design.palluPattern]}
+          col={pc} acc={ac} x={palluX} y={palluY} w={palluW} h={palluH} ky="sdf_pallu" />
+        {/* Left-edge depth shadow */}
+        <rect x={palluX} y={palluY} width={s(20)} height={palluH} fill={`url(#${uid}_pallushad)`} />
+        <rect x={palluX} y={palluY} width={palluW} height={palluH} fill={`url(#${uid}_sheen)`} />
+        <rect x={palluX} y={palluY} width={palluW} height={palluH} fill={`url(#${uid}_vignette)`} />
       </g>
-
-      <g clipPath={`url(#mn_pallubdr_${scale})`}>
-        <FO id="pallubdr" patternId={design.borderPattern} customPattern={patternMap?.[design.borderPattern]}
-          color={sc} accent={ac} px={palluBotLeftX} py={palluBotY - palluBorderH}
-          pw={palluBorderFOW} ph={palluBorderFOH} instanceKey="mn_pallubdr" />
-        <rect x={palluBotLeftX} y={palluBotY - palluBorderH} width={palluBorderFOW} height={s(3)} fill={`url(#mn_zarih_${scale})`} />
+      {/* Pallu border strip */}
+      <g clipPath={`url(#${uid}_palluBdrClip)`}>
+        <FO patId={design.borderPattern} custPat={patternMap?.[design.borderPattern]}
+          col={sc} acc={ac} x={palluX} y={palluBdrY} w={palluW} h={palluBdrH} ky="sdf_pbdr" />
+        <rect x={palluX} y={palluBdrY}            width={palluW} height={s(6)} fill={`url(#${uid}_zarih)`} />
+        <rect x={palluX} y={palluY + palluH - s(6)} width={palluW} height={s(6)} fill={`url(#${uid}_zarih2)`} />
       </g>
+      {/* Pallu top zari line */}
+      <rect x={palluX} y={palluY} width={palluW} height={s(5)} fill={`url(#${uid}_zarih)`} />
+      <rect x={palluX} y={palluY} width={palluW} height={palluH}
+        fill="none" stroke={`${ac}55`} strokeWidth={s(1)} />
 
-      <rect x={palluLeftX} y={palluTopY} width={palluFOW} height={palluTopBorderH} fill={ac} opacity="0.65" />
-      <rect x={palluLeftX} y={palluTopY} width={palluFOW} height={s(2.5)} fill={`url(#mn_zarih_${scale})`} />
-      <rect x={palluLeftX} y={palluTopY + palluTopBorderH - s(2.5)} width={palluFOW} height={s(2.5)} fill={`url(#mn_zarih_${scale})`} />
+      {/* ══ BLOUSE panel (on top of body top-left) ══ */}
+      <g filter={`url(#${uid}_shadowSm)`}>
+        <rect x={blouseX} y={blouseY} width={blouseW} height={blouseH} fill={blouseColor} />
+      </g>
+      <g clipPath={`url(#${uid}_blouseClip)`}>
+        <FO patId={blousePatternId} custPat={patternMap?.[blousePatternId]}
+          col={blouseColor} acc={ac} x={blouseX} y={blouseY} w={blouseW} h={blouseH} ky="sdf_blouse" />
+        <rect x={blouseX} y={blouseY} width={blouseW} height={blouseH} fill={`url(#${uid}_sheen)`} />
+        {/* Blouse bottom zari hem */}
+        <rect x={blouseX} y={blouseY + blouseH - s(9)} width={blouseW} height={s(9)} fill={ac} opacity="0.55" />
+        <rect x={blouseX} y={blouseY + blouseH - s(9)} width={blouseW} height={s(4)} fill={`url(#${uid}_zarih)`} />
+      </g>
+      <rect x={blouseX} y={blouseY} width={blouseW} height={blouseH}
+        fill="none" stroke={`${ac}66`} strokeWidth={s(1)} />
 
-      <path d={bodyPath} fill="none" stroke="rgba(180,150,110,0.35)" strokeWidth={s(1)} />
-      <circle cx={headCX} cy={headCY} r={headR} fill="none" stroke="rgba(180,150,110,0.35)" strokeWidth={s(1)} />
-      <path d={lSleeveP} fill="none" stroke="rgba(180,150,110,0.25)" strokeWidth={s(0.8)} />
-      <path d={rSleeveP} fill="none" stroke="rgba(180,150,110,0.25)" strokeWidth={s(0.8)} />
+      {/* ══ Seam lines between panels ══ */}
+      {/* Blouse-to-body seam */}
+      <line x1={blouseX} y1={bodyY} x2={blouseX + blouseW} y2={bodyY}
+        stroke={ac} strokeWidth={s(2)} opacity="0.75" />
+      {/* Body-to-border seam */}
+      <line x1={borderX - s(1)} y1={borderY} x2={borderX + borderW + s(1)} y2={borderY}
+        stroke={ac} strokeWidth={s(2.5)} opacity="0.9" />
+      {/* Pallu left seam (vertical) */}
+      <line x1={palluX} y1={palluY} x2={palluX} y2={palluY + palluH}
+        stroke={ac} strokeWidth={s(1.5)} opacity="0.65" />
 
-      <path d={`M ${lArmpitX + s(14)},${blouseTopY + s(6)} L ${neckX},${blouseBotY - s(20)} L ${rArmpitX - s(14)},${blouseTopY + s(6)}`}
-        fill="none" stroke={ac} strokeWidth={s(1.2)} opacity="0.7" />
+      {/* ══ Section labels ══ */}
+      <text x={blouseX + blouseW * 0.5} y={blouseY + blouseH * 0.6}
+        textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif"
+        fontSize={s(14)} fill={ac} letterSpacing="3" fontWeight="bold">BLOUSE</text>
 
-      <path d={`M ${rWaistX - s(10)},${blouseBotY} C ${s(190)},${s(200)} ${s(155)},${s(280)} ${lHipX + s(10)},${hemY - borderH}`}
-        fill="none" stroke={ac} strokeWidth={s(2.5)} opacity="0.5" />
-      <path d={`M ${rWaistX - s(10)},${blouseBotY} C ${s(190)},${s(200)} ${s(155)},${s(280)} ${lHipX + s(10)},${hemY - borderH}`}
-        fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth={s(1)} opacity="0.8" />
+      <text x={bodyX + bodyW * 0.42} y={bodyY + s(52)}
+        textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif"
+        fontSize={s(14)} fill={ac} letterSpacing="3" fontWeight="bold">BODY</text>
 
-      <path d={palluClipP} fill="none" stroke={`${acD}88`} strokeWidth={s(1.2)} />
-      <path d={palluBorderClipP} fill="none" stroke={`${ac}66`} strokeWidth={s(0.8)} />
+      <text x={borderX + borderW * 0.42} y={borderY + borderH * 0.62}
+        textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif"
+        fontSize={s(13)} fill={ac} letterSpacing="3" fontWeight="bold">BORDER</text>
 
-      <line x1={lHipX} y1={hemY - borderH} x2={rHemX - s(20)} y2={hemY - borderH}
-        stroke={ac} strokeWidth={s(1.5)} opacity="0.7" />
+      <text x={palluX + palluW * 0.5} y={palluY + s(44)}
+        textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif"
+        fontSize={s(13)} fill={ac} letterSpacing="3" fontWeight="bold">PALLU</text>
     </svg>
   )
 }
