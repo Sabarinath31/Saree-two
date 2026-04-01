@@ -2,7 +2,7 @@
 // AIModePage, MyDesignsPage, DesignerDashboard, TopNav
 import { useState, useEffect } from 'react'
 import { T } from './theme.jsx'
-import { sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, GEMINI_MODEL, GEMINI_API_URL, GEMINI_KEY } from './data.jsx'
+import { sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, GROQ_TEXT_MODEL, GROQ_API_URL, GROQ_KEY } from './data.jsx'
 import { PatternRenderer, SareeCanvas } from './canvas.jsx'
 import { VoiceQuestionnaire } from './components.jsx'
 import { UploadPattern, PatternEditor } from './patternEditor.jsx'
@@ -31,24 +31,31 @@ function AIModePage({ onBack, onDesignReady, notify }) {
     if (!prompt.trim()) return
     setIsGenerating(true)
     try {
-      if (GEMINI_KEY) {
+      if (GROQ_KEY) {
+        console.log('[AIMode] 🤖 Trying Groq text model with prompt:', prompt)
         const sysPrompt = `You are a saree design expert. Return ONLY valid JSON with no markdown or backticks:
 {"recommendations":[{"name":"...","description":"...","matchScore":90,"design":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b6","borderPattern":"br3","palluPattern":"p6"}}],"design":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","explanation":"..."}}
 Pattern IDs — body: b1-b17, border: br1-br12, pallu: p1-p12. Return exactly 3 recommendations.`
-        const res = await fetch(
-          `${GEMINI_API_URL}/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ role:'user', parts:[{ text: sysPrompt + '\n\nDesign a saree based on: ' + prompt }] }],
-              generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
-            })
-          }
-        )
+        const res = await fetch(GROQ_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + GROQ_KEY,
+          },
+          body: JSON.stringify({
+            model: GROQ_TEXT_MODEL,
+            messages: [
+              { role: 'system', content: sysPrompt },
+              { role: 'user',   content: 'Design a saree based on: ' + prompt }
+            ],
+            max_tokens: 1000,
+            temperature: 0.7,
+          })
+        })
         const data = await res.json()
-        if (data.error) throw new Error(data.error.message || 'Gemini API error')
-        const text  = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+        if (data.error) throw new Error(data.error?.message || 'Groq API error')
+        console.log('[AIMode] ✅ Groq succeeded. Response preview:', data.choices?.[0]?.message?.content?.slice(0, 120))
+        const text  = data.choices?.[0]?.message?.content || ''
         const clean = text.replace(/```json|```/g, '').trim()
         const parsed = JSON.parse(clean)
         if (parsed.recommendations) {
@@ -61,11 +68,14 @@ Pattern IDs — body: b1-b17, border: br1-br12, pallu: p1-p12. Return exactly 3 
         setIsGenerating(false)
         setMode('results')
         return
+      } else {
+        console.log('[AIMode] ⚠️ No GROQ_KEY — skipping AI')
       }
     } catch (e) {
-      console.warn('Gemini generation failed, using fallback:', e.message)
+      console.warn('[AIMode] ❌ Groq failed, using keyword fallback:', e.message)
     }
     // Fallback: keyword-based design (no API needed)
+    console.log('[AIMode] 🔄 Running keyword fallback...')
     const fallbackDesign = promptFallback(prompt)
     setResults({
       design: fallbackDesign,

@@ -4,12 +4,13 @@
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 export const SUPABASE_URL = 'https://glvmekmiwyyasnepceqp.supabase.co'
 export const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdsdm1la21pd3l5YXNuZXBjZXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzEwNjIsImV4cCI6MjA4ODkwNzA2Mn0.-Fx8aPqpxSHIkm9RAkVT92nXNyFPSBUYLmWhuEr3ONU'
-export const GEMINI_MODEL   = 'gemini-2.5-flash'
-export const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models'
+export const GROQ_API_URL      = 'https://api.groq.com/openai/v1/chat/completions'
+export const GROQ_TEXT_MODEL   = 'llama-3.3-70b-versatile'
+export const GROQ_VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'
 
-// 🔑 Set VITE_GEMINI_KEY in your .env file
-export const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY || ''
-console.log('Gemini API Key:', GEMINI_KEY ? 'YES ✅' : 'MISSING ❌')
+// 🔑 Set VITE_GROQ_KEY in your .env file
+export const GROQ_KEY = import.meta.env.VITE_GROQ_KEY || ''
+console.log('Groq API Key:', GROQ_KEY ? 'YES ✅' : 'MISSING ❌')
 export const HF_TOKEN         = import.meta.env.VITE_HF_TOKEN || ''
 export const REPLICATE_TOKEN  = import.meta.env.VITE_REPLICATE_TOKEN || ''
 export const TOGETHER_TOKEN   = import.meta.env.VITE_TOGETHER_TOKEN || ''

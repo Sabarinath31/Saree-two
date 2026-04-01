@@ -6,7 +6,8 @@ import { T } from './theme.jsx'
 import {
   sb, SEED_PATTERNS, SEED_PALETTES, SEED_TEMPLATES, PATTERN_NAMES,
   QUESTIONS, buildDesignFromAnswers, generateRecommendations,
-  GEMINI_KEY, GEMINI_API_URL, GEMINI_MODEL, HF_TOKEN, REPLICATE_TOKEN, TOGETHER_TOKEN,
+  GROQ_KEY, GROQ_API_URL, GROQ_TEXT_MODEL, GROQ_VISION_MODEL,
+  HF_TOKEN, REPLICATE_TOKEN, TOGETHER_TOKEN,
 } from './data.jsx'
 import { PatternRenderer, SareeCanvas, exportSareeAsPNG, generateSareeDataURL, MannequinCanvas } from './canvas.jsx'
 import { CustomerUploadWizard, InlinePatternEditor } from './patternEditor.jsx'
@@ -450,9 +451,10 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
     if (!base64Data) { setError('No image loaded.'); return }
     setIsAnalyzing(true); setError(null)
 
-    // Try Gemini vision analysis if key available
-    if (GEMINI_KEY) {
+    // Try Groq vision analysis if key available
+    if (GROQ_KEY) {
       try {
+        console.log('[ImageUpload] 🤖 Trying Groq vision analysis...')
         const sysPrompt = 'You are a saree design expert. Analyse the image carefully. ' +
           'Return ONLY valid JSON (no markdown, no backticks): ' +
           '{"isSaree":true,"detectedStyle":"Pochampally Ikat","colors":{"primary":"#1B4F8A","secondary":"#5BA3C9","accent":"#C9A843"},' +
@@ -460,25 +462,29 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
           '"similarStyles":["Pochampally Ikat","Handloom Cotton"],"description":"Describe what you see in detail."} ' +
           'Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12. Use ACTUAL colours from the image — extract the real dominant hue, not defaults. ' +
           'If no saree: {"isSaree":false,"message":"No saree detected"}'
-        const res = await fetch(
-          GEMINI_API_URL + '/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_KEY,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { inline_data: { mime_type: mediaType, data: base64Data } },
-                  { text: sysPrompt }
-                ]
-              }],
-              generationConfig: { maxOutputTokens: 1000, temperature: 0.15 }
-            })
-          }
-        )
+        const res = await fetch(GROQ_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + GROQ_KEY,
+          },
+          body: JSON.stringify({
+            model: GROQ_VISION_MODEL,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'text', text: sysPrompt },
+                { type: 'image_url', image_url: { url: `data:${mediaType};base64,${base64Data}` } }
+              ]
+            }],
+            max_tokens: 1000,
+            temperature: 0.15,
+          })
+        })
         const data = await res.json()
         if (!data.error) {
-          const raw    = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+          console.log('[ImageUpload] ✅ Groq vision succeeded. Raw:', data.choices?.[0]?.message?.content?.slice(0, 120))
+          const raw    = data.choices?.[0]?.message?.content || ''
           const clean  = raw.replace(/```json|```/g, '').trim()
           const parsed = JSON.parse(clean)
           // Ensure blousePattern is set
@@ -489,16 +495,19 @@ function ImageUploadPage({ onBack, onDesignReady, notify }) {
           setIsAnalyzing(false)
           return
         }
-        console.warn('Gemini analysis error:', data.error?.message)
+        console.warn('[ImageUpload] ⚠️ Groq vision returned error:', data.error?.message)
       } catch (e) {
-        console.warn('Gemini analysis failed, using color sampling:', e.message)
+        console.warn('[ImageUpload] ❌ Groq vision fetch failed, falling back to pixel sampling:', e.message)
       }
+    } else {
+      console.log('[ImageUpload] ⚠️ No GROQ_KEY found — skipping AI, using pixel sampling fallback')
     }
 
     // Fallback: sample actual colors from the image pixels using the ref (always populated)
     await new Promise(r => setTimeout(r, 600))
+    console.log('[ImageUpload] 🔄 Running pixel color sampling fallback...')
     const sampled = imgElRef.current ? sampleImageColors(imgElRef.current) : null
-    console.log('[ImageUpload] pixel sample result:', sampled)
+    console.log('[ImageUpload] Pixel sample result:', sampled)
 
     if (sampled) {
       setResult({
@@ -1002,25 +1011,34 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
   const generateAI = async () => {
     if (!aiPrompt.trim()) return
     setIsGenerating(true)
+    console.log('[CanvasAI] 🤖 Calling Groq text model with prompt:', aiPrompt)
     try {
-      const sysPrompt = 'You are a saree design AI. Return ONLY valid JSON with no markdown: ' +
-        '{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex",' +
-        '"bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","explanation":"..."} ' +
-        'Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12.'
-      const res = await fetch(
-        GEMINI_API_URL + '/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_KEY,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: sysPrompt + ' Design a saree: ' + aiPrompt }] }],
-            generationConfig: { maxOutputTokens: 600, temperature: 0.7 }
-          })
-        }
-      )
+      const res = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + GROQ_KEY,
+        },
+        body: JSON.stringify({
+          model: GROQ_TEXT_MODEL,
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a saree design AI. Return ONLY valid JSON with no markdown: ' +
+                '{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex",' +
+                '"bodyPattern":"b1","borderPattern":"br1","palluPattern":"p1","explanation":"..."} ' +
+                'Pattern IDs body:b1-b17, border:br1-br12, pallu:p1-p12.'
+            },
+            { role: 'user', content: 'Design a saree: ' + aiPrompt }
+          ],
+          max_tokens: 600,
+          temperature: 0.7,
+        })
+      })
       const data = await res.json()
       if (!data.error) {
-        const text   = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
+        console.log('[CanvasAI] ✅ Groq succeeded. Response preview:', data.choices?.[0]?.message?.content?.slice(0, 120))
+        const text   = data.choices?.[0]?.message?.content || '{}'
         const parsed = JSON.parse(text.replace(/```json|```/g, '').trim())
         setDesign(d => ({
           ...d,
@@ -1029,8 +1047,14 @@ function DesignerCanvas({ user, token, initialDesign, notify, onBack, patterns: 
           blousePattern: parsed.blousePattern || parsed.bodyPattern || d.blousePattern,
         }))
         setAiResult(parsed.explanation)
+      } else {
+        console.warn('[CanvasAI] ⚠️ Groq returned error:', data.error?.message)
+        notify('AI generation failed. Try again.', 'error')
       }
-    } catch (e) { notify('AI generation failed. Try again.', 'error') }
+    } catch (e) {
+      console.log('[CanvasAI] ❌ Groq fetch failed:', e.message)
+      notify('AI generation failed. Try again.', 'error')
+    }
     setIsGenerating(false)
   }
 
